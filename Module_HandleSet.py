@@ -1,3 +1,4 @@
+import os
 import sys
 import win32api
 import win32con
@@ -6,7 +7,7 @@ import win32process
 
 
 class HandleSet:
-    def __init__(self, handle_title):
+    def __init__(self, handle_title=''):
         super(HandleSet, self).__init__()
         self.handle_pos = None
         self.handle_title = handle_title
@@ -93,5 +94,24 @@ class HandleSet:
                 priority_name = "高"
             if priority == 5:
                 priority_name = "最高"
-            print("------------------------------------------------------------")
             print(f"已设置进程 [{handle_title}] 的优先级为 [{priority_name}] ")
+            print("------------------------------------------------------------")
+
+    @staticmethod
+    def adb_test():
+        raw_content = os.popen('adb devices').read()
+        row_list = raw_content.split('List of devices attached\n')[1].split('\n')  # 从1改成0 没有报错了
+        devices_list = [i for i in row_list if len(i) > 1]
+        # print(raw_content)
+        devices_count = len(devices_list)
+        # print(devices_count)
+        if devices_count >= 1:
+            # print('adb连接设备数量为 ', devices_count)
+            return
+        else:
+            print('无设备连接')
+            sys.exit(0)  # 脚本结束
+
+    @staticmethod
+    def adb_kill():
+        os.popen('adb kill-server').read()

@@ -1,8 +1,9 @@
 import heapq
 import sys
 from os.path import dirname, abspath
+import numpy as np
 from cv2 import cv2
-from GetTargetPic import GetTargetPic
+from Module_GetTargetPic import GetTargetPic
 
 
 class GetTargetPos:
@@ -17,7 +18,7 @@ class GetTargetPos:
     def draw_target_pos(pos, scr_img, move_var):
         if pos is not None:
             # 在截图上框住识别的位置（左上角、右下角、颜色、线宽），这里可以改成函数调用
-            scr_img = cv2.cvtColor(scr_img, cv2.COLOR_RGB2BGRA)
+            # scr_img = cv2.cvtColor(scr_img, cv2.COLOR_RGB2BGRA)
             scr_img_tag = abspath(dirname(__file__)) + r'\screen_img\%s' % 'screen_img_tag.jpg'  # 截图的存储位置，程序路径里面
             cv2.rectangle(scr_img, (pos[0] - move_var, pos[1] - move_var), (pos[0] + move_var, pos[1] + move_var),
                           (0, 238, 118), 2)

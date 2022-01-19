@@ -2,7 +2,7 @@ import os
 import win32con
 import win32gui
 from gooey import Gooey, GooeyParser
-from AutoClick import auto_click
+from Module_Main_StartFind import start_click
 
 """
 窗体程序
@@ -22,6 +22,9 @@ def main():
     settings_msg = '选择模式，设置运行长，点击开始！'
     parser = GooeyParser(description=settings_msg)
 
+    parser.add_argument('connect_mod', metavar='游戏连接模式', help='请选择在电脑使用还是手机端使用',
+                        choices=['电脑端', '手机端-ADB'], default='电脑端')
+
     parser.add_argument('hwnd', metavar='窗口标题名称', help='请输入程序窗口标题', default='阴阳师-网易游戏')
     parser.add_argument("mode", metavar='选择功能', help="请选择功能模式", choices=['御魂', '探索', '突破', '活动', '觉醒', '百鬼夜行', '微信红包'],
                         default='御魂')  # 百鬼夜行，要么多截点图（每个式神的脚+桥中间的图案，可以辨识），要么单独写个百鬼夜行的方法
@@ -31,6 +34,7 @@ def main():
 
     parser.add_argument("end_do", metavar='执行完成后操作', help="请选择运行完成后需执行的操作",
                         choices=['不执行任何操作', '关机', '关闭目标程序'], default='不执行任何操作')
+    parser.add_argument('compress_val', metavar='压缩率', help='数值越低精度越低，匹配速度越快', default=0.4)
 
     # parser.add_argument("start_p", metavar='是否启动程序', help="请选择是否启动该程序",
     #                     choices=['不启动', '启动'], default='不启动')
@@ -45,8 +49,8 @@ def main():
     #     sys.exit(0)
     # elif args.start_p == '不启动':
 
-    auto_click(args.mode, args.hwnd, args.move_var, args.interval_seconds, args.loop_min)  # 执行脚本
-
+    # auto_click(args.connect_mod, args.mode, args.hwnd, args.move_var, args.interval_seconds, args.loop_min)  # 执行脚本
+    start_click(args.connect_mod, args.mode, args.hwnd, args.move_var, args.interval_seconds, args.loop_min, args.compress_val)
     # 下面这个可以作为函数放在另一个文件里面
     if args.end_do == '关机':
         print("已完成，60秒后自动关机！")
