@@ -1,9 +1,10 @@
-import os
+# -*- coding: utf-8 -*-
 import sys
 import win32api
 import win32con
 import win32gui
 import win32process
+import subprocess
 
 
 class HandleSet:
@@ -98,20 +99,31 @@ class HandleSet:
             print("------------------------------------------------------------")
 
     @staticmethod
-    def adb_test():
-        raw_content = os.popen('adb devices').read()
-        row_list = raw_content.split('List of devices attached\n')[1].split('\n')  # 从1改成0 没有报错了
-        devices_list = [i for i in row_list if len(i) > 1]
-        # print(raw_content)
-        devices_count = len(devices_list)
-        # print(devices_count)
-        if devices_count >= 1:
-            # print('adb连接设备数量为 ', devices_count)
-            return
-        else:
-            print('无设备连接')
-            sys.exit(0)  # 脚本结束
+    def deal_cmd(cmd):
+        pi = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+        return pi.stdout.read()
 
     @staticmethod
-    def adb_kill():
-        os.popen('adb kill-server').read()
+    def adb_device_status():
+        result = HandleSet.deal_cmd('adb devices')
+        result = result.decode("utf-8")
+        if result.startswith('List of devices attached'):
+            # 查看连接设备
+            result = result.strip().splitlines()
+            # 查看连接设备数量
+            device_size = len(result)
+            if device_size > 1:
+                device_list = []
+                for i in range(1, device_size):
+                    device_detail = result[1].split('\t')
+                    if device_detail[1] == 'device':
+                        device_list.append(device_detail[0])
+                    elif device_detail[1] == 'offline':
+                        print(device_detail[0])
+                        return False, '连接出现异常，设备无响应'
+                    elif device_detail[1] == 'unknown':
+                        print(device_detail[0])
+                        return False, '设备不在线，请重新连接，或打开安卓调试模式'
+                return True, device_list
+            else:
+                return False, "设备不在线，请重新连接，或打开安卓调试模式"

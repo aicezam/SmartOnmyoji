@@ -1,7 +1,8 @@
+# -*- coding: utf-8 -*-
 # import time
 # import win32gui
-from HandleSet import HandleSet
-from AutoClick import get_active_window
+from modules.ModuleHandleSet import HandleSet
+from modules.ModuleStart import get_active_window
 
 
 # def get_active_window(loop_times):

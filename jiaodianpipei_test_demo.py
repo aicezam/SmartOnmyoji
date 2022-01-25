@@ -4,8 +4,8 @@ from matplotlib import pyplot as plt
 
 MIN_MATCH_COUNT = 10
 
-img1 = cv2.imread('img/adb_img/yuhun/3.jpg', 1)
-img2 = cv2.imread('screen_img/screen_pic.jpg', 1)
+img1 = cv2.imread('img/yuhun/end_win_0.jpg', 1)
+img2 = cv2.imread('screen_img/1.jpg', 1)
 
 # 使用SIFT检测角点
 # sift = cv2.xfeatures2d.SIFT_create()
@@ -61,59 +61,3 @@ img3 = cv2.drawMatches(img1, kp1, img2, kp2, good, None, **draw_params)
 plt.figure(figsize=(20, 20))
 plt.imshow(cv2.cvtColor(img3, cv2.COLOR_BGR2RGB))
 plt.show()
-
-
-
-
-# import cv2
-# import os
-# from matplotlib import pyplot as plt
-#
-#
-# def FLANN():
-#     # flags=0
-#     # 灰色读入目标图像
-#     targetPath = r'\img\pc_img\yuhun\end_win_0.jpg'
-#     trainingImage = cv2.imread(targetPath, flags=0)
-#     # 灰色读所有模板图片
-#     templatePath = 'screen_img/'
-#     icons = os.listdir(templatePath)
-#     iconMatch = dict({'name': '未识别', 'value': 0})
-#     for icon in icons:
-#         queryImage = cv2.imread(templatePath + icon, 0)
-#         # 使用SIFT 检测角点
-#         sift = cv2.SIFT_create()
-#         kp1, des1 = sift.detectAndCompute(queryImage, None)
-#         kp2, des2 = sift.detectAndCompute(trainingImage, None)
-#         # 设置FLANN匹配器参数，定义FLANN匹配器，使用 KNN 算法实现匹配
-#         indexParams = dict(algorithm=0, trees=5)
-#         searchParams = dict(checks=50)
-#         flann = cv2.FlannBasedMatcher(indexParams, searchParams)
-#         matches = flann.knnMatch(des1, des2, k=2)
-#
-#         # 根据matches生成相同长度的matchesMask列表，列表元素为[0,0]
-#         matchesMask = [[0, 0] for i in range(len(matches))]
-#         matchNumber = 0
-#         # 去除错误匹配, 此处阈值设定为0.7
-#         for i, (m, n) in enumerate(matches):
-#             if m.distance < 0.7 * n.distance:
-#                 matchesMask[i] = [1, 0]
-#                 matchNumber = matchNumber + 1
-#
-#         # 将图像显示
-#         # matchColor是两图的匹配连接线，连接线与matchesMask相关
-#         # singlePointColor是勾画关键点
-#         drawParams = dict(matchColor=(0, 255, 0), matchesMask=matchesMask[:50], flags=0)
-#         resultImage = cv2.drawMatchesKnn(queryImage, kp1, trainingImage, kp2, matches[:50], None, **drawParams)
-#
-#         if matchNumber > iconMatch['value']:
-#             iconMatch['name'] = icon.split('_')[0]
-#             iconMatch['value'] = matchNumber
-#
-#     return resultImage, iconMatch
-#
-#
-# if __name__ == '__main__':
-#     resultImage, res = FLANN()
-#     plt.imshow(resultImage)
-#     plt.show()
