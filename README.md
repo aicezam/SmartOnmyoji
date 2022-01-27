@@ -7,6 +7,7 @@
 - pywin32
 - opencv-python
 - numpy
+- adb命令行工具，安装方法： https://blog.csdn.net/weixin_46932303/article/details/106969799
 
 ### 使用
 - 先安装python3.7,再安装上述依赖库
