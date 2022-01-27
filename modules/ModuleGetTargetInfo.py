@@ -2,6 +2,7 @@
 import os
 import re
 import sys
+import numpy as np
 from os.path import abspath, dirname
 from cv2 import cv2
 from modules.ModuleImgProcess import ImgProcess
@@ -73,7 +74,8 @@ class GetTargetPicInfo:
 
             # 通过图片地址获取每张图片的信息
             for i in range(len(img_file_path)):
-                img = cv2.imread(img_file_path[i])  # 读取图片地址的图片到内存中
+                # img = cv2.imread(img_file_path[i])  # 读取图片地址的图片到内存中
+                img = cv2.imdecode(np.fromfile(img_file_path[i], dtype=np.uint8), -1)  # 修复中文路径下opencv报错问题
                 img_process = ImgProcess()
                 # if self.compress_val is not 1:
                 #     img = img_process.img_compress(img, self.compress_val)  # 压缩图片
