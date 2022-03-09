@@ -20,7 +20,7 @@ def time_transform(seconds):
     return run_time
 
 
-def get_active_window(loop_times=10):
+def get_active_window(loop_times=5):
     """点击鼠标获取目标窗口句柄"""
     hand_win = ""
     hand_win_title = ""
@@ -54,11 +54,14 @@ def start_click(connect_mod='windows-程序', modname='御魂', hwd_title='阴�
 
     # 参数初始化
     modname = modname
-    hwd_title = hwd_title  # 句柄名称
-    # hwd_title = get_active_window()  # 点击窗口获取窗体名称
     click_deviation = int(click_deviation)  # 随机偏移量
     compress_val = float(compress_val)
     match_method = match_method
+    # 获取窗体标题
+    if hwd_title == '开始后鼠标点击选择窗体':
+        hwd_title = get_active_window()  # 点击窗口获取窗体名称
+    else:
+        hwd_title = hwd_title  # 句柄名称
 
     # 获取待检测目标图片信息
     print('目标图片读取中……')
@@ -110,6 +113,7 @@ def start_click(connect_mod='windows-程序', modname='御魂', hwd_title='阴�
             else:
                 print(device_id)
                 sys.exit(0)  # 脚本结束
+
         # ImgProcess.show_img(screen_img)  # test显示截图
 
         # 开始匹配
@@ -140,6 +144,7 @@ def start_click(connect_mod='windows-程序', modname='御魂', hwd_title='阴�
                                                       target_img, screen_img)
 
         if pos and target_num is not None:
+
             # test,查看匹配情况，在获取的截图上画边框
             # target_img_hw_m = [target_img_hw[target_num][0] * compress_val,
             #                    target_img_hw[target_num][1] * compress_val]
@@ -166,8 +171,6 @@ def start_click(connect_mod='windows-程序', modname='御魂', hwd_title='阴�
                 click.adb_click()
         else:
             print("匹配失败！")
-
-        # ImgProcess.show_img(screen_img)  # test显示截图
 
         # 判断是否结束
         if i == loop_times - 1:
