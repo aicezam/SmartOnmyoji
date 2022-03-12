@@ -22,7 +22,6 @@ def main():
     parser.add_argument('connect_mod', metavar='连接模式', help='请选择在电脑使用还是手机端使用',
                         choices=['windows-程序', 'Android-Adb'], default='windows-程序')
 
-    # parser.add_argument('hwd_title', metavar='窗口标题名称', help='请输入程序窗口标题', default='阴阳师-网易游戏') # 直接输入标题
     parser.add_argument("hwd_title", metavar='窗口标题名称', help="请输入程序窗口标题，或选择开始后鼠标点击窗体获取！",
                         choices=['阴阳师-网易游戏', '开始后鼠标点击选择窗体'], default='阴阳师-网易游戏')
 
