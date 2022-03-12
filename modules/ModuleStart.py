@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-import gc
-import random
-import sys
-import time
-import win32gui
+from gc import collect
+from random import uniform, randint
+from sys import exit
+from time import sleep, localtime, strftime
+from win32gui import GetWindowText, GetWindowRect, GetForegroundWindow
 from modules.ModuleGetTargetInfo import GetTargetPicInfo
 from modules.ModuleGetScreenCapture import GetScreenCapture
 from modules.ModuleHandleSet import HandleSet
@@ -27,18 +27,18 @@ def get_active_window(loop_times=5):
     for t in range(loop_times):
         print('请在倒计时%d秒结束前，点击目标窗口' % loop_times)
         loop_times -= 1
-        hand_win = win32gui.GetForegroundWindow()
-        hand_win_title = win32gui.GetWindowText(hand_win)
+        hand_win = GetForegroundWindow()
+        hand_win_title = GetWindowText(hand_win)
         print("目标窗口：[", hand_win_title, hand_win, "]")
-        time.sleep(1)  # 每1s输出一次
-    left, top, right, bottom = win32gui.GetWindowRect(hand_win)
+        sleep(1)  # 每1s输出一次
+    left, top, right, bottom = GetWindowRect(hand_win)
     print("目标窗口: [", hand_win_title, "] ,窗口大小：[%d X" % (right - left), "%d]" % (bottom - top))
     return hand_win_title
 
 
 def start_click(connect_mod='windows-程序', modname='御魂', hwd_title='阴阳师-网易游戏', click_deviation=20,
                 interval_seconds=1,
-                loop_min=120, compress_val=1, match_method='模板匹配'):
+                loop_min=120, compress_val=1, match_method='模板匹配', scr_and_click_method='正常模式-可后台'):
     """
     在图片中指定坐标点绘制边框
     :param connect_mod: 需点击的端，windows-程序 or Android-Adb
@@ -82,7 +82,7 @@ def start_click(connect_mod='windows-程序', modname='御魂', hwd_title='阴�
         handle_num = handle_set.get_handle_num
         handle_width = handle_set.get_handle_pos[2] - handle_set.get_handle_pos[0]  # 右x - 左x 计算宽度
         handle_height = handle_set.get_handle_pos[3] - handle_set.get_handle_pos[1]  # 下y - 上y 计算高度
-        handle_set.set_priority(random.randint(3, 5))  # 设置目标程序优先级，避免程序闪退
+        handle_set.set_priority(randint(3, 5))  # 设置目标程序优先级，避免程序闪退
         screen_method = GetScreenCapture(handle_num, handle_width, handle_height)
     elif connect_mod == 'Android-Adb':
         adb_device_connect_status, device_id = HandleSet.adb_device_status()
@@ -90,11 +90,11 @@ def start_click(connect_mod='windows-程序', modname='御魂', hwd_title='阴�
             print(f'已连接设备[ {device_id} ]')
         else:
             print(device_id)
-            sys.exit(0)  # 脚本结束
+            exit(0)  # 脚本结束
 
     # 开始循环（截图->匹配->点击）
     for i in range(loop_times):
-        now_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+        now_time = strftime("%Y-%m-%d %H:%M:%S", localtime())
         progress = format((i + 1) / loop_times, '.2%')
         print(f"第 [ {i + 1} ] 次匹配, 还剩 [ {loop_times - i - 1} ] 次, 当前进度 [ {progress} ], 当前时间 [ {now_time} ]")
 
@@ -104,15 +104,21 @@ def start_click(connect_mod='windows-程序', modname='御魂', hwd_title='阴�
         if connect_mod == 'windows-程序':
             handle_set = HandleSet(hwd_title)
             handle_set.handle_is_active()
-            screen_img = screen_method.window_screen()
 
+            # 如果部分窗口不能点击、截图出来是黑屏，可以使用兼容模式
+            if scr_and_click_method == '正常模式-可后台':
+                screen_img = screen_method.window_screen()
+            elif scr_and_click_method == '兼容模式':
+                screen_img = screen_method.window_screen_bk()
+
+        # 支持安卓adb连接
         elif connect_mod == 'Android-Adb':
             adb_device_connect_status, device_id = HandleSet.adb_device_status()
             if adb_device_connect_status:
                 screen_img = screen_method.adb_screen()
             else:
                 print(device_id)
-                sys.exit(0)  # 脚本结束
+                exit(0)  # 脚本结束
 
         # ImgProcess.show_img(screen_img)  # test显示截图
 
@@ -146,10 +152,10 @@ def start_click(connect_mod='windows-程序', modname='御魂', hwd_title='阴�
         if pos and target_num is not None:
 
             # test,查看匹配情况，在获取的截图上画边框
-            # target_img_hw_m = [target_img_hw[target_num][0] * compress_val,
-            #                    target_img_hw[target_num][1] * compress_val]
-            # draw_img = ImgProcess.draw_pos_in_img(screen_img, pos, target_img_hw_m)
-            # ImgProcess.show_img(draw_img)
+            target_img_hw_m = [target_img_hw[target_num][0] * compress_val,
+                               target_img_hw[target_num][1] * compress_val]
+            draw_img = ImgProcess.draw_pos_in_img(screen_img, pos, target_img_hw_m)
+            ImgProcess.show_img(draw_img)
 
             # 如果图片有压缩，需对坐标还原
             if compress_val != 1:
@@ -165,7 +171,14 @@ def start_click(connect_mod='windows-程序', modname='御魂', hwd_title='阴�
                 handle_set.handle_is_active()
                 handle_num = handle_set.get_handle_num
                 click = DoClick(pos, click_deviation, handle_num)
-                click.windows_click()
+
+                # 如果部分窗口不能点击、截图出来是黑屏，可以使用兼容模式
+                if scr_and_click_method == '正常模式-可后台':
+                    click.windows_click()
+                elif scr_and_click_method == '兼容模式':
+                    click.windows_click_bk()
+
+            # 支持安卓adb连接
             elif connect_mod == 'Android-Adb':
                 click = DoClick(pos, click_deviation)
                 click.adb_click()
@@ -181,8 +194,8 @@ def start_click(connect_mod='windows-程序', modname='御魂', hwd_title='阴�
             remaining_time = time_transform(int(((loop_times - i - 1) / (60 / (interval_seconds + t1))) * 60))
             print("-----------------------%.2f秒后继续" % interval_seconds,
                   "%s后结束-----------------------" % remaining_time)
-            ts = random.uniform(0.1, 1.5)  # 设置随机延时
-            time.sleep(interval_seconds + ts)
+            ts = uniform(0.1, 1.5)  # 设置随机延时
+            sleep(interval_seconds + ts)
 
             # 内存清理
             del screen_img, pos, now_time  # 删除变量
@@ -190,7 +203,7 @@ def start_click(connect_mod='windows-程序', modname='御魂', hwd_title='阴�
                 del screen_sift  # 删除变量
             else:
                 del target_img_m
-            gc.collect()  # 清理内存
+            collect()  # 清理内存
 
 
 def main():
