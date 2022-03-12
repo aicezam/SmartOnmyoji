@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # get pos by template matching and sift matching
-import numpy as np
+from numpy import int32, float32
 from cv2 import cv2
 from modules.ModuleImgProcess import ImgProcess
 
@@ -120,8 +120,8 @@ class GetPosBySiftMatch:
             if m.distance < 0.6 * n.distance:  # m表示大图像上最匹配点的距离，n表示次匹配点的距离，若比值小于0.5则舍弃
                 good.append(m)
         if len(good) > min_match_count:
-            src_pts = np.float32([kp1[m.queryIdx].pt for m in good]).reshape(-1, 1, 2)
-            dst_pts = np.float32([kp2[m.trainIdx].pt for m in good]).reshape(-1, 1, 2)
+            src_pts = float32([kp1[m.queryIdx].pt for m in good]).reshape(-1, 1, 2)
+            dst_pts = float32([kp2[m.trainIdx].pt for m in good]).reshape(-1, 1, 2)
             m, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)
 
             # 绘制匹配成功的连线
@@ -139,10 +139,10 @@ class GetPosBySiftMatch:
 
             # 计算中心坐标
             h, w = target_hw
-            pts = np.float32([[0, 0], [0, h - 1], [w - 1, h - 1], [w - 1, 0]]).reshape(-1, 1, 2)
+            pts = float32([[0, 0], [0, h - 1], [w - 1, h - 1], [w - 1, 0]]).reshape(-1, 1, 2)
             if m is not None:
                 dst = cv2.perspectiveTransform(pts, m)
-                arr = np.int32(dst)
+                arr = int32(dst)
                 pos_arr = arr[0] + (arr[2] - arr[0]) // 2
                 pos = (int(pos_arr[0][0]), int(pos_arr[0][1]))
                 return pos

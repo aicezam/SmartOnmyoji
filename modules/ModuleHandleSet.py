@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-import sys
-import win32api
-import win32con
-import win32gui
-import win32process
-import subprocess
+from sys import exit
+from win32api import OpenProcess
+from win32con import PROCESS_ALL_ACCESS
+from win32gui import GetWindowText, GetWindowRect, FindWindow
+from win32process import NORMAL_PRIORITY_CLASS, REALTIME_PRIORITY_CLASS, SetPriorityClass, IDLE_PRIORITY_CLASS, \
+    HIGH_PRIORITY_CLASS, GetWindowThreadProcessId, BELOW_NORMAL_PRIORITY_CLASS, ABOVE_NORMAL_PRIORITY_CLASS
+from subprocess import Popen, PIPE
 
 
 class HandleSet:
@@ -19,10 +20,10 @@ class HandleSet:
     @property
     def get_handle_num(self):
         """通过句柄标题获取句柄编号"""
-        self.handle_num = win32gui.FindWindow(None, self.handle_title)  # 搜索句柄标题，获取句柄编号
+        self.handle_num = FindWindow(None, self.handle_title)  # 搜索句柄标题，获取句柄编号
         if self.handle_num == 0:
             print("目标程序未启动,即将中止！")
-            sys.exit(0)  # 脚本结束
+            exit(0)  # 脚本结束
         else:
             return self.handle_num
 
@@ -33,13 +34,13 @@ class HandleSet:
         :param handle_num: 句柄编号
         :returns: 句柄标题
         """
-        handle_title = win32gui.GetWindowText(handle_num)  # 获取句柄标题
+        handle_title = GetWindowText(handle_num)  # 获取句柄标题
         return handle_title
 
     @property
     def get_handle_pid(self):
         """通过句柄标题获取句柄进程id"""
-        self.handle_pid = win32process.GetWindowThreadProcessId(self.get_handle_num)  # 获取进程Pid
+        self.handle_pid = GetWindowThreadProcessId(self.get_handle_num)  # 获取进程Pid
         return self.handle_pid[1]
 
     @property
@@ -48,7 +49,7 @@ class HandleSet:
         获取句柄的坐标
         :returns: 坐标，左上角（x1，y1），右下角（x2，y2）
         """
-        self.handle_pos = win32gui.GetWindowRect(self.get_handle_num)
+        self.handle_pos = GetWindowRect(self.get_handle_num)
         return self.handle_pos
 
     def handle_is_active(self):
@@ -56,7 +57,7 @@ class HandleSet:
         hwnd = self.get_handle_num
         if hwnd == 0:  # 检测目标窗口是否存在
             print("目标程序未启动,即将中止！")
-            sys.exit(0)  # 脚本结束
+            exit(0)  # 脚本结束
         # else:
         #     print("目标程序正常运行中！")
 
@@ -66,20 +67,20 @@ class HandleSet:
         :param priority: 0-5,(0-最低，5-最高)
         """
         pid = self.get_handle_pid
-        priority_classes = [win32process.IDLE_PRIORITY_CLASS,
-                            win32process.BELOW_NORMAL_PRIORITY_CLASS,
-                            win32process.NORMAL_PRIORITY_CLASS,
-                            win32process.ABOVE_NORMAL_PRIORITY_CLASS,
-                            win32process.HIGH_PRIORITY_CLASS,
-                            win32process.REALTIME_PRIORITY_CLASS]
+        priority_classes = [IDLE_PRIORITY_CLASS,
+                            BELOW_NORMAL_PRIORITY_CLASS,
+                            NORMAL_PRIORITY_CLASS,
+                            ABOVE_NORMAL_PRIORITY_CLASS,
+                            HIGH_PRIORITY_CLASS,
+                            REALTIME_PRIORITY_CLASS]
         if pid is None:
             # pid = win32api.GetCurrentProcessId()  # 获取当前进程pid
             print("进程pid查找失败,即将中止！")
-            sys.exit(0)  # 脚本结束
+            exit(0)  # 脚本结束
         else:
             # print(pid)
-            handle = win32api.OpenProcess(win32con.PROCESS_ALL_ACCESS, True, pid)
-            win32process.SetPriorityClass(handle, priority_classes[priority])
+            handle = OpenProcess(PROCESS_ALL_ACCESS, True, pid)
+            SetPriorityClass(handle, priority_classes[priority])
 
             handle_title = self.handle_title
             priority_name = None
@@ -100,7 +101,7 @@ class HandleSet:
 
     @staticmethod
     def deal_cmd(cmd):
-        pi = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+        pi = Popen(cmd, shell=True, stdout=PIPE)
         return pi.stdout.read()
 
     @staticmethod

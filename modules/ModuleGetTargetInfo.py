@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-import os
-import re
-import sys
-import numpy as np
+from os import path, walk
 from os.path import abspath, dirname
+from re import search, compile
+from sys import exit
+from numpy import uint8, fromfile
 from cv2 import cv2
 from modules.ModuleImgProcess import ImgProcess
 
@@ -20,7 +20,7 @@ class GetTargetPicInfo:
         不同的模式下，匹配对应文件夹的图片
         :returns: 需要匹配的目标图片地址，如果没有返回空值
         """
-        parent_path = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))  # 父路径
+        parent_path = path.abspath(path.dirname(path.dirname(__file__)))  # 父路径
         current_path = abspath(dirname(__file__))  # 当前路径
         if self.modname == "御魂":
             target_folder_path = parent_path + r'\img\yuhun'
@@ -55,27 +55,27 @@ class GetTargetPicInfo:
         # 获取每张图片的路径地址
         if folder_path is None:
             print("未找到目标文件夹或图片地址！即将退出！")
-            sys.exit(0)  # 脚本结束
+            exit(0)  # 脚本结束
         else:
             # print("------------------------------------------------------------")
             # print("正在读取目标图片(仅限.jpg格式)……")
-            for cur_dir, sub_dir, included_file in os.walk(folder_path):
+            for cur_dir, sub_dir, included_file in walk(folder_path):
                 if included_file:
                     for file in included_file:
-                        if re.search(img_type, file):
+                        if search(img_type, file):
                             # print(cur_dir + "\\" + file)
                             # print(file)
                             img_file_path.append(cur_dir + "\\" + file)
             if len(img_file_path) == 0:
                 print("未找到目标文件夹或图片地址！")
-                sys.exit(0)  # 脚本结束
+                exit(0)  # 脚本结束
             # print("图片路径读取完成!共[%d]张图片" % len(target_file_path))
             # print("------------------------------------------------------------")
 
             # 通过图片地址获取每张图片的信息
             for i in range(len(img_file_path)):
                 # img = cv2.imread(img_file_path[i])  # 读取图片地址的图片到内存中
-                img = cv2.imdecode(np.fromfile(img_file_path[i], dtype=np.uint8), -1)  # 修复中文路径下opencv报错问题
+                img = cv2.imdecode(fromfile(img_file_path[i], dtype=uint8), -1)  # 修复中文路径下opencv报错问题
                 img_process = ImgProcess()
                 # if self.compress_val is not 1:
                 #     img = img_process.img_compress(img, self.compress_val)  # 压缩图片
@@ -91,7 +91,7 @@ class GetTargetPicInfo:
     @staticmethod
     def trans_path_to_name(path_string):
         """获取指定文件路径的文件名称"""
-        pattern = re.compile(r'([^<>/\\|:"*?]+)\.\w+$')
+        pattern = compile(r'([^<>/\\|:"*?]+)\.\w+$')
         data = pattern.findall(path_string)
         if data:
             return data[0]
