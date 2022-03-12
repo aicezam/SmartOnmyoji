@@ -152,10 +152,10 @@ def start_click(connect_mod='windows-程序', modname='御魂', hwd_title='阴�
         if pos and target_num is not None:
 
             # test,查看匹配情况，在获取的截图上画边框
-            target_img_hw_m = [target_img_hw[target_num][0] * compress_val,
-                               target_img_hw[target_num][1] * compress_val]
-            draw_img = ImgProcess.draw_pos_in_img(screen_img, pos, target_img_hw_m)
-            ImgProcess.show_img(draw_img)
+            # target_img_hw_m = [target_img_hw[target_num][0] * compress_val,
+            #                    target_img_hw[target_num][1] * compress_val]
+            # draw_img = ImgProcess.draw_pos_in_img(screen_img, pos, target_img_hw_m)
+            # ImgProcess.show_img(draw_img)
 
             # 如果图片有压缩，需对坐标还原
             if compress_val != 1:

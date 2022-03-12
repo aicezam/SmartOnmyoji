@@ -66,6 +66,7 @@ class ImgProcess:
         """
         # 初始化SIFT探测器
         sift = cv2.SIFT_create()
+        # cv.xfeatures2d.BEBLID_create(0.75)
         kp, des = sift.detectAndCompute(img, None)
         img_sift = [kp, des]
         return img_sift
