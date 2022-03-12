@@ -49,7 +49,7 @@ class DoClick:
             print(f"点击坐标: [ {cx} , {cy} ]")
 
     def windows_click_bk(self):
-        # 前台点击，窗口必须置顶，必须放左上角，兼容所有窗口（模拟器、云游戏等）点击
+        # 前台点击，窗口必须置顶，兼容所有窗口（模拟器、云游戏等）点击
         pos = self.pos
         handle_num = self.handle_num
         move_var = int(self.move_var)
