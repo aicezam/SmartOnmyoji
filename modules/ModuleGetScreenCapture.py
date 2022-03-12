@@ -2,7 +2,7 @@
 from subprocess import Popen, PIPE
 from numpy import frombuffer, uint8, array
 from win32con import SRCCOPY
-from win32gui import DeleteObject, SetForegroundWindow, GetWindowRect, GetWindowDC
+from win32gui import DeleteObject, SetForegroundWindow, GetWindowRect, GetWindowDC, SetWindowPos
 from win32ui import CreateDCFromHandle, CreateBitmap
 from cv2 import cv2
 from PIL import ImageGrab
@@ -58,7 +58,7 @@ class GetScreenCapture:
 
     def window_screen_bk(self):
         """PIL截图方法，不能被遮挡"""
-        SetForegroundWindow(self.hwd_num)  # 自动置顶
+        SetForegroundWindow(self.hwd_num)  # 窗口置顶
         x1, y1, x2, y2 = GetWindowRect(self.hwd_num)  # 获取窗口坐标
         grab_image = ImageGrab.grab((x1, y1, x2, y2))  # 用PIL方法截图
         im_cv2 = array(grab_image)  # 转换为cv2的矩阵格式

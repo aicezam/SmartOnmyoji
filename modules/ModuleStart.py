@@ -3,7 +3,8 @@ from gc import collect
 from random import uniform, randint
 from sys import exit
 from time import sleep, localtime, strftime
-from win32gui import GetWindowText, GetWindowRect, GetForegroundWindow
+from pymouse import PyMouse
+from win32gui import GetWindowText, GetWindowRect, GetForegroundWindow, SetForegroundWindow
 from modules.ModuleGetTargetInfo import GetTargetPicInfo
 from modules.ModuleGetScreenCapture import GetScreenCapture
 from modules.ModuleHandleSet import HandleSet
@@ -84,6 +85,18 @@ def start_click(connect_mod='windows-程序', modname='御魂', hwd_title='阴�
         handle_height = handle_set.get_handle_pos[3] - handle_set.get_handle_pos[1]  # 下y - 上y 计算高度
         handle_set.set_priority(randint(3, 5))  # 设置目标程序优先级，避免程序闪退
         screen_method = GetScreenCapture(handle_num, handle_width, handle_height)
+
+        # 通过pywin32模块下的SetForegroundWindow函数调用时，会出现error: (0, 'SetForegroundWindow', 'No error message is available')
+        # 报错，为pywin32模块下的一个小bug，在该函数调用前，需要先发送一个其他键给屏幕，这里先用鼠标点一次就不会报错了
+        if scr_and_click_method == '兼容模式':
+            x1, y1, x2, y2 = GetWindowRect(handle_num)
+            m = PyMouse()
+            m.press(x1+10, y1+10, button=1)  # 按下
+            sleep(0.1)
+            m.release(x1+10, y1+10, button=1)  # 松开
+            SetForegroundWindow(handle_num)  # 窗口置顶
+
+    # 检测安卓设备是否正常连接
     elif connect_mod == 'Android-Adb':
         adb_device_connect_status, device_id = HandleSet.adb_device_status()
         if adb_device_connect_status:

@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 from sys import exit
+
+import win32gui
 from win32api import OpenProcess
 from win32con import PROCESS_ALL_ACCESS
 from win32gui import GetWindowText, GetWindowRect, FindWindow

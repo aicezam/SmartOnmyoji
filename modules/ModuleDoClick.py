@@ -2,9 +2,9 @@
 from os import system
 from time import sleep
 from random import randint
+from win32gui import SetForegroundWindow, GetWindowRect
 from win32api import MAKELONG, SendMessage
 from win32con import WM_LBUTTONUP, MK_LBUTTON, WM_LBUTTONDOWN
-from win32gui import SetForegroundWindow, GetWindowRect
 from pymouse import PyMouse
 from modules.ModuleHandleSet import HandleSet
 
