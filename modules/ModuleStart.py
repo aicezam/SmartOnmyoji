@@ -185,9 +185,9 @@ class StartMatch:
             # 开始点击
             if connect_mod == 'Windows程序窗体':
                 handle_set = HandleSet(hwd_title)
-                handle_is_active = handle_set.handle_is_active()
-                if handle_is_active is None:
-                    exit(0)
+                # handle_is_active = handle_set.handle_is_active()
+                # if handle_is_active is None:
+                #     exit(0)
                 handle_num = handle_set.get_handle_num
                 doclick = DoClick(pos, click_deviation, handle_num)
 
