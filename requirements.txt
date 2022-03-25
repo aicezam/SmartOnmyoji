@@ -2,8 +2,9 @@
 
 numpy>=1.21.4
 Pillow>=8.4.0
-pymouse>=1.0
-gooey>=1.0.8.1
 pywin32>=302
 opencv-python>=4.5.4.60
 matplotlib>=3.5.1
+PyQt5>=5.15.4
+PyAutoGUI>=0.9.53
+pypiwin32>=223

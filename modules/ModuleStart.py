@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from gc import collect
-from random import uniform, randint
+from random import randint
 from sys import exit
 from time import sleep, localtime, strftime
-from pymouse import PyMouse
+from pyautogui import click
 from win32gui import GetWindowText, GetWindowRect, GetForegroundWindow, SetForegroundWindow
 from modules.ModuleGetTargetInfo import GetTargetPicInfo
 from modules.ModuleGetScreenCapture import GetScreenCapture
@@ -26,106 +26,110 @@ def get_active_window(loop_times=5):
     hand_win = ""
     hand_win_title = ""
     for t in range(loop_times):
-        print('请在倒计时%d秒结束前，点击目标窗口' % loop_times)
+        print(f'请在倒计时 [ {loop_times} ] 秒结束前，点击目标窗口')
         loop_times -= 1
         hand_win = GetForegroundWindow()
         hand_win_title = GetWindowText(hand_win)
-        print("目标窗口：[", hand_win_title, hand_win, "]")
+        print(f"目标窗口： [ {hand_win_title} ] [ {hand_win} ] ")
         sleep(1)  # 每1s输出一次
     left, top, right, bottom = GetWindowRect(hand_win)
-    print("目标窗口: [", hand_win_title, "] ,窗口大小：[%d X" % (right - left), "%d]" % (bottom - top))
+    print("-----------------------------------------------------------")
+    print(f"目标窗口: [ {hand_win_title} ] 窗口大小：[ {right - left} X {bottom - top} ]")
+    print("-----------------------------------------------------------")
     return hand_win_title
 
 
-def start_click(connect_mod='windows-程序', modname='御魂', hwd_title='阴阳师-网易游戏', click_deviation=20,
-                interval_seconds=1,
-                loop_min=120, compress_val=1, match_method='模板匹配', scr_and_click_method='正常模式-可后台'):
-    """
-    在图片中指定坐标点绘制边框
-    :param connect_mod: 需点击的端，windows-程序 or Android-Adb
-    :param modname: 需要使用的功能，即对应的文件夹
-    :param hwd_title: windows程序窗口标题名称
-    :param click_deviation: 鼠标点击偏移范围值，从中心点往周围随机偏移
-    :param interval_seconds: 每次循环间隔的时间
-    :param loop_min: 一共要循环的分钟数，受脚本执行时间的影响，实际执行时间大概会略小于这个时间
-    :param compress_val: 对图片进行压缩的压缩率（1为不压缩），压缩程度越高，匹配速度越快，匹配精度越低，ADB模式下，0.8比较合适
-    :param match_method: 匹配方法
-    :return: 无
-    """
+class StartMatch:
+    def __init__(self, gui_info):
+        super(StartMatch, self).__init__()
+        self.connect_mod, self.modname, self.hwd_title, self.click_deviation, self.interval_seconds, self.loop_min, self.compress_val, self.match_method, self.scr_and_click_method = gui_info
 
-    # 参数初始化
-    modname = modname
-    click_deviation = int(click_deviation)  # 随机偏移量
-    compress_val = float(compress_val)
-    match_method = match_method
-    # 获取窗体标题
-    if hwd_title == '开始后鼠标点击选择窗体':
-        hwd_title = get_active_window()  # 点击窗口获取窗体名称
-    else:
-        hwd_title = hwd_title  # 句柄名称
+    def set_init(self):
 
-    # 获取待检测目标图片信息
-    print('目标图片读取中……')
-    target_info = GetTargetPicInfo(modname, compress_val=1).get_target_info  # 目标图片不压缩（本身就小）
-    target_img_sift, target_img_hw, target_img_name, target_img_file_path, target_img = target_info
-    print(f'读取完成！共[ {len(target_img)} ]张图片\n{target_img_name}')
-
-    # 计算循环次数、时间
-    t1 = len(target_img) / 30  # 每次循环匹配找图需要消耗的时间, 脚本每次匹配一般平均需要2.5秒（30个匹配目标）
-    loop_min = int(loop_min)  # 初始化执行时间，因为不能使用字符串，所以要转一下
-    interval_seconds = int(interval_seconds)  # 初始化间隔秒数
-    loop_times = int(loop_min * (60 / (interval_seconds + t1)))  # 计算要一共要执行的次数
-
-    # 句柄操作（获取句柄编号、设置优先级、检测程序是否运行）
-    screen_method = GetScreenCapture()
-    if connect_mod == 'windows-程序':
-        handle_set = HandleSet(hwd_title)
-        handle_num = handle_set.get_handle_num
-        handle_width = handle_set.get_handle_pos[2] - handle_set.get_handle_pos[0]  # 右x - 左x 计算宽度
-        handle_height = handle_set.get_handle_pos[3] - handle_set.get_handle_pos[1]  # 下y - 上y 计算高度
-        handle_set.set_priority(randint(3, 5))  # 设置目标程序优先级，避免程序闪退
-        screen_method = GetScreenCapture(handle_num, handle_width, handle_height)
-
-        # 通过pywin32模块下的SetForegroundWindow函数调用时，会出现error: (0, 'SetForegroundWindow', 'No error message is available')
-        # 报错，为pywin32模块下的一个小bug，在该函数调用前，需要先发送一个其他键给屏幕，这里先用鼠标点一次就不会报错了
-        if scr_and_click_method == '兼容模式':
-            x1, y1, x2, y2 = GetWindowRect(handle_num)
-            m = PyMouse()
-            m.press(x1+10, y1+10, button=1)  # 按下
-            sleep(0.1)
-            m.release(x1+10, y1+10, button=1)  # 松开
-            SetForegroundWindow(handle_num)  # 窗口置顶
-
-    # 检测安卓设备是否正常连接
-    elif connect_mod == 'Android-Adb':
-        adb_device_connect_status, device_id = HandleSet.adb_device_status()
-        if adb_device_connect_status:
-            print(f'已连接设备[ {device_id} ]')
+        # 参数初始化
+        modname = self.modname
+        connect_mod = self.connect_mod
+        hwd_title = self.hwd_title
+        interval_seconds = self.interval_seconds
+        loop_min = self.loop_min
+        scr_and_click_method = self.scr_and_click_method
+        # 获取窗体标题
+        if hwd_title == '开始后鼠标点击选择窗体':
+            hwd_title = get_active_window()  # 点击窗口获取窗体名称
         else:
-            print(device_id)
-            exit(0)  # 脚本结束
+            hwd_title = hwd_title  # 句柄名称
 
-    # 开始循环（截图->匹配->点击）
-    for i in range(loop_times):
-        now_time = strftime("%Y-%m-%d %H:%M:%S", localtime())
-        progress = format((i + 1) / loop_times, '.2%')
-        print(f"第 [ {i + 1} ] 次匹配, 还剩 [ {loop_times - i - 1} ] 次, 当前进度 [ {progress} ], 当前时间 [ {now_time} ]")
+        # 获取待检测目标图片信息
+        print('目标图片读取中……')
+        target_info = GetTargetPicInfo(modname, compress_val=1).get_target_info  # 目标图片不压缩（本身就小）
+        target_img_sift, target_img_hw, target_img_name, target_img_file_path, target_img = target_info
+        print(f'读取完成！共[ {len(target_img)} ]张图片\n{target_img_name}')
+
+        # 计算循环次数、时间
+        t1 = len(target_img) / 30  # 每次循环匹配找图需要消耗的时间, 脚本每次匹配一般平均需要2.5秒（30个匹配目标）
+        loop_min = int(loop_min)  # 初始化执行时间，因为不能使用字符串，所以要转一下
+        interval_seconds = int(interval_seconds)  # 初始化间隔秒数
+        loop_times = int(loop_min * (60 / (interval_seconds + t1)))  # 计算要一共要执行的次数
+
+        # 句柄操作（获取句柄编号、设置优先级、检测程序是否运行）
+        screen_method = GetScreenCapture()
+        if connect_mod == 'Windows程序窗体':
+            handle_set = HandleSet(hwd_title)
+            handle_num = handle_set.get_handle_num
+            handle_width = handle_set.get_handle_pos[2] - handle_set.get_handle_pos[0]  # 右x - 左x 计算宽度
+            handle_height = handle_set.get_handle_pos[3] - handle_set.get_handle_pos[1]  # 下y - 上y 计算高度
+            # handle_set.set_priority(randint(3, 5))  # 设置目标程序优先级，避免程序闪退，若需要避免可以打开
+            screen_method = GetScreenCapture(handle_num, handle_width, handle_height)
+
+            # 通过pywin32模块下的SetForegroundWindow函数调用时，会出现
+            # error: (0, 'SetForegroundWindow', 'No error message is available')报错，为pywin32模块下的一个小bug，
+            # 在该函数调用前，需要先发送一个其他键给屏幕，这里先用鼠标点一次就不会报错了
+            if scr_and_click_method == '兼容模式':
+                x1, y1, x2, y2 = GetWindowRect(handle_num)
+                click(x1 + 10, y1 + 10)
+                SetForegroundWindow(handle_num)  # 窗口置顶
+
+        # 检测安卓设备是否正常连接
+        elif connect_mod == 'Android-Adb':
+            adb_device_connect_status, device_id = HandleSet.adb_device_status()
+            if adb_device_connect_status:
+                print(f'已连接设备[ {device_id} ]')
+            else:
+                print(device_id)
+                exit(0)  # 脚本结束
+        return loop_times, screen_method, target_info, t1
+
+    def start_match_click(self, i, loop_times, screen_method, target_info, debug_status):
+        connect_mod = self.connect_mod
+        hwd_title = self.hwd_title
+        scr_and_click_method = self.scr_and_click_method
+        match_method = self.match_method
+        compress_val = float(self.compress_val)
+        click_deviation = int(self.click_deviation)
+        target_img_sift, target_img_hw, target_img_name, target_img_file_path, target_img = target_info
+
+        if debug_status:
+            now_time = strftime("%Y-%m-%d %H:%M:%S", localtime())
+            progress = format((i + 1) / loop_times, '.2%')
+            print(f"第 [ {i + 1} ] 次匹配, 还剩 [ {loop_times - i - 1} ] 次 \n当前进度 [ {progress} ] \n当前时间 [ {now_time} ]")
+        else:
+            print(f"第 [ {i + 1} ] 次匹配, 还剩 [ {loop_times - i - 1} ] 次")
 
         # 获取截图
         print('正在截图…')
         screen_img = None
-        if connect_mod == 'windows-程序':
+        if connect_mod == 'Windows程序窗体':
             handle_set = HandleSet(hwd_title)
             handle_set.handle_is_active()
 
             # 如果部分窗口不能点击、截图出来是黑屏，可以使用兼容模式
-            if scr_and_click_method == '正常模式-可后台':
+            if scr_and_click_method == '正常-可后台':
                 screen_img = screen_method.window_screen()
-            elif scr_and_click_method == '兼容模式':
+            elif scr_and_click_method == '兼容-不可后台':
                 screen_img = screen_method.window_screen_bk()
 
         # 支持安卓adb连接
-        elif connect_mod == 'Android-Adb':
+        elif connect_mod == 'Android-手机':
             adb_device_connect_status, device_id = HandleSet.adb_device_status()
             if adb_device_connect_status:
                 screen_img = screen_method.adb_screen()
@@ -133,7 +137,8 @@ def start_click(connect_mod='windows-程序', modname='御魂', hwd_title='阴�
                 print(device_id)
                 exit(0)  # 脚本结束
 
-        # ImgProcess.show_img(screen_img)  # test显示截图
+        if debug_status:
+            ImgProcess.show_img(screen_img)  # test显示截图
 
         # 开始匹配
         print("正在匹配…")
@@ -144,6 +149,8 @@ def start_click(connect_mod='windows-程序', modname='御魂', hwd_title='阴�
         if match_method == '模板匹配':
             if compress_val != 1:  # 压缩图片，模板匹配：模板和截图必须一起压缩
                 screen_img = ImgProcess.img_compress(screen_img, compress_val)
+                if debug_status:
+                    ImgProcess.show_img(screen_img)  # test显示截图
                 target_img_m = []
                 for k in range(len(target_img)):
                     target_img_m.append(ImgProcess.img_compress(target_img[k], compress_val))
@@ -160,15 +167,16 @@ def start_click(connect_mod='windows-程序', modname='御魂', hwd_title='阴�
             get_pos = GetPosBySiftMatch()
             pos, target_num = get_pos.get_pos_by_sift(target_img_sift, screen_sift,
                                                       target_img_hw,
-                                                      target_img, screen_img)
+                                                      target_img, screen_img, debug_status)
 
         if pos and target_num is not None:
 
-            # test,查看匹配情况，在获取的截图上画边框
-            # target_img_hw_m = [target_img_hw[target_num][0] * compress_val,
-            #                    target_img_hw[target_num][1] * compress_val]
-            # draw_img = ImgProcess.draw_pos_in_img(screen_img, pos, target_img_hw_m)
-            # ImgProcess.show_img(draw_img)
+            # 查看匹配情况，在获取的截图上画边框
+            if debug_status:
+                target_img_hw_m = [target_img_hw[target_num][0] * compress_val,
+                                   target_img_hw[target_num][1] * compress_val]
+                draw_img = ImgProcess.draw_pos_in_img(screen_img, pos, target_img_hw_m)
+                ImgProcess.show_img(draw_img)
 
             # 如果图片有压缩，需对坐标还原
             if compress_val != 1:
@@ -179,49 +187,29 @@ def start_click(connect_mod='windows-程序', modname='御魂', hwd_title='阴�
                   f"坐标位置: [ {int(pos[0])} , {int(pos[1])} ] ")
 
             # 开始点击
-            if connect_mod == 'windows-程序':
+            if connect_mod == 'Windows程序窗体':
                 handle_set = HandleSet(hwd_title)
                 handle_set.handle_is_active()
                 handle_num = handle_set.get_handle_num
-                click = DoClick(pos, click_deviation, handle_num)
+                doclick = DoClick(pos, click_deviation, handle_num)
 
                 # 如果部分窗口不能点击、截图出来是黑屏，可以使用兼容模式
-                if scr_and_click_method == '正常模式-可后台':
-                    click.windows_click()
-                elif scr_and_click_method == '兼容模式':
-                    click.windows_click_bk()
+                if scr_and_click_method == '正常-可后台':
+                    doclick.windows_click()
+                elif scr_and_click_method == '兼容-不可后台':
+                    doclick.windows_click_bk()
 
             # 支持安卓adb连接
-            elif connect_mod == 'Android-Adb':
-                click = DoClick(pos, click_deviation)
-                click.adb_click()
+            elif connect_mod == 'Android-手机':
+                doclick = DoClick(pos, click_deviation)
+                doclick.adb_click()
         else:
             print("匹配失败！")
 
-        # 判断是否结束
-        if i == loop_times - 1:
-            print("---------------------已执行完成!---------------------")
-            break
+        # 内存清理
+        del screen_img, pos  # , now_time  # 删除变量
+        if match_method == '特征点匹配':
+            del screen_sift  # 删除变量
         else:
-            # 倒推剩余时间（时分秒格式）
-            remaining_time = time_transform(int(((loop_times - i - 1) / (60 / (interval_seconds + t1))) * 60))
-            print("-----------------------%.2f秒后继续" % interval_seconds,
-                  "%s后结束-----------------------" % remaining_time)
-            ts = uniform(0.1, 1.5)  # 设置随机延时
-            sleep(interval_seconds + ts)
-
-            # 内存清理
-            del screen_img, pos, now_time  # 删除变量
-            if match_method == '特征点匹配':
-                del screen_sift  # 删除变量
-            else:
-                del target_img_m
-            collect()  # 清理内存
-
-
-def main():
-    start_click()
-
-
-if __name__ == '__main__':
-    main()
+            del target_img_m
+        collect()  # 清理内存

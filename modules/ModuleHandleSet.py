@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 from sys import exit
-
-import win32gui
 from win32api import OpenProcess
 from win32con import PROCESS_ALL_ACCESS
 from win32gui import GetWindowText, GetWindowRect, FindWindow
@@ -16,7 +14,6 @@ class HandleSet:
         self.handle_pos = None
         self.handle_title = handle_title
         self.handle_num = None
-        # self.handle_num = self.get_handle_num(self.handle_title)  # 静态方法才能这么用
         self.handle_pid = None
 
     @property
@@ -99,7 +96,7 @@ class HandleSet:
             if priority == 5:
                 priority_name = "最高"
             print(f"已设置进程 [{handle_title}] 的优先级为 [{priority_name}] ")
-            print("------------------------------------------------------------")
+            print("-----------------------------")
 
     @staticmethod
     def deal_cmd(cmd):

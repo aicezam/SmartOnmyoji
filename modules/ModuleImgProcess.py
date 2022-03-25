@@ -30,21 +30,20 @@ class ImgProcess:
             cv2.destroyAllWindows()
 
     @staticmethod
-    def draw_pos_in_img(img, pos, move_val):
+    def draw_pos_in_img(img, pos, height_width):
         """
         在图片中指定坐标点绘制边框
         :param img: 需要绘制边框的图片
         :param pos: 中心坐标点
-        :param move_val: 要绘制的边框的高和宽
+        :param height_width: 要绘制的边框的高和宽
         :return: 返回坐标(x,y) 与opencv坐标系对应
         """
         if pos is None:
             print("未获取坐标点位置！")
         else:
-            # print(move_val)
             img = cv2.rectangle(img,
-                                (pos[0] - int(move_val[1] * 0.5), pos[1] - int(move_val[0] * 0.5)),
-                                (pos[0] + int(move_val[1] * 0.5), pos[1] + int(move_val[0] * 0.5)),
+                                (pos[0] - int(height_width[1] * 0.5), pos[1] - int(height_width[0] * 0.5)),
+                                (pos[0] + int(height_width[1] * 0.5), pos[1] + int(height_width[0] * 0.5)),
                                 (0, 238, 118),
                                 2)  # 参数解释：图片，左上角坐标，右下角坐标，颜色，线宽
             return img
@@ -61,12 +60,12 @@ class ImgProcess:
     @staticmethod
     def get_sift(img):
         """
-        传入cv2格式的图片，获取特征点信息
-        :return:
+        :param img: 传入cv2格式的图片，获取特征点信息
+        :return: 返回特征点信息
         """
         # 初始化SIFT探测器
         sift = cv2.SIFT_create()
-        # cv.xfeatures2d.BEBLID_create(0.75)
+        # cv.xfeatures2d.BEBLID_create(0.75)  # 已过时用法
         kp, des = sift.detectAndCompute(img, None)
         img_sift = [kp, des]
         return img_sift

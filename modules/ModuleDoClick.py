@@ -5,7 +5,7 @@ from random import randint
 from win32gui import SetForegroundWindow, GetWindowRect
 from win32api import MAKELONG, SendMessage
 from win32con import WM_LBUTTONUP, MK_LBUTTON, WM_LBUTTONDOWN
-from pymouse import PyMouse
+from pyautogui import position, click, moveTo
 from modules.ModuleHandleSet import HandleSet
 
 
@@ -67,15 +67,9 @@ class DoClick:
 
         # 把窗口置顶，并进行点击
         SetForegroundWindow(handle_num)
-        m = PyMouse()
-        now_loc = PyMouse()
-        now_pos = now_loc.position()  # 获取鼠标当前位置
-        m.move(jx, jy)  # 鼠标移至目标
-        m.press(jx, jy, button=1)  # 按下
-        sleep(0.1)
-        m.release(jx, jy, button=1)  # 松开
-        sleep(0.05)
-
-        m.move(now_pos[0], now_pos[1])  # 把鼠标移回之前的位置
+        now_pos = position()
+        moveTo(jx, jy)  # 鼠标移至目标
+        click(jx, jy)
+        moveTo(now_pos[0], now_pos[1])
 
         print(f"点击坐标: [ {cx} , {cy} ] 窗口名称: [ {HandleSet.get_handle_title(handle_num)} ]")

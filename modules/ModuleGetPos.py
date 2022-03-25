@@ -54,7 +54,7 @@ class GetPosBySiftMatch:
         super(GetPosBySiftMatch, self).__init__()
 
     @staticmethod
-    def get_pos_by_sift(target_sift, screen_sift, target_hw, target_img, screen_img):
+    def get_pos_by_sift(target_sift, screen_sift, target_hw, target_img, screen_img, debug_status):
         """
         特征点匹配，准确度不好说，用起来有点难受，不是那么准确（比如有两个按钮的情况下），但是待检测的目标图片不受缩放、旋转的影响
         :param target_sift: 目标的特征点信息
@@ -62,6 +62,7 @@ class GetPosBySiftMatch:
         :param target_hw: 目标的高和宽
         :param target_img: cv2格式的目标图片
         :param screen_img: cv2格式的原图
+        :param debug_status: 调试模式
         :return: 返回坐标(x,y) 与opencv坐标系对应
         """
         # print("正在匹配…")
@@ -69,13 +70,13 @@ class GetPosBySiftMatch:
         i = 0
         for i in range(len(target_img)):
             # print(i)
-            pos = GetPosBySiftMatch.sift_matching(target_sift[i], screen_sift, target_hw[i], target_img[i], screen_img)
+            pos = GetPosBySiftMatch.sift_matching(target_sift[i], screen_sift, target_hw[i], target_img[i], screen_img, debug_status)
             if pos is not None:
                 break
         return pos, i
 
     @staticmethod
-    def sift_matching(target_sift, screen_sift, target_hw, target_img, screen_img):
+    def sift_matching(target_sift, screen_sift, target_hw, target_img, screen_img, debug_status):
         """
         特征点匹配，准确度不好说，用起来有点难受，不是那么准确（比如有两个按钮的情况下），但是待检测的目标图片不受缩放、旋转的影响
         :param target_sift: 目标的特征点信息
@@ -83,6 +84,7 @@ class GetPosBySiftMatch:
         :param target_hw: 目标的高和宽
         :param target_img: cv2格式的目标图片
         :param screen_img: cv2格式的原图
+        :param debug_status: 调试模式
         :return: 返回坐标(x,y) 与opencv坐标系对应
         """
         # 利用创建好的特征点检测器去检测两幅图像的特征关键点，
@@ -125,17 +127,18 @@ class GetPosBySiftMatch:
             m, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)
 
             # 绘制匹配成功的连线
-            # matches_mask = mask.ravel().tolist()  # ravel方法将数据降维处理，最后并转换成列表格式
-            # draw_params = dict(matchColor=(0, 255, 0),  # draw matches in green color
-            #                    singlePointColor=None,
-            #                    matchesMask=matches_mask,  # draw only inliers
-            #                    flags=2)
-            # img3 = cv2.drawMatches(target_img, kp1, screen_img, kp2, good, None, **draw_params)
-            # img3 = cv2.cvtColor(img3, cv2.COLOR_BGR2RGB)
-            # cv2.namedWindow('scr_img')  # 命名窗口
-            # cv2.imshow("scr_img", img3)  # 显示
-            # cv2.waitKey(0)
-            # cv2.destroyAllWindows()
+            if debug_status:
+                matches_mask = mask.ravel().tolist()  # ravel方法将数据降维处理，最后并转换成列表格式
+                draw_params = dict(matchColor=(0, 255, 0),  # draw matches in green color
+                                   singlePointColor=None,
+                                   matchesMask=matches_mask,  # draw only inliers
+                                   flags=2)
+                img3 = cv2.drawMatches(target_img, kp1, screen_img, kp2, good, None, **draw_params)
+                img3 = cv2.cvtColor(img3, cv2.COLOR_BGR2RGB)
+                cv2.namedWindow('scr_img')  # 命名窗口
+                cv2.imshow("scr_img", img3)  # 显示
+                cv2.waitKey(0)
+                cv2.destroyAllWindows()
 
             # 计算中心坐标
             h, w = target_hw
