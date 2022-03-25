@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from gc import collect
-from random import randint
 from sys import exit
 from time import sleep, localtime, strftime
 from pyautogui import click
@@ -120,7 +119,9 @@ class StartMatch:
         screen_img = None
         if connect_mod == 'Windows程序窗体':
             handle_set = HandleSet(hwd_title)
-            handle_set.handle_is_active()
+            handle_is_active = handle_set.handle_is_active()
+            if handle_is_active is None:
+                exit(0)
 
             # 如果部分窗口不能点击、截图出来是黑屏，可以使用兼容模式
             if scr_and_click_method == '正常-可后台':
@@ -189,7 +190,9 @@ class StartMatch:
             # 开始点击
             if connect_mod == 'Windows程序窗体':
                 handle_set = HandleSet(hwd_title)
-                handle_set.handle_is_active()
+                handle_is_active = handle_set.handle_is_active()
+                if handle_is_active is None:
+                    exit(0)
                 handle_num = handle_set.get_handle_num
                 doclick = DoClick(pos, click_deviation, handle_num)
 

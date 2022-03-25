@@ -22,7 +22,7 @@ class HandleSet:
         self.handle_num = FindWindow(None, self.handle_title)  # 搜索句柄标题，获取句柄编号
         if self.handle_num == 0:
             print("目标程序未启动,即将中止！")
-            exit(0)  # 脚本结束
+            return None  # 返回异常
         else:
             return self.handle_num
 
@@ -33,14 +33,20 @@ class HandleSet:
         :param handle_num: 句柄编号
         :returns: 句柄标题
         """
-        handle_title = GetWindowText(handle_num)  # 获取句柄标题
-        return handle_title
+        if handle_num is None:
+            return None
+        else:
+            handle_title = GetWindowText(handle_num)  # 获取句柄标题
+            return handle_title
 
     @property
     def get_handle_pid(self):
         """通过句柄标题获取句柄进程id"""
-        self.handle_pid = GetWindowThreadProcessId(self.get_handle_num)  # 获取进程Pid
-        return self.handle_pid[1]
+        if self.get_handle_num is None:
+            return None
+        else:
+            self.handle_pid = GetWindowThreadProcessId(self.get_handle_num)  # 获取进程Pid
+            return self.handle_pid[1]
 
     @property
     def get_handle_pos(self):
@@ -48,17 +54,16 @@ class HandleSet:
         获取句柄的坐标
         :returns: 坐标，左上角（x1，y1），右下角（x2，y2）
         """
-        self.handle_pos = GetWindowRect(self.get_handle_num)
-        return self.handle_pos
+        if self.get_handle_num is None:
+            return None
+        else:
+            self.handle_pos = GetWindowRect(self.get_handle_num)
+            return self.handle_pos
 
     def handle_is_active(self):
         """检测句柄是否停止"""
-        hwnd = self.get_handle_num
-        if hwnd == 0:  # 检测目标窗口是否存在
-            print("目标程序未启动,即将中止！")
-            exit(0)  # 脚本结束
-        # else:
-        #     print("目标程序正常运行中！")
+        if self.get_handle_num is None:
+            return None
 
     def set_priority(self, priority=4):
         """

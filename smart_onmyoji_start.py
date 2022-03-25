@@ -6,6 +6,7 @@ from random import uniform
 from PyQt5.QtCore import *
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QMainWindow, QApplication
+from PyQt5.uic.properties import QtGui
 from win32con import WM_CLOSE
 from win32gui import FindWindow, PostMessage
 from modules.ModuleStart import StartMatch, time_transform, get_active_window
@@ -49,7 +50,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # 控制台消息重定向槽函数，字符追加到 run_log 中
     def output_write(self, text):
         # self.run_log.insertPlainText(text)
-        self.run_log.append(text)
+        # self.run_log.append(text)
+        cursor = self.run_log.textCursor()
+        cursor.insertText(text)
+        self.run_log.setTextCursor(cursor)
+        self.run_log.ensureCursorVisible()
 
     # 根据下拉框内容，设置按钮是否可点击
     def select_target_path_mode_btn_enable(self, tag):
@@ -303,7 +308,15 @@ class Thread(QThread):
         self.finished_signal.emit(True)
 
 
+def exceptOutConfig(exctype, value, tb):
+    print('My Error Information:')
+    print('Type:', exctype)
+    print('Value:', value)
+    print('Traceback:', tb)
+
+
 if __name__ == '__main__':
+    sys.excepthook = exceptOutConfig
     app = QApplication(sys.argv)
     myWindow = MainWindow()
     myWindow.setWindowTitle('护肝小助手')  # 设置窗口标题

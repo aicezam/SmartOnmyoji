@@ -251,7 +251,7 @@ class Ui_MainWindow(object):
         self.label_13 = QtWidgets.QLabel(self.layoutWidget12)
         self.label_13.setObjectName("label_13")
         self.verticalLayout.addWidget(self.label_13)
-        self.run_log = QtWidgets.QTextEdit(self.layoutWidget12)
+        self.run_log = QtWidgets.QTextBrowser(self.layoutWidget12)
         self.run_log.setObjectName("run_log")
         self.verticalLayout.addWidget(self.run_log)
         self.line_2 = QtWidgets.QFrame(self.centralwidget)

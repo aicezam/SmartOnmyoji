@@ -2,7 +2,6 @@
 from os import path, walk
 from os.path import abspath, dirname
 from re import search, compile
-from sys import exit
 from numpy import uint8, fromfile
 from cv2 import cv2
 from modules.ModuleImgProcess import ImgProcess
@@ -55,7 +54,7 @@ class GetTargetPicInfo:
         # 获取每张图片的路径地址
         if folder_path is None:
             print("未找到目标文件夹或图片地址！即将退出！")
-            exit(0)  # 脚本结束
+            return None  # 脚本结束
         else:
             # print("------------------------------------------------------------")
             # print("正在读取目标图片(仅限.jpg格式)……")
@@ -68,7 +67,7 @@ class GetTargetPicInfo:
                             img_file_path.append(cur_dir + "\\" + file)
             if len(img_file_path) == 0:
                 print("未找到目标文件夹或图片地址！")
-                exit(0)  # 脚本结束
+                return None # 脚本结束
             # print("图片路径读取完成!共[%d]张图片" % len(target_file_path))
             # print("------------------------------------------------------------")
 
@@ -93,4 +92,3 @@ class GetTargetPicInfo:
         data = pattern.findall(path_string)
         if data:
             return data[0]
-
