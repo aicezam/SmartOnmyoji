@@ -118,11 +118,6 @@ class StartMatch:
         print('正在截图…')
         screen_img = None
         if connect_mod == 'Windows程序窗体':
-            handle_set = HandleSet(hwd_title)
-            handle_is_active = handle_set.handle_is_active()
-            if handle_is_active is None:
-                exit(0)
-
             # 如果部分窗口不能点击、截图出来是黑屏，可以使用兼容模式
             if scr_and_click_method == '正常-可后台':
                 screen_img = screen_method.window_screen()
@@ -136,7 +131,7 @@ class StartMatch:
                 screen_img = screen_method.adb_screen()
             else:
                 print(device_id)
-                exit(0)  # 脚本结束
+                return None
 
         if debug_status:
             ImgProcess.show_img(screen_img)  # test显示截图
