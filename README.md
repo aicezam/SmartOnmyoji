@@ -12,7 +12,7 @@ pip install -r requirements.txt
 
 ### 使用方法
 - 先安装python3.7（基于 python3.7.6 开发）, 再安装上述依赖库
-- 管理员身份运行IDE或CMD, 执行 python smart_onmyoji_start.py
+- 【管理员身份运行IDE或CMD或powershell】, 执行 python smart_onmyoji_start.py
 - 阴阳师电脑版使用模板匹配时，不要调分辨率，如果要调分辨率，需要重新截图，然后放到/img目录的对应文件夹下面
 - 如果发现总是匹配失败，可能是/img模板图片大小问题，可以重新截图，或使用特征点匹配方法，或切换为 **兼容模式** ，也可自行调试代码看截图是否成功，找看看是哪儿的问题
 - **支持后台点击**，但不支持部分窗体（如网易MuMu、网易云游戏），可以切换为 **兼容模式** 以兼容这些窗体，兼容模式下不能后台点击
@@ -27,19 +27,20 @@ pip install -r requirements.txt
 
 - UI界面、可配置参数：可修改执行时间、间隔时间、匹配方式、压缩率、执行完成后的操作等
 
-![image](https://user-images.githubusercontent.com/39365915/158008228-9309234f-8d45-4df8-9de6-388c2ac5c304.png)
+![image](https://user-images.githubusercontent.com/39365915/160130249-62554943-f746-4a56-91f9-9898f4267685.png)
 
-- 匹配执行中：
 
-![image](https://user-images.githubusercontent.com/39365915/158008334-7aea70aa-dd78-4e95-b10c-c3c12b13d3d7.png)
 
 - 模板匹配方法：不能随意调整窗体分辨率，模板图片与窗体中的部分必须一致
 
 ![image](https://user-images.githubusercontent.com/39365915/158008385-6d661a3f-51a7-44c0-9b8b-b872cfed60eb.png)
 
+
+
 - 特征点匹配方法：可以随便调整窗体分辨率，也可以对目标图片旋转、缩放，都可以匹配到
 
 ![image](https://user-images.githubusercontent.com/39365915/158009257-97dbc188-aa5a-4eb6-a559-03cae7e0a5d1.png)
+
 
 
 ### 计划
@@ -50,13 +51,14 @@ pip install -r requirements.txt
 - [x] 所有图片转灰度图，并保存在内存里，识别速度快多了
 - [x] 修复中文路径报错的问题
 - [x] 兼容所有windows窗体的截图和点击
-- [ ] 使用QT5重构UI界面
+- [x] 使用QT5重构UI界面
 - [ ] 增加超时停止脚本的功能
 - [ ] 优化百鬼夜行的选式神和砸豆子逻辑
 - [ ] 模拟真实点击（某时间一顿猛戳，每隔一段时间随机等待30秒到5分钟）
 - [ ] 增加御灵、地域鬼王、逢魔、秘闻副本等场景
 
 ### 更新记录
+- 2022年3月25日 使用PYQT5重构GUI，使用pyautogui替换pymouse库
 - 2022年3月12日 增加兼容模式，支持在所有的 windows窗体 截图和点击，包括模拟器、云游戏、scrcpy 等， 兼容模式下 **窗体会自动置顶，不再支持后台点击**
 - 2022年3月10日 增加鼠标点击选择窗体的功能，（窗口标题名称 - 下拉选择 “开始后鼠标点击选择窗体”，5秒内点击要匹配窗体）
 - 2022年1月27日 修复opencv在中文路径下报错的问题
