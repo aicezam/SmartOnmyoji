@@ -21,13 +21,13 @@ pip install -r requirements.txt
 - 除了阴阳师，也可以其他点点点的游戏，比如连手机抢微信红包啥的~
 - 只要每天不刷满300次，理论上不会收到鬼使黑的信
 - 不想使用cmd编译的，可以使用我打包的win程序，管理员身份运行smart_onmyoji_start.exe：https://github.com/aicezam/SmartOnmyoji/releases/tag/v0.01
-- 编译后需要把img文件夹放进打包生成目录中，手动编译使用：pyinstaller -D smart_onmyoji_start.py -w
+- 编译后需要把img文件夹和modules文件夹放进打包生成目录中，手动编译可使用：pyinstaller --distpath Release/ -w -i logo.ico --clean .\smart_onmyoji_start.py
 
 ### 功能预览
 
 - UI界面、可配置参数：可修改执行时间、间隔时间、匹配方式、压缩率、执行完成后的操作等
 
-![image](https://user-images.githubusercontent.com/39365915/160130249-62554943-f746-4a56-91f9-9898f4267685.png)
+![image](https://user-images.githubusercontent.com/39365915/160885083-5ffc81ad-7779-4a16-a82b-c0cf4426122b.png)
 
 
 
