@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from sys import exit
+from os.path import abspath, dirname
 from win32api import OpenProcess
 from win32con import PROCESS_ALL_ACCESS
 from win32gui import GetWindowText, GetWindowRect, FindWindow
@@ -63,6 +63,7 @@ class HandleSet:
     def handle_is_active(self):
         """检测句柄是否停止"""
         if self.get_handle_num is None:
+            print("目标窗体未运行！")
             return None
 
     def set_priority(self, priority=4):
@@ -80,7 +81,8 @@ class HandleSet:
         if pid is None:
             # pid = win32api.GetCurrentProcessId()  # 获取当前进程pid
             print("进程pid查找失败,即将中止！")
-            exit(0)  # 脚本结束
+            # exit(0)  # 脚本结束
+            return None
         else:
             # print(pid)
             handle = OpenProcess(PROCESS_ALL_ACCESS, True, pid)
@@ -110,7 +112,9 @@ class HandleSet:
 
     @staticmethod
     def adb_device_status():
-        result = HandleSet.deal_cmd('adb devices')
+        command = abspath(dirname(__file__)) + r'\adb.exe devices'  # adb放在modules目录下，不用那么麻烦安装adb命令了
+        # result = HandleSet.deal_cmd('adb devices')
+        result = HandleSet.deal_cmd(command)
         result = result.decode("utf-8")
         if result.startswith('List of devices attached'):
             # 查看连接设备

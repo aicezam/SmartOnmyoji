@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from gc import collect
-from sys import exit
 from time import sleep, localtime, strftime
 from pyautogui import click
 from win32gui import GetWindowText, GetWindowRect, GetForegroundWindow, SetForegroundWindow
@@ -13,7 +12,11 @@ from modules.ModuleDoClick import DoClick
 
 
 def time_transform(seconds):
-    """转换时间格式 秒—>时分秒"""
+    """
+    转换时间格式 秒—>时分秒
+    :param seconds: 秒数
+    :return: 时分秒格式
+    """
     m, s = divmod(seconds, 60)
     h, m = divmod(m, 60)
     run_time = "%02d时%02d分%02d秒" % (h, m, s)
@@ -21,7 +24,11 @@ def time_transform(seconds):
 
 
 def get_active_window(loop_times=5):
-    """点击鼠标获取目标窗口句柄"""
+    """
+    点击鼠标获取目标窗口句柄
+    :param loop_times: 倒计时/循环次数
+    :return: 窗体标题名称
+    """
     hand_win = ""
     hand_win_title = ""
     for t in range(loop_times):
@@ -42,21 +49,19 @@ class StartMatch:
     def __init__(self, gui_info):
         super(StartMatch, self).__init__()
         self.connect_mod, self.modname, self.hwd_title, self.click_deviation, self.interval_seconds, self.loop_min, self.compress_val, self.match_method, self.scr_and_click_method = gui_info
+        self.handle_set = HandleSet(self.hwd_title)
 
     def set_init(self):
-
+        """
+        获取待匹配的目标图片信息、计算循环次数、时间、截图方法
+        :return: 循环次数、截图方法、图片信息、每次循环大约需要执行的时间
+        """
         # 参数初始化
         modname = self.modname
         connect_mod = self.connect_mod
-        hwd_title = self.hwd_title
         interval_seconds = self.interval_seconds
         loop_min = self.loop_min
         scr_and_click_method = self.scr_and_click_method
-        # 获取窗体标题
-        if hwd_title == '开始后鼠标点击选择窗体':
-            hwd_title = get_active_window()  # 点击窗口获取窗体名称
-        else:
-            hwd_title = hwd_title  # 句柄名称
 
         # 获取待检测目标图片信息
         print('目标图片读取中……')
@@ -73,11 +78,11 @@ class StartMatch:
         # 句柄操作（获取句柄编号、设置优先级、检测程序是否运行）
         screen_method = GetScreenCapture()
         if connect_mod == 'Windows程序窗体':
-            handle_set = HandleSet(hwd_title)
-            handle_num = handle_set.get_handle_num
-            handle_width = handle_set.get_handle_pos[2] - handle_set.get_handle_pos[0]  # 右x - 左x 计算宽度
-            handle_height = handle_set.get_handle_pos[3] - handle_set.get_handle_pos[1]  # 下y - 上y 计算高度
-            # handle_set.set_priority(randint(3, 5))  # 设置目标程序优先级，避免程序闪退，若需要避免可以打开
+            handle_num = self.handle_set.get_handle_num
+            handle_width = self.handle_set.get_handle_pos[2] - self.handle_set.get_handle_pos[0]  # 右x - 左x 计算宽度
+            handle_height = self.handle_set.get_handle_pos[3] - self.handle_set.get_handle_pos[1]  # 下y - 上y 计算高度
+            # 设置目标程序优先级，避免程序闪退（痒痒鼠在我电脑总是闪退，设置优先级后就不闪退了），若需要可以打开，脚本打包成exe可执行程序运行时，会报错，不知道什么原因
+            # self.handle_set.set_priority(4)
             screen_method = GetScreenCapture(handle_num, handle_width, handle_height)
 
             # 通过pywin32模块下的SetForegroundWindow函数调用时，会出现
@@ -95,29 +100,26 @@ class StartMatch:
                 print(f'已连接设备[ {device_id} ]')
             else:
                 print(device_id)
-                exit(0)  # 脚本结束
+                return None
         return loop_times, screen_method, target_info, t1
 
     def start_match_click(self, i, loop_times, screen_method, target_info, debug_status):
         connect_mod = self.connect_mod
-        hwd_title = self.hwd_title
         scr_and_click_method = self.scr_and_click_method
         match_method = self.match_method
         compress_val = float(self.compress_val)
         click_deviation = int(self.click_deviation)
         target_img_sift, target_img_hw, target_img_name, target_img_file_path, target_img = target_info
 
-        if debug_status:
-            now_time = strftime("%Y-%m-%d %H:%M:%S", localtime())
-            progress = format((i + 1) / loop_times, '.2%')
-            print(f"第 [ {i + 1} ] 次匹配, 还剩 [ {loop_times - i - 1} ] 次 \n当前进度 [ {progress} ] \n当前时间 [ {now_time} ]")
-        else:
-            print(f"第 [ {i + 1} ] 次匹配, 还剩 [ {loop_times - i - 1} ] 次")
+        now_time = strftime("%Y-%m-%d %H:%M:%S", localtime())
+        progress = format((i + 1) / loop_times, '.2%')
+        print(f"第 [ {i + 1} ] 次匹配, 还剩 [ {loop_times - i - 1} ] 次 \n当前进度 [ {progress} ] \n当前时间 [ {now_time} ]")
 
         # 获取截图
         print('正在截图…')
         screen_img = None
         if connect_mod == 'Windows程序窗体':
+            self.handle_set.handle_is_active()
             # 如果部分窗口不能点击、截图出来是黑屏，可以使用兼容模式
             if scr_and_click_method == '正常-可后台':
                 screen_img = screen_method.window_screen()
@@ -140,25 +142,29 @@ class StartMatch:
         print("正在匹配…")
         pos = None
         target_num = None
-        target_img_m = target_img
+        target_img_tm = target_img
+
         # 模板匹配方法
         if match_method == '模板匹配':
-            if compress_val != 1:  # 压缩图片，模板匹配：模板和截图必须一起压缩
+            if compress_val != 1:  # 压缩图片，模板和截图必须一起压缩
                 screen_img = ImgProcess.img_compress(screen_img, compress_val)
                 if debug_status:
-                    ImgProcess.show_img(screen_img)  # test显示截图
-                target_img_m = []
+                    ImgProcess.show_img(screen_img)  # test显示压缩后截图
+                target_img_tm = []
                 for k in range(len(target_img)):
-                    target_img_m.append(ImgProcess.img_compress(target_img[k], compress_val))
+                    target_img_tm.append(ImgProcess.img_compress(target_img[k], compress_val))
+
             # 开始匹配
             get_pos = GetPosByTemplateMatch()
-            pos, target_num = get_pos.get_pos_by_template(screen_img, target_img_m)
+            pos, target_num = get_pos.get_pos_by_template(screen_img, target_img_tm, debug_status)
 
         # 特征点匹配方法，准确度不能保证，但是不用适配不同设备
         elif match_method == '特征点匹配':
-            if compress_val != 1:  # 压缩图片，特征点匹配方法，可以只压缩截图图片
+            if compress_val != 1:  # 压缩图片，特征点匹配方法，只压缩截图
                 screen_img = ImgProcess.img_compress(screen_img, compress_val)
+                ImgProcess.show_img(screen_img)  # test显示压缩后截图
             screen_sift = ImgProcess.get_sift(screen_img)  # 获取截图的特征点
+
             # 开始匹配
             get_pos = GetPosBySiftMatch()
             pos, target_num = get_pos.get_pos_by_sift(target_img_sift, screen_sift,
@@ -167,28 +173,19 @@ class StartMatch:
 
         if pos and target_num is not None:
 
-            # 查看匹配情况，在获取的截图上画边框
-            if debug_status:
-                target_img_hw_m = [target_img_hw[target_num][0] * compress_val,
-                                   target_img_hw[target_num][1] * compress_val]
-                draw_img = ImgProcess.draw_pos_in_img(screen_img, pos, target_img_hw_m)
-                ImgProcess.show_img(draw_img)
-
             # 如果图片有压缩，需对坐标还原
             if compress_val != 1:
                 pos = [pos[0] / compress_val, pos[1] / compress_val]
 
             # 打印匹配到的实际坐标点和匹配到的图片信息
-            print(f"匹配成功! 匹配到第 [ {target_num} ] 张图片: [ {target_img_name[target_num]} ]\n"
+            print(f"匹配成功! 匹配到第 [ {target_num + 1} ] 张图片: [ {target_img_name[target_num]} ]\n"
                   f"坐标位置: [ {int(pos[0])} , {int(pos[1])} ] ")
 
             # 开始点击
             if connect_mod == 'Windows程序窗体':
-                handle_set = HandleSet(hwd_title)
-                # handle_is_active = handle_set.handle_is_active()
-                # if handle_is_active is None:
-                #     exit(0)
-                handle_num = handle_set.get_handle_num
+
+                self.handle_set.handle_is_active()
+                handle_num = self.handle_set.get_handle_num
                 doclick = DoClick(pos, click_deviation, handle_num)
 
                 # 如果部分窗口不能点击、截图出来是黑屏，可以使用兼容模式
@@ -205,9 +202,5 @@ class StartMatch:
             print("匹配失败！")
 
         # 内存清理
-        del screen_img, pos  # , now_time  # 删除变量
-        if match_method == '特征点匹配':
-            del screen_sift  # 删除变量
-        else:
-            del target_img_m
+        del screen_img, pos, target_info, screen_method  # 删除变量
         collect()  # 清理内存

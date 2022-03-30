@@ -56,20 +56,14 @@ class GetTargetPicInfo:
             print("未找到目标文件夹或图片地址！即将退出！")
             return None  # 脚本结束
         else:
-            # print("------------------------------------------------------------")
-            # print("正在读取目标图片(仅限.jpg格式)……")
             for cur_dir, sub_dir, included_file in walk(folder_path):
                 if included_file:
                     for file in included_file:
                         if search(img_type, file):
-                            # print(cur_dir + "\\" + file)
-                            # print(file)
                             img_file_path.append(cur_dir + "\\" + file)
             if len(img_file_path) == 0:
                 print("未找到目标文件夹或图片地址！")
-                return None # 脚本结束
-            # print("图片路径读取完成!共[%d]张图片" % len(target_file_path))
-            # print("------------------------------------------------------------")
+                return None  # 脚本结束
 
             # 通过图片地址获取每张图片的信息
             for i in range(len(img_file_path)):

@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import time
+from os.path import abspath, dirname
 from subprocess import Popen, PIPE
 from numpy import frombuffer, uint8, array
 from win32con import SRCCOPY
@@ -59,6 +61,7 @@ class GetScreenCapture:
     def window_screen_bk(self):
         """PIL截图方法，不能被遮挡"""
         SetForegroundWindow(self.hwd_num)  # 窗口置顶
+        time.sleep(0.2) # 置顶后等0.2秒再截图
         x1, y1, x2, y2 = GetWindowRect(self.hwd_num)  # 获取窗口坐标
         grab_image = ImageGrab.grab((x1, y1, x2, y2))  # 用PIL方法截图
         im_cv2 = array(grab_image)  # 转换为cv2的矩阵格式
@@ -74,8 +77,9 @@ class GetScreenCapture:
 
     @staticmethod
     def adb_screen():
-        """安卓手机adb截图"""
-        commend = Popen("adb shell screencap -p",
+        """安卓手机adb截图"""r'\adb.exe shell input tap {0} {1}'
+        # commend = Popen("adb shell screencap -p",stdin=PIPE,stdout=PIPE,shell=True)  # 截图
+        commend = Popen(abspath(dirname(__file__)) + r'\adb shell screencap -p',
                         stdin=PIPE,
                         stdout=PIPE,
                         shell=True)  # 截图

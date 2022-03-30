@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 import sys
-import time
+from ctypes import windll
+from time import sleep
 from os import system
 from random import uniform
-from PyQt5.QtCore import *
+import PyQt5.QtCore
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QMainWindow, QApplication
-from PyQt5.uic.properties import QtGui
 from win32con import WM_CLOSE
 from win32gui import FindWindow, PostMessage
 from modules.ModuleStart import StartMatch, time_transform, get_active_window
@@ -74,9 +74,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.btn_resume.hide()
         self.btn_stop.show()
         self.set_edit_enabled(False)
-        self.thread = Thread(self)  # 创建线程
+        self.thread = MatchingThread(self)  # 创建线程
         self.thread.finished_signal.connect(self.thread_finished)  # 线程信号和槽连接，任务正常结束重置按钮状态
         self.thread.progress_val_signal.connect(self.loop_progress.setValue)  # 线程信号和槽连接，设置进度条
+        sleep(0.1)
         self.thread.start()
 
     # 暂停按钮被点击的槽函数
@@ -87,6 +88,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.btn_stop.setEnabled(True)
         self.btn_resume.show()
         self.btn_pause.hide()
+        sleep(0.1)
         self.thread.pause()
 
     # 恢复按钮被点击的槽函数
@@ -97,6 +99,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.btn_stop.setEnabled(True)
         self.btn_resume.hide()
         self.btn_pause.show()
+        sleep(0.1)
         self.thread.resume()
 
     # 取消按钮被点击的槽函数
@@ -110,6 +113,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.btn_pause.hide()
         self.btn_resume.hide()
         self.btn_stop.hide()
+        sleep(0.1)
         self.thread.cancel()
 
     # 正常完成后的槽函数
@@ -158,22 +162,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.image_compression.setEnabled(bool_val)
 
 
-class EmitStr(QObject):
+class EmitStr(PyQt5.QtCore.QObject):
     """
     定义一个信号类，sys.stdout有个write方法，通过重定向，
     每当有新字符串输出时就会触发下面定义的write函数，进而发出信号
     """
-    textWrit = pyqtSignal(str)
+    textWrit = PyQt5.QtCore.pyqtSignal(str)
 
     def write(self, text):
         self.textWrit.emit(str(text))
 
 
-class GetActiveWindowThread(QThread):
+class GetActiveWindowThread(PyQt5.QtCore.QThread):
     """
     继承QThread，启用多线程，用于点击获取目标窗体的标题名称
     """
-    active_window_signal = pyqtSignal(str)
+    active_window_signal = PyQt5.QtCore.pyqtSignal(str)
 
     def __init__(self):
         super(GetActiveWindowThread, self).__init__()
@@ -183,41 +187,47 @@ class GetActiveWindowThread(QThread):
         self.active_window_signal.emit(hand_title)
 
 
-class Thread(QThread):
+class MatchingThread(PyQt5.QtCore.QThread):
     """
     为线程方法增加暂停、恢复、取消方法，并可以传递信号给UI控件
     """
     # 线程值信号
-    progress_val_signal = pyqtSignal(int)
-    finished_signal = pyqtSignal(bool)
+    progress_val_signal = PyQt5.QtCore.pyqtSignal(int)
+    finished_signal = PyQt5.QtCore.pyqtSignal(bool)
 
-    # 构造函数，thread初始化创建时，加上self，可以在run中直接获取GUI中的参数
+    # 构造函数，thread初始化创建时，传入UI窗体类，可以在run中直接获取GUI中的参数
     def __init__(self, main_window_ui):
-        super(Thread, self).__init__()
+        super(MatchingThread, self).__init__()
         self.isPause = False
         self.isCancel = False
-        self.cond = QWaitCondition()
-        self.mutex = QMutex()
+        self.cond = PyQt5.QtCore.QWaitCondition()
+        self.mutex = PyQt5.QtCore.QMutex()
         self.ui_info = main_window_ui
 
     # 暂停
     def pause(self):
-        print("线程暂停")
+        # print("线程暂停")
         self.isPause = True
 
     # 恢复
     def resume(self):
-        print("线程恢复")
+        # print("线程恢复")
         self.isPause = False
         self.cond.wakeAll()
 
     # 取消
     def cancel(self):
-        print("线程取消")
+        # print("线程取消")
         self.isCancel = True
 
     # 正常结束后执行
-    def end_do(self, if_end_do, handle_title):
+    @staticmethod
+    def end_do(if_end_do, handle_title):
+        """
+        :param if_end_do: 程序正常结束后动作：电脑关机、关闭目标窗体、关闭脚本、不执行任何操作
+        :param handle_title: 目标窗体的标题名称
+        :return: 无
+        """
         if if_end_do == '电脑关机':
             print("已完成，60秒后自动关机！")
             system('shutdown /s /t 60')
@@ -229,12 +239,13 @@ class Thread(QThread):
             PostMessage(hwnd1, WM_CLOSE, 0, 0)  # 关闭程序
         elif if_end_do == '关闭脚本':
             print("已完成，%s即将退出！" % 'YYS护肝小能手')
-            # hwnd2 = FindWindow(None, 'YYS护肝小能手')
-            # PostMessage(hwnd2, WM_CLOSE, 0, 0)  # 关闭脚本
             sys.exit(0)
 
     # 获取GUI界面参数
     def get_ui_info(self):
+        """
+        :return: GUI界面的参数
+        """
         loop_min = float(self.ui_info.loop_min.value())  # 运行时长
         interval_seconds = float(self.ui_info.interval_seconds.value())  # 间隔时间
         click_deviation = int(self.ui_info.click_deviation.value())  # 点击偏移范围
@@ -263,7 +274,10 @@ class Thread(QThread):
 
     # 运行(入口)
     def run(self):
-        print("线程开始")
+        """
+        多线程执行，避免界面卡顿，通过线程锁实现暂停、终止的操作，通过信号实现传参到界面
+        """
+        # print("线程开始")
         info = self.get_ui_info()
         if_end_do = info[9]
         debug_status = info[10]
@@ -285,7 +299,7 @@ class Thread(QThread):
             progress = int((i + 1) / loop_times * 100)
             self.progress_val_signal.emit(progress)
 
-            # # 业务代码
+            # 业务代码
             start_match.start_match_click(i, loop_times, screen_method, target_info, debug_status)
 
             # 判断是否结束
@@ -295,11 +309,11 @@ class Thread(QThread):
                 break
             else:
                 # 倒推剩余时间（时分秒格式）
-                remaining_time = time_transform(int(((loop_times - i - 1) / (60 / (interval_seconds + t1))) * 60))
-                ts = uniform(0.1, 1.5)  # 设置随机延时
-                print(f"--- [{round(interval_seconds + ts, 2)}] 秒后继续，[ {remaining_time} ] 后结束---")
+                ts = uniform(0.1, 0.5)  # 设置随机延时
+                remaining_time = time_transform(int(((loop_times - i - 1) / (60 / (interval_seconds + t1))) * 60 - ts))
+                print(f"--- [ {round(interval_seconds + ts, 2)} ] 秒后继续，[ {remaining_time} ] 后结束---")
                 print(f"--------------------------------------------------")
-                time.sleep(interval_seconds + ts)
+                sleep(interval_seconds + ts)
 
             # 线程锁off
             self.mutex.unlock()
@@ -308,17 +322,21 @@ class Thread(QThread):
         self.finished_signal.emit(True)
 
 
-def exceptOutConfig(exctype, value, tb):
-    print('My Error Information:')
-    print('Type:', exctype)
+def except_out_config(exc_type, value, tb):
+    print('Error Information:')
+    print('Type:', exc_type)
     print('Value:', value)
     print('Traceback:', tb)
 
 
 if __name__ == '__main__':
-    sys.excepthook = exceptOutConfig
-    app = QApplication(sys.argv)
-    myWindow = MainWindow()
-    myWindow.setWindowTitle('护肝小助手')  # 设置窗口标题
-    myWindow.show()
-    sys.exit(app.exec_())
+    if windll.shell32.IsUserAnAdmin():  # 是否以管理员身份运行
+        sys.excepthook = except_out_config
+        app = QApplication(sys.argv)
+        myWindow = MainWindow()
+        myWindow.setWindowTitle('护肝小助手')  # 设置窗口标题
+        myWindow.show()
+        sys.exit(app.exec_())
+    else:
+        windll.shell32.ShellExecuteW(None, "runas", sys.executable, __file__, None, 1)  # 调起UAC以管理员身份重新执行
+        sys.exit(0)
