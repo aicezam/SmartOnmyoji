@@ -2,11 +2,12 @@
 
 > 虽然有很多大佬有写过类似的脚本，但其实这是个学习项目，通过这个项目基本花了一个月学会了python，这里注释会比较完整，代码虽然不够简洁，功能也不够丰富，但是想要用更加优雅的方法继续完善~
 
-### 依赖库
-克隆仓库，进入根目录下，安装 requirements.txt 依赖库：pywin32、opencv-python、PyQt5、PyAutoGUI
+### 安装方法
+安装python，克隆仓库，进入根目录下，安装 requirements.txt 依赖库：pywin32、opencv-python、PyQt5、PyAutoGUI
 ```
-cd .\SmartOnmyoji\
-pip install -r requirements.txt
+python安装：https://www.python.org/ftp/python/3.7.6/python-3.7.6-amd64.exe
+进入主目录：cd .\SmartOnmyoji\
+安装依赖库：pip install -r requirements.txt
 ```
 
 ### 使用方法
