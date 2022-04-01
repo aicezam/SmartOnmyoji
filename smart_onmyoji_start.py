@@ -219,6 +219,9 @@ class MatchingThread(PyQt5.QtCore.QThread):
     def cancel(self):
         # print("线程取消")
         self.isCancel = True
+        self.terminate()
+        # 线程终止方法，terminate()据说是不安全的用法，但实际使用可以解决多线程结束后依然继续运行的问题，
+        # 以及控制台的警告：QMutex: destroying locked mutex
 
     # 正常结束后执行
     @staticmethod
