@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import random
 from gc import collect
 from time import sleep, localtime, strftime
 from pyautogui import click
@@ -50,6 +51,8 @@ class StartMatch:
         super(StartMatch, self).__init__()
         self.connect_mod, self.target_modname, self.hwd_title, self.click_deviation, self.interval_seconds, self.loop_min, self.compress_val, self.match_method, self.scr_and_click_method, self.custom_target_path = gui_info
         self.handle_set = HandleSet(self.hwd_title)
+        self.handle_width = self.handle_set.get_handle_pos[2] - self.handle_set.get_handle_pos[0]  # 右x - 左x 计算宽度
+        self.handle_height = self.handle_set.get_handle_pos[3] - self.handle_set.get_handle_pos[1]  # 下y - 上y 计算高度
 
     def set_init(self):
         """
@@ -66,7 +69,8 @@ class StartMatch:
 
         # 获取待检测目标图片信息
         print('目标图片读取中……')
-        target_info = GetTargetPicInfo(target_modname, custom_target_path, compress_val=1).get_target_info  # 目标图片不压缩（本身就小）
+        target_info = GetTargetPicInfo(target_modname, custom_target_path,
+                                       compress_val=1).get_target_info  # 目标图片不压缩（本身就小）
         target_img_sift, target_img_hw, target_img_name, target_img_file_path, target_img = target_info
         print(f'读取完成！共[ {len(target_img)} ]张图片\n{target_img_name}')
 
@@ -80,8 +84,8 @@ class StartMatch:
         screen_method = GetScreenCapture()
         if connect_mod == 'Windows程序窗体':
             handle_num = self.handle_set.get_handle_num
-            handle_width = self.handle_set.get_handle_pos[2] - self.handle_set.get_handle_pos[0]  # 右x - 左x 计算宽度
-            handle_height = self.handle_set.get_handle_pos[3] - self.handle_set.get_handle_pos[1]  # 下y - 上y 计算高度
+            handle_width = self.handle_width
+            handle_height = self.handle_height
             # 设置目标程序优先级，避免程序闪退（痒痒鼠在我电脑总是闪退，设置优先级后就不闪退了），若需要可以打开，脚本打包成exe可执行程序运行时，会报错，不知道什么原因
             # self.handle_set.set_priority(4)
             screen_method = GetScreenCapture(handle_num, handle_width, handle_height)
@@ -206,3 +210,22 @@ class StartMatch:
         # 内存清理
         del screen_img, pos, target_info, screen_method  # 删除变量
         collect()  # 清理内存
+
+    def simulates_real_clicks(self):
+        if self.connect_mod == 'Windows程序窗体':
+            pos = [random.randint(0, self.handle_width), random.randint(0, self.handle_height)]
+
+            real_clicks = DoClick(pos, 100, self.handle_set.get_handle_num)
+            if self.scr_and_click_method == '正常-可后台':
+                real_clicks.windows_click()
+            elif self.scr_and_click_method == '兼容-不可后台':
+                real_clicks.windows_click_bk()
+
+        elif self.connect_mod == 'Android-手机':
+            pos = [random.randint(0, 500), random.randint(0, 500)]
+            real_clicks = DoClick(pos, 100)
+            real_clicks.adb_click()
+        yc = random.uniform(0.1, 1.5)
+        print(f'{yc}秒后继续')
+        sleep(yc)  # 延迟
+

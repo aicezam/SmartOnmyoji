@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 import sys
+import time
 from ctypes import windll
 from os.path import abspath, dirname
-from time import sleep
+from time import sleep, strftime, localtime
 from os import system
 from random import uniform
 import PyQt5.QtCore
@@ -60,7 +61,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     # 根据下拉框内容，设置按钮是否可点击
     def select_target_path_mode_btn_enable(self, tag):
-        if tag == 5:
+        if tag == 7:
             self.select_targetpic_path_btn.show()
         else:
             self.select_targetpic_path_btn.hide()
@@ -297,6 +298,11 @@ class MatchingThread(PyQt5.QtCore.QThread):
         debug_status = info[11]
         interval_seconds = int(info[4])
         start_match = StartMatch(info[:10])
+        print("参数初始化中…")
+        if time.localtime().tm_hour < 9:
+            now_time = strftime("%Y-%m-%d %H:%M:%S", localtime())
+            print(f"现在时间 [ {now_time} ] ，非正常时间段，请谨慎使用脚本，10秒后继续~")
+            sleep(10)
         loop_times, screen_method, target_info, t1 = start_match.set_init()
 
         # 开始循环
@@ -316,6 +322,11 @@ class MatchingThread(PyQt5.QtCore.QThread):
             # 业务代码
             start_match.start_match_click(i, loop_times, screen_method, target_info, debug_status)
 
+            # 每匹配7次后，随机在窗口点击两次，防止点击太规律被识别为异常
+            if i % 7 == 0:
+                start_match.simulates_real_clicks()
+                start_match.simulates_real_clicks()
+
             # 判断是否结束
             if i == loop_times - 1:
                 print("---已执行完成!---")
@@ -323,7 +334,7 @@ class MatchingThread(PyQt5.QtCore.QThread):
                 break
             else:
                 # 倒推剩余时间（时分秒格式）
-                ts = uniform(0.1, 0.5)  # 设置随机延时
+                ts = uniform(0.1, 1.5)  # 设置随机延时，防检测
                 remaining_time = time_transform(int(((loop_times - i - 1) / (60 / (interval_seconds + t1))) * 60 - ts))
                 print(f"--- [ {round(interval_seconds + ts, 2)} ] 秒后继续，[ {remaining_time} ] 后结束---")
                 print(f"--------------------------------------------------")
