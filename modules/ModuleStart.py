@@ -162,7 +162,8 @@ class StartMatch:
         elif match_method == '特征点匹配':
             if compress_val != 1:  # 压缩图片，特征点匹配方法，只压缩截图
                 screen_img = ImgProcess.img_compress(screen_img, compress_val)
-                ImgProcess.show_img(screen_img)  # test显示压缩后截图
+                if debug_status:
+                    ImgProcess.show_img(screen_img)  # test显示压缩后截图
             screen_sift = ImgProcess.get_sift(screen_img)  # 获取截图的特征点
 
             # 开始匹配
