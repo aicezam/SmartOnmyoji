@@ -1,11 +1,13 @@
 # SmartOnmyoji
 
-> 为了解放双手，特意学了python，虽然已经有很多大佬写了类似的脚本，但自己主要是利用这个项目学习python，所以有很多被注释的代码片段和注释啥的（大部分代码都可以删除，其实100行左右就能实现），写完之后，基本了解了opencv的目标检测方法和一些图像处理的方法，以及图像处理的一些原理，包括期间还看了神经网络和深度学习的一些知识（虽然没用上，不过以后可以用在砸百鬼上）
+> 虽然有很多大佬有写过类似的脚本，但其实这是个学习项目，通过这个项目基本花了一个月学会了python，这里注释会比较完整，代码虽然不够简洁，功能也不够丰富，但是想要用更加优雅的方法继续完善~
 
-### 依赖库
-进入根目录下，安装 requirements.txt 里的依赖库：pywin32、opencv-python、PyQt5、PyAutoGUI
-``` 
-pip install -r requirements.txt
+### 安装方法
+启动windows命令行终端cmd或powershell，安装python，克隆仓库，进入根目录下，安装 requirements.txt 依赖库：pywin32、opencv-python、PyQt5、PyAutoGUI
+```
+python安装（版本大于3.7.6都行）：https://www.python.org/ftp/python/3.7.6/python-3.7.6-amd64.exe
+进入主目录：cd .\SmartOnmyoji\
+安装依赖库：pip install -r requirements.txt
 ```
 
 ### 使用方法
@@ -57,6 +59,7 @@ pip install -r requirements.txt
 - [ ] 增加御灵、地域鬼王、逢魔、秘闻副本等默认场景
 
 ### 更新记录
+- 2022年4月02日 修复bug：停止匹配后，偶尔会触发继续匹配运行的bug
 - 2022年3月31日 移除重复的依赖，运行时检测是否使用管理员身份运行，脚本默认包含adb程序，为代码增加部分注释
 - 2022年3月25日 使用PYQT5重构GUI，使用pyautogui替换pymouse库
 - 2022年3月12日 增加兼容模式，支持在所有的 windows窗体 截图和点击，包括模拟器、云游戏、scrcpy 等， 兼容模式下 **窗体会自动置顶，不再支持后台点击**
