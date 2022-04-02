@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 import sys
 from ctypes import windll
+from os.path import abspath, dirname
 from time import sleep
 from os import system
 from random import uniform
 import PyQt5.QtCore
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QMainWindow, QApplication
+from PyQt5.QtWidgets import QMainWindow, QApplication, QFileDialog
 from win32con import WM_CLOSE
 from win32gui import FindWindow, PostMessage
 from modules.ModuleStart import StartMatch, time_transform, get_active_window
@@ -34,7 +35,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.btn_exit.show()
         self.loop_progress.setValue(0)
         self.run_log.setReadOnly(True)
-        self.select_targetpic_path_btn.setEnabled(False)
+        self.select_targetpic_path_btn.hide()
         self.setWindowIcon(QIcon('img/logo.ico'))
 
         # 绑定信号
@@ -46,6 +47,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.select_target_path_mode_combobox.currentIndexChanged.connect(
             lambda: self.select_target_path_mode_btn_enable(self.select_target_path_mode_combobox.currentIndex()))
         self.btn_select_handle.clicked.connect(self.__on_click_btn_select_handle)
+        self.select_targetpic_path_btn.clicked.connect(self.__on_click_btn_select_custom_path)
 
     # 控制台消息重定向槽函数，字符追加到 run_log 中
     def output_write(self, text):
@@ -59,9 +61,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # 根据下拉框内容，设置按钮是否可点击
     def select_target_path_mode_btn_enable(self, tag):
         if tag == 5:
-            self.select_targetpic_path_btn.setEnabled(True)
+            self.select_targetpic_path_btn.show()
         else:
-            self.select_targetpic_path_btn.setEnabled(False)
+            self.select_targetpic_path_btn.hide()
+            self.show_target_path.setText('')
 
     # 开始按钮被点击的槽函数
     def __on_clicked_btn_begin(self):
@@ -133,6 +136,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.thread_1 = GetActiveWindowThread()
         self.thread_1.active_window_signal.connect(self.show_handle_title.setText)
         self.thread_1.start()
+
+    def __on_click_btn_select_custom_path(self):
+        current_path = abspath(dirname(__file__))  # 当前路径
+        custom_path = QFileDialog.getExistingDirectory(None, "选择文件夹", current_path+r'\img')  # 起始路径
+        self.show_target_path.setText(custom_path)  # 显示路径
 
     # 退出程序的槽函数
     def __on_clicked_exit(self):
@@ -225,22 +233,22 @@ class MatchingThread(PyQt5.QtCore.QThread):
 
     # 正常结束后执行
     @staticmethod
-    def end_do(if_end_do, handle_title):
+    def end_do(if_end, handle_title):
         """
-        :param if_end_do: 程序正常结束后动作：电脑关机、关闭目标窗体、关闭脚本、不执行任何操作
+        :param if_end: 程序正常结束后动作：电脑关机、关闭目标窗体、关闭脚本、不执行任何操作
         :param handle_title: 目标窗体的标题名称
         :return: 无
         """
-        if if_end_do == '电脑关机':
+        if if_end == '电脑关机':
             print("已完成，60秒后自动关机！")
             system('shutdown /s /t 60')
-        elif if_end_do == '不执行任何操作':
+        elif if_end == '不执行任何操作':
             print("已完成！")
-        elif if_end_do == '关闭匹配目标窗体':
+        elif if_end == '关闭匹配目标窗体':
             print("已完成，%s即将退出！" % handle_title)
             hwnd1 = FindWindow(None, handle_title)
             PostMessage(hwnd1, WM_CLOSE, 0, 0)  # 关闭程序
-        elif if_end_do == '关闭脚本':
+        elif if_end == '关闭脚本':
             print("已完成，%s即将退出！" % 'YYS护肝小能手')
             sys.exit(0)
 
@@ -270,10 +278,13 @@ class MatchingThread(PyQt5.QtCore.QThread):
             run_mode = self.ui_info.runmod_nomal.text()
         elif self.ui_info.runmod_compatibility.isChecked():
             run_mode = self.ui_info.runmod_compatibility.text()
-        if_end_do = str(self.ui_info.if_end_do.currentText())  # 脚本运行正常结束后，执行的操作，未生效
+        if_end = str(self.ui_info.if_end_do.currentText())  # 脚本运行正常结束后，执行的操作，未生效
         debug_status = self.ui_info.debug.isChecked()  # 是否启用调试
+        custom_target_path = None
+        if self.ui_info.select_target_path_mode_combobox.currentText() == '自定义':
+            custom_target_path = self.ui_info.show_target_path.text()
 
-        return connect_mod, target_path_mode, handle_title, click_deviation, interval_seconds, loop_min, img_compress_val, match_method, run_mode, if_end_do, debug_status
+        return connect_mod, target_path_mode, handle_title, click_deviation, interval_seconds, loop_min, img_compress_val, match_method, run_mode, custom_target_path, if_end, debug_status
 
     # 运行(入口)
     def run(self):
@@ -282,10 +293,10 @@ class MatchingThread(PyQt5.QtCore.QThread):
         """
         # print("线程开始")
         info = self.get_ui_info()
-        if_end_do = info[9]
-        debug_status = info[10]
+        if_end = info[10]
+        debug_status = info[11]
         interval_seconds = int(info[4])
-        start_match = StartMatch(info[:9])
+        start_match = StartMatch(info[:10])
         loop_times, screen_method, target_info, t1 = start_match.set_init()
 
         # 开始循环
@@ -308,7 +319,7 @@ class MatchingThread(PyQt5.QtCore.QThread):
             # 判断是否结束
             if i == loop_times - 1:
                 print("---已执行完成!---")
-                self.end_do(if_end_do, info[2])
+                self.end_do(if_end, info[2])
                 break
             else:
                 # 倒推剩余时间（时分秒格式）

@@ -8,9 +8,10 @@ from modules.ModuleImgProcess import ImgProcess
 
 
 class GetTargetPicInfo:
-    def __init__(self, modname, compress_val=1):
+    def __init__(self, target_modname, custom_target_path, compress_val=1):
         super(GetTargetPicInfo, self).__init__()
-        self.modname = modname
+        self.modname = target_modname
+        self.custom_target_path = custom_target_path
         self.target_folder_path = None
         self.compress_val = compress_val
 
@@ -35,8 +36,10 @@ class GetTargetPicInfo:
             target_folder_path = parent_path + r'\img\juexing'
         elif self.modname == "百鬼夜行":
             target_folder_path = parent_path + r'\img\baigui'
-        elif self.modname == "微信红包":
-            target_folder_path = parent_path + r'\img\wxhongbao'
+        elif self.modname == "御灵":
+            target_folder_path = parent_path + r'\img\yuling'
+        elif self.modname == "自定义":
+            target_folder_path = self.custom_target_path
         else:
             target_folder_path = None
         return target_folder_path

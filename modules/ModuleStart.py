@@ -48,7 +48,7 @@ def get_active_window(loop_times=5):
 class StartMatch:
     def __init__(self, gui_info):
         super(StartMatch, self).__init__()
-        self.connect_mod, self.modname, self.hwd_title, self.click_deviation, self.interval_seconds, self.loop_min, self.compress_val, self.match_method, self.scr_and_click_method = gui_info
+        self.connect_mod, self.target_modname, self.hwd_title, self.click_deviation, self.interval_seconds, self.loop_min, self.compress_val, self.match_method, self.scr_and_click_method, self.custom_target_path = gui_info
         self.handle_set = HandleSet(self.hwd_title)
 
     def set_init(self):
@@ -57,7 +57,8 @@ class StartMatch:
         :return: 循环次数、截图方法、图片信息、每次循环大约需要执行的时间
         """
         # 参数初始化
-        modname = self.modname
+        target_modname = self.target_modname
+        custom_target_path = self.custom_target_path
         connect_mod = self.connect_mod
         interval_seconds = self.interval_seconds
         loop_min = self.loop_min
@@ -65,7 +66,7 @@ class StartMatch:
 
         # 获取待检测目标图片信息
         print('目标图片读取中……')
-        target_info = GetTargetPicInfo(modname, compress_val=1).get_target_info  # 目标图片不压缩（本身就小）
+        target_info = GetTargetPicInfo(target_modname, custom_target_path, compress_val=1).get_target_info  # 目标图片不压缩（本身就小）
         target_img_sift, target_img_hw, target_img_name, target_img_file_path, target_img = target_info
         print(f'读取完成！共[ {len(target_img)} ]张图片\n{target_img_name}')
 
@@ -162,7 +163,8 @@ class StartMatch:
         elif match_method == '特征点匹配':
             if compress_val != 1:  # 压缩图片，特征点匹配方法，只压缩截图
                 screen_img = ImgProcess.img_compress(screen_img, compress_val)
-                ImgProcess.show_img(screen_img)  # test显示压缩后截图
+                if debug_status:
+                    ImgProcess.show_img(screen_img)  # test显示压缩后截图
             screen_sift = ImgProcess.get_sift(screen_img)  # 获取截图的特征点
 
             # 开始匹配

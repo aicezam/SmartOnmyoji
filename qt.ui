@@ -201,6 +201,9 @@
       </item>
       <item row="0" column="1">
        <widget class="QRadioButton" name="runmod_nomal">
+        <property name="cursor">
+         <cursorShape>PointingHandCursor</cursorShape>
+        </property>
         <property name="text">
          <string>正常-可后台</string>
         </property>
@@ -211,6 +214,9 @@
       </item>
       <item row="0" column="2">
        <widget class="QRadioButton" name="runmod_compatibility">
+        <property name="cursor">
+         <cursorShape>PointingHandCursor</cursorShape>
+        </property>
         <property name="text">
          <string>兼容-不可后台</string>
         </property>
@@ -237,6 +243,9 @@
       </item>
       <item>
        <widget class="QCheckBox" name="debug">
+        <property name="cursor">
+         <cursorShape>PointingHandCursor</cursorShape>
+        </property>
         <property name="text">
          <string>开启调试</string>
         </property>
@@ -305,7 +314,7 @@
          <number>50</number>
         </property>
         <property name="value">
-         <number>10</number>
+         <number>50</number>
         </property>
         <property name="displayIntegerBase">
          <number>10</number>
@@ -356,7 +365,7 @@
          <double>0.500000000000000</double>
         </property>
         <property name="value">
-         <double>5.000000000000000</double>
+         <double>7.000000000000000</double>
         </property>
        </widget>
       </item>
@@ -398,13 +407,13 @@
          <double>1.000000000000000</double>
         </property>
         <property name="maximum">
-         <double>600.000000000000000</double>
+         <double>60.000000000000000</double>
         </property>
         <property name="singleStep">
          <double>0.500000000000000</double>
         </property>
         <property name="value">
-         <double>120.000000000000000</double>
+         <double>60.000000000000000</double>
         </property>
        </widget>
       </item>
@@ -468,6 +477,16 @@
         <item>
          <property name="text">
           <string>觉醒</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>御灵</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>百鬼夜行</string>
          </property>
         </item>
         <item>
@@ -576,7 +595,7 @@
          <bool>true</bool>
         </property>
         <property name="placeholderText">
-         <string>匹配目标文件夹路径…</string>
+         <string>自定义文件夹路径…</string>
         </property>
        </widget>
       </item>
@@ -611,7 +630,14 @@
       </widget>
      </item>
      <item>
-      <widget class="QTextEdit" name="run_log"/>
+      <widget class="QTextEdit" name="run_log">
+       <property name="cursor" stdset="0">
+        <cursorShape>IBeamCursor</cursorShape>
+       </property>
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
      </item>
     </layout>
    </widget>
