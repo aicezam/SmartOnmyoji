@@ -23,8 +23,7 @@ python安装（版本大于3.7.6都行）：https://www.python.org/ftp/python/3.
 - 原理是定时截图，然后找到图片坐标，然后随机延迟并点击附近随机坐标
 - 除了阴阳师，也可以其他点点点的游戏，比如连手机抢微信红包啥的~
 - 只要每天正常时间内，不刷满300次，理论上不会收到鬼使黑的信，**请按正常时间运行脚本，偶尔还是用一下樱饼，使用脚本有被封号的风险**
-- 不想使用cmd编译的，可以使用我打包的win程序，管理员身份运行smart_onmyoji_start.exe：https://github.com/aicezam/SmartOnmyoji/releases
-- 编译后需要把img文件夹和modules文件夹放进打包生成目录中，手动编译可使用：pyinstaller --distpath Release/ -w -i logo.ico --clean .\smart_onmyoji_start.py
+- 不想使用cmd编译的，可以自行编译为win程序，编译后需要把img文件夹和modules文件夹放进根目录中，手动编译可使用：pyinstaller --distpath Release/ -w -i logo.ico --clean .\smart_onmyoji_start.py
 
 ### 功能预览
 
