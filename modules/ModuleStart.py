@@ -50,9 +50,6 @@ class StartMatch:
     def __init__(self, gui_info):
         super(StartMatch, self).__init__()
         self.connect_mod, self.target_modname, self.hwd_title, self.click_deviation, self.interval_seconds, self.loop_min, self.compress_val, self.match_method, self.scr_and_click_method, self.custom_target_path = gui_info
-        self.handle_set = HandleSet(self.hwd_title)
-        self.handle_width = self.handle_set.get_handle_pos[2] - self.handle_set.get_handle_pos[0]  # 右x - 左x 计算宽度
-        self.handle_height = self.handle_set.get_handle_pos[3] - self.handle_set.get_handle_pos[1]  # 下y - 上y 计算高度
 
     def set_init(self):
         """
@@ -83,9 +80,10 @@ class StartMatch:
         # 句柄操作（获取句柄编号、设置优先级、检测程序是否运行）
         screen_method = GetScreenCapture()
         if connect_mod == 'Windows程序窗体':
-            handle_num = self.handle_set.get_handle_num
-            handle_width = self.handle_width
-            handle_height = self.handle_height
+            handle_set = HandleSet(self.hwd_title)
+            handle_num = handle_set.get_handle_num
+            handle_width = handle_set.get_handle_pos[2] - handle_set.get_handle_pos[0]  # 右x - 左x 计算宽度
+            handle_height = handle_set.get_handle_pos[3] - handle_set.get_handle_pos[1]  # 下y - 上y 计算高度
             # 设置目标程序优先级，避免程序闪退（痒痒鼠在我电脑总是闪退，设置优先级后就不闪退了），若需要可以打开，脚本打包成exe可执行程序运行时，会报错，不知道什么原因
             # self.handle_set.set_priority(4)
             screen_method = GetScreenCapture(handle_num, handle_width, handle_height)
@@ -105,10 +103,11 @@ class StartMatch:
                 print(f'已连接设备[ {device_id} ]')
             else:
                 print(device_id)
-                return None
+                return False
         return loop_times, screen_method, target_info, t1
 
     def start_match_click(self, i, loop_times, screen_method, target_info, debug_status):
+        match_status = False
         connect_mod = self.connect_mod
         scr_and_click_method = self.scr_and_click_method
         match_method = self.match_method
@@ -116,6 +115,7 @@ class StartMatch:
         click_deviation = int(self.click_deviation)
         target_img_sift, target_img_hw, target_img_name, target_img_file_path, target_img = target_info
 
+        # 计算进度
         now_time = strftime("%Y-%m-%d %H:%M:%S", localtime())
         progress = format((i + 1) / loop_times, '.2%')
         print(f"第 [ {i + 1} ] 次匹配, 还剩 [ {loop_times - i - 1} ] 次 \n当前进度 [ {progress} ] \n当前时间 [ {now_time} ]")
@@ -124,7 +124,9 @@ class StartMatch:
         print('正在截图…')
         screen_img = None
         if connect_mod == 'Windows程序窗体':
-            self.handle_set.handle_is_active()
+            handle_set = HandleSet(self.hwd_title)
+            if not handle_set.handle_is_active():
+                return False, match_status
             # 如果部分窗口不能点击、截图出来是黑屏，可以使用兼容模式
             if scr_and_click_method == '正常-可后台':
                 screen_img = screen_method.window_screen()
@@ -138,7 +140,7 @@ class StartMatch:
                 screen_img = screen_method.adb_screen()
             else:
                 print(device_id)
-                return None
+                return False, match_status
 
         if debug_status:
             ImgProcess.show_img(screen_img)  # test显示截图
@@ -178,6 +180,7 @@ class StartMatch:
                                                       target_img, screen_img, debug_status)
 
         if pos and target_num is not None:
+            match_status = True
 
             # 如果图片有压缩，需对坐标还原
             if compress_val != 1:
@@ -189,9 +192,9 @@ class StartMatch:
 
             # 开始点击
             if connect_mod == 'Windows程序窗体':
-
-                self.handle_set.handle_is_active()
-                handle_num = self.handle_set.get_handle_num
+                handle_set = HandleSet(self.hwd_title)
+                handle_set.handle_is_active()
+                handle_num = handle_set.get_handle_num
                 doclick = DoClick(pos, click_deviation, handle_num)
 
                 # 如果部分窗口不能点击、截图出来是黑屏，可以使用兼容模式
@@ -206,16 +209,21 @@ class StartMatch:
                 doclick.adb_click()
         else:
             print("匹配失败！")
+            match_status = False
 
         # 内存清理
         del screen_img, pos, target_info, screen_method  # 删除变量
         collect()  # 清理内存
+        return True, match_status
 
     def simulates_real_clicks(self):
+        """模拟真实点击：屏幕随机点击多次"""
         if self.connect_mod == 'Windows程序窗体':
-            pos = [random.randint(0, self.handle_width), random.randint(0, self.handle_height)]
-
-            real_clicks = DoClick(pos, 100, self.handle_set.get_handle_num)
+            handle_set = HandleSet(self.hwd_title)
+            handle_width = handle_set.get_handle_pos[2] - handle_set.get_handle_pos[0]  # 右x - 左x 计算宽度
+            handle_height = handle_set.get_handle_pos[3] - handle_set.get_handle_pos[1]  # 下y - 上y 计算高度
+            pos = [random.randint(0, handle_width), random.randint(0, handle_height)]
+            real_clicks = DoClick(pos, 100, handle_set.get_handle_num)
             if self.scr_and_click_method == '正常-可后台':
                 real_clicks.windows_click()
             elif self.scr_and_click_method == '兼容-不可后台':
@@ -225,7 +233,20 @@ class StartMatch:
             pos = [random.randint(0, 500), random.randint(0, 500)]
             real_clicks = DoClick(pos, 100)
             real_clicks.adb_click()
-        yc = random.uniform(0.1, 1.5)
-        print(f'{yc}秒后继续')
+        yc = random.uniform(0.5, 1.5)
+        print(f'{round(yc,2)}秒后继续')
         sleep(yc)  # 延迟
 
+    @staticmethod
+    def time_warming():
+        """检测时间是否晚12-早9点之间，这个时间可能因为异常导致封号"""
+
+        if localtime().tm_hour < 9:
+            now_time = strftime("%H:%M:%S", localtime())
+            print("----------------------------------------------------------")
+            print(f"现在 [ {now_time} ]【非正常游戏时间，请谨慎使用】")
+            print("----------------------------------------------------------")
+            for t in range(9):
+                print(f"[ {9 - t} ] 秒后开始……")
+                sleep(1)
+            print("----------------------------------------------------------")

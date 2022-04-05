@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 import sys
-import time
 from ctypes import windll
 from os.path import abspath, dirname
-from time import sleep, strftime, localtime
+from time import sleep
 from os import system
 from random import uniform
 import PyQt5.QtCore
@@ -23,8 +22,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)  # 继承UI类，下面进行信号与槽的绑定和修改
 
         # 控制台消息输出到窗口上
-        sys.stdout = EmitStr(textWrit=self.output_write)  # 输出结果重定向
-        sys.stderr = EmitStr(textWrit=self.output_write)  # 错误输出重定向
+        sys.stdout = EmitStr(text_writ=self.output_write)  # 输出结果重定向
+        sys.stderr = EmitStr(text_writ=self.output_write)  # 错误输出重定向
 
         # 继承重新设置GUI初始状态
         self.btn_pause.setEnabled(False)
@@ -36,6 +35,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.btn_exit.show()
         self.loop_progress.setValue(0)
         self.run_log.setReadOnly(True)
+        self.click_deviation.setValue(30)  # 设置默认偏移量
         self.select_targetpic_path_btn.hide()
         self.setWindowIcon(QIcon('img/logo.ico'))
 
@@ -78,6 +78,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.btn_resume.hide()
         self.btn_stop.show()
         self.set_edit_enabled(False)
+        self.run_log.setText('')
         self.thread = MatchingThread(self)  # 创建线程
         self.thread.finished_signal.connect(self.thread_finished)  # 线程信号和槽连接，任务正常结束重置按钮状态
         self.thread.progress_val_signal.connect(self.loop_progress.setValue)  # 线程信号和槽连接，设置进度条
@@ -140,7 +141,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def __on_click_btn_select_custom_path(self):
         current_path = abspath(dirname(__file__))  # 当前路径
-        custom_path = QFileDialog.getExistingDirectory(None, "选择文件夹", current_path+r'\img')  # 起始路径
+        custom_path = QFileDialog.getExistingDirectory(None, "选择文件夹", current_path + r'\img')  # 起始路径
         self.show_target_path.setText(custom_path)  # 显示路径
 
     # 退出程序的槽函数
@@ -176,10 +177,10 @@ class EmitStr(PyQt5.QtCore.QObject):
     定义一个信号类，sys.stdout有个write方法，通过重定向，
     每当有新字符串输出时就会触发下面定义的write函数，进而发出信号
     """
-    textWrit = PyQt5.QtCore.pyqtSignal(str)
+    text_writ = PyQt5.QtCore.pyqtSignal(str)
 
     def write(self, text):
-        self.textWrit.emit(str(text))
+        self.text_writ.emit(str(text))
 
 
 class GetActiveWindowThread(PyQt5.QtCore.QThread):
@@ -298,12 +299,15 @@ class MatchingThread(PyQt5.QtCore.QThread):
         debug_status = info[11]
         interval_seconds = int(info[4])
         start_match = StartMatch(info[:10])
-        print("参数初始化中…")
-        if time.localtime().tm_hour < 9:
-            now_time = strftime("%Y-%m-%d %H:%M:%S", localtime())
-            print(f"现在时间 [ {now_time} ] ，非正常时间段，请谨慎使用脚本，10秒后继续~")
-            sleep(10)
+        print("初始化中…")
+
+        # 对UI参数初始化，计算匹配的次数、导入需要检测的目标图片
         loop_times, screen_method, target_info, t1 = start_match.set_init()
+
+        # 检测游戏时间是否太晚，进行提示
+        start_match.time_warming()
+
+        success_times = 0
 
         # 开始循环
         for i in range(int(loop_times)):
@@ -319,11 +323,28 @@ class MatchingThread(PyQt5.QtCore.QThread):
             progress = int((i + 1) / loop_times * 100)
             self.progress_val_signal.emit(progress)
 
-            # 业务代码
-            start_match.start_match_click(i, loop_times, screen_method, target_info, debug_status)
+            # 下面是Qthread中的循环匹配代码--------------
 
-            # 每匹配7次后，随机在窗口点击两次，防止点击太规律被识别为异常
-            if i % 7 == 0:
+            # 开始匹配
+            run_status, match_status = start_match.start_match_click(i, loop_times, screen_method, target_info,
+                                                                     debug_status)
+
+            # 计算匹配成功的次数,每成功匹配50次，休息2分钟，避免异常
+            if match_status:
+                success_times = success_times + 1
+                if success_times % 50 == 0:
+                    for t in range(120):
+                        print(f"已成功匹配50次，为防止异常，[ {120 - t} ] 秒后继续……")
+                        sleep(1)
+
+            # 检测是否正常运行，否则终止
+            if not run_status:
+                self.mutex.unlock()
+                break
+
+            # 每匹配7次或9次后，随机在窗口点击两次，防止点击太规律被识别为异常
+            if (i + 1) % 7 == 0 or (i + 1) % 9 == 0:
+                start_match.simulates_real_clicks()
                 start_match.simulates_real_clicks()
                 start_match.simulates_real_clicks()
 
@@ -337,8 +358,10 @@ class MatchingThread(PyQt5.QtCore.QThread):
                 ts = uniform(0.1, 1.5)  # 设置随机延时，防检测
                 remaining_time = time_transform(int(((loop_times - i - 1) / (60 / (interval_seconds + t1))) * 60 - ts))
                 print(f"--- [ {round(interval_seconds + ts, 2)} ] 秒后继续，[ {remaining_time} ] 后结束---")
-                print(f"--------------------------------------------------")
+                print("----------------------------------------------------------")
                 sleep(interval_seconds + ts)
+
+            # 上面是Qthread中的循环匹配代码--------------
 
             # 线程锁off
             self.mutex.unlock()

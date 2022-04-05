@@ -64,7 +64,9 @@ class HandleSet:
         """检测句柄是否停止"""
         if self.get_handle_num is None:
             print("目标窗体未运行！")
-            return None
+            return False
+        else:
+            return True
 
     def set_priority(self, priority=4):
         """

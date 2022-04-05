@@ -37,6 +37,8 @@ class DoClick:
 
             print(f"点击坐标: [ {cx} , {cy} ] 窗口名称: [ {HandleSet.get_handle_title(handle_num)} ]")
 
+            return True
+
     def adb_click(self):
         """数据线连手机点击"""
         if self.pos is not None:
@@ -46,10 +48,13 @@ class DoClick:
             py = randint(-click_deviation, click_deviation)
             cx = int(px + pos[0])
             cy = int(py + pos[1])
+            # 使用modules下的adb工具执行adb命令
             command = abspath(dirname(__file__)) + r'\adb.exe shell input tap {0} {1}'.format(cx, cy)
             # command = "adb shell input tap {0} {1}".format(cx, cy)
             system(command)
             print(f"点击坐标: [ {cx} , {cy} ]")
+
+            return True
 
     def windows_click_bk(self):
         """
@@ -80,3 +85,5 @@ class DoClick:
         moveTo(now_pos[0], now_pos[1])
 
         print(f"点击坐标: [ {cx} , {cy} ] 窗口名称: [ {HandleSet.get_handle_title(handle_num)} ]")
+
+        return True
