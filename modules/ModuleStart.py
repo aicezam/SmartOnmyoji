@@ -222,16 +222,16 @@ class StartMatch:
             handle_set = HandleSet(self.hwd_title)
             handle_width = handle_set.get_handle_pos[2] - handle_set.get_handle_pos[0]  # 右x - 左x 计算宽度
             handle_height = handle_set.get_handle_pos[3] - handle_set.get_handle_pos[1]  # 下y - 上y 计算高度
-            pos = [random.randint(0, handle_width), random.randint(0, handle_height)]
-            real_clicks = DoClick(pos, 100, handle_set.get_handle_num)
+            pos = [int(handle_width/2), int(handle_height/2)]
+            real_clicks = DoClick(pos, 200, handle_set.get_handle_num)
             if self.scr_and_click_method == '正常-可后台':
                 real_clicks.windows_click()
             elif self.scr_and_click_method == '兼容-不可后台':
                 real_clicks.windows_click_bk()
 
         elif self.connect_mod == 'Android-手机':
-            pos = [random.randint(0, 500), random.randint(0, 500)]
-            real_clicks = DoClick(pos, 100)
+            pos = [random.randint(400, 500), random.randint(400, 500)]
+            real_clicks = DoClick(pos, 200)
             real_clicks.adb_click()
         yc = random.uniform(0.5, 1.5)
         print(f'{round(yc,2)}秒后继续')

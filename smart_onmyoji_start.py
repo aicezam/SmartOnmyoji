@@ -35,7 +35,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.btn_exit.show()
         self.loop_progress.setValue(0)
         self.run_log.setReadOnly(True)
-        self.click_deviation.setValue(30)  # 设置默认偏移量
+        self.click_deviation.setValue(35)  # 设置默认偏移量
         self.select_targetpic_path_btn.hide()
         self.setWindowIcon(QIcon('img/logo.ico'))
 
@@ -329,12 +329,13 @@ class MatchingThread(PyQt5.QtCore.QThread):
             run_status, match_status = start_match.start_match_click(i, loop_times, screen_method, target_info,
                                                                      debug_status)
 
-            # 计算匹配成功的次数,每成功匹配50次，休息2分钟，避免异常
+            # 计算匹配成功的次数,每成功匹配30次，休息2分钟，避免异常
             if match_status:
                 success_times = success_times + 1
-                if success_times % 50 == 0:
+                print(f"已成功匹配 [ {success_times} ] 次")
+                if success_times % 30 == 0:
                     for t in range(120):
-                        print(f"已成功匹配50次，为防止异常，[ {120 - t} ] 秒后继续……")
+                        print(f"已成功匹配30次，为防止异常，[ {120 - t} ] 秒后继续……")
                         sleep(1)
 
             # 检测是否正常运行，否则终止
@@ -342,8 +343,8 @@ class MatchingThread(PyQt5.QtCore.QThread):
                 self.mutex.unlock()
                 break
 
-            # 每匹配7次或9次后，随机在窗口点击两次，防止点击太规律被识别为异常
-            if (i + 1) % 7 == 0 or (i + 1) % 9 == 0:
+            # 每匹配11次后，随机在窗口点击3次，防止点击太规律被识别为异常
+            if (i + 1) % 11 == 0:
                 start_match.simulates_real_clicks()
                 start_match.simulates_real_clicks()
                 start_match.simulates_real_clicks()
