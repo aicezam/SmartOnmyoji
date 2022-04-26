@@ -5,9 +5,9 @@
 ### 安装方法
 启动windows命令行终端cmd或powershell，安装python，克隆仓库，进入根目录下，安装 requirements.txt 依赖库：pywin32、opencv-python、PyQt5、PyAutoGUI
 ```
-python安装（版本大于3.7.6都行）：https://www.python.org/ftp/python/3.7.6/python-3.7.6-amd64.exe
-进入主目录：cd .\SmartOnmyoji\
-安装依赖库：pip install -r requirements.txt
+1. python安装（版本大于3.7.6都行）：https://www.python.org/ftp/python/3.7.6/python-3.7.6-amd64.exe
+2. 克隆或下载本项目
+3. 运行power shell 或 cmd 进入主目录：cd .\SmartOnmyoji\ 安装依赖库：pip install -r requirements.txt
 ```
 
 ### 使用方法
@@ -55,10 +55,12 @@ python安装（版本大于3.7.6都行）：https://www.python.org/ftp/python/3.
 - [x] 兼容所有windows窗体的截图和点击
 - [x] 使用QT5重构UI界面
 - [x] 增加选择自定义匹配图片文件夹的功能
-- [ ] 优化百鬼夜行的选式神和砸豆子逻辑（yolov5）
+- [ ] ~~优化百鬼夜行的选式神和砸豆子逻辑（yolov5），尝试跑了个模型，但是效果不好，会导致程序特别臃肿，而且运行速度特别慢~~ 
 - [ ] 增加御灵、地域鬼王、逢魔、秘闻副本等默认场景
+- [ ] 兼容常用安卓模拟器后台点击（已兼容雷电模拟器）
 
 ### 更新记录
+- 2022年4月26日 调整部分默认参数，更新雷电模拟器后台点击方法（感谢 @zyhazwraith 提供的思路 https://github.com/aicezam/SmartOnmyoji/issues/7 ）
 - 2022年4月07日 更新防检测异常的逻辑（虽然可能没什么用）
 - 2022年4月03日 增加选择自定义匹配目标图片文件夹的功能
 - 2022年4月02日 修复bug：停止匹配后，偶尔会触发继续匹配运行的bug
