@@ -47,6 +47,7 @@ def get_active_window(loop_times=5):
 
 
 class StartMatch:
+
     def __init__(self, gui_info):
         super(StartMatch, self).__init__()
         self.connect_mod, self.target_modname, self.hwd_title, self.click_deviation, self.interval_seconds, self.loop_min, self.compress_val, self.match_method, self.scr_and_click_method, self.custom_target_path = gui_info
@@ -93,7 +94,7 @@ class StartMatch:
             # 在该函数调用前，需要先发送一个其他键给屏幕，这里先用鼠标点一次就不会报错了
             if scr_and_click_method == '兼容模式':
                 x1, y1, x2, y2 = GetWindowRect(handle_num)
-                click(x1 + 10, y1 + 10)
+                click(x1 + 100, y1 + 100)
                 SetForegroundWindow(handle_num)  # 窗口置顶
 
         # 检测安卓设备是否正常连接
@@ -108,6 +109,7 @@ class StartMatch:
 
     def start_match_click(self, i, loop_times, screen_method, target_info, debug_status):
         match_status = False
+        run_status = True
         connect_mod = self.connect_mod
         scr_and_click_method = self.scr_and_click_method
         match_method = self.match_method
@@ -126,7 +128,8 @@ class StartMatch:
         if connect_mod == 'Windows程序窗体':
             handle_set = HandleSet(self.hwd_title)
             if not handle_set.handle_is_active():
-                return False, match_status
+                run_status = False
+                return run_status, match_status
             # 如果部分窗口不能点击、截图出来是黑屏，可以使用兼容模式
             if scr_and_click_method == '正常-可后台':
                 screen_img = screen_method.window_screen()
@@ -140,7 +143,8 @@ class StartMatch:
                 screen_img = screen_method.adb_screen()
             else:
                 print(device_id)
-                return False, match_status
+                run_status = False
+                return run_status, match_status
 
         if debug_status:
             ImgProcess.show_img(screen_img)  # test显示截图
@@ -178,6 +182,7 @@ class StartMatch:
             pos, target_num = get_pos.get_pos_by_sift(target_img_sift, screen_sift,
                                                       target_img_hw,
                                                       target_img, screen_img, debug_status)
+            del screen_sift  # 删除截图的特征点信息
 
         if pos and target_num is not None:
             match_status = True
@@ -212,12 +217,13 @@ class StartMatch:
             match_status = False
 
         # 内存清理
-        del screen_img, pos, target_info, screen_method  # 删除变量
+        del screen_img, pos, target_info, target_img, target_img_sift, screen_method  # 删除变量
         collect()  # 清理内存
-        return True, match_status
+        return run_status, match_status
 
     def simulates_real_clicks(self):
         """模拟真实点击：屏幕随机点击多次"""
+
         if self.connect_mod == 'Windows程序窗体':
             handle_set = HandleSet(self.hwd_title)
             handle_width = handle_set.get_handle_pos[2] - handle_set.get_handle_pos[0]  # 右x - 左x 计算宽度
@@ -233,20 +239,20 @@ class StartMatch:
             pos = [random.randint(400, 500), random.randint(400, 500)]
             real_clicks = DoClick(pos, 200)
             real_clicks.adb_click()
-        yc = random.uniform(0.5, 1.5)
-        print(f'{round(yc,2)}秒后继续')
+        yc = random.uniform(0.2, 0.8)
+        # print(f'{round(yc,2)}秒后继续')
         sleep(yc)  # 延迟
 
     @staticmethod
     def time_warming():
-        """检测时间是否晚12-早9点之间，这个时间可能因为异常导致封号"""
+        """检测时间是否晚12-早8点之间，这个时间可能因为异常导致封号"""
 
-        if localtime().tm_hour < 9:
+        if localtime().tm_hour < 8:
             now_time = strftime("%H:%M:%S", localtime())
             print("----------------------------------------------------------")
             print(f"现在 [ {now_time} ]【非正常游戏时间，请谨慎使用】")
             print("----------------------------------------------------------")
-            for t in range(9):
-                print(f"[ {9 - t} ] 秒后开始……")
+            for t in range(8):
+                print(f"[ {8 - t} ] 秒后开始……")
                 sleep(1)
             print("----------------------------------------------------------")

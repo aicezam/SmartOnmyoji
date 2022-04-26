@@ -2,7 +2,7 @@
 from os.path import abspath, dirname
 from win32api import OpenProcess
 from win32con import PROCESS_ALL_ACCESS
-from win32gui import GetWindowText, GetWindowRect, FindWindow
+from win32gui import GetWindowText, GetWindowRect, FindWindow, FindWindowEx
 from win32process import NORMAL_PRIORITY_CLASS, REALTIME_PRIORITY_CLASS, SetPriorityClass, IDLE_PRIORITY_CLASS, \
     HIGH_PRIORITY_CLASS, GetWindowThreadProcessId, BELOW_NORMAL_PRIORITY_CLASS, ABOVE_NORMAL_PRIORITY_CLASS
 from subprocess import Popen, PIPE
@@ -20,11 +20,14 @@ class HandleSet:
     def get_handle_num(self):
         """通过句柄标题获取句柄编号"""
         self.handle_num = FindWindow(None, self.handle_title)  # 搜索句柄标题，获取句柄编号
-        if self.handle_num == 0:
-            print("目标程序未启动,即将中止！")
-            return None  # 返回异常
+        if self.handle_title == "雷电模拟器":
+            self.handle_num = FindWindowEx(self.handle_num, 0, None, "TheRender")  # 兼容雷电模拟器后台点击
         else:
-            return self.handle_num
+            if self.handle_num == 0:
+                print("目标程序未启动,即将中止！")
+                return None  # 返回异常
+            else:
+                return self.handle_num
 
     @staticmethod
     def get_handle_title(handle_num=None):

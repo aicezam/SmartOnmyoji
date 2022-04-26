@@ -329,13 +329,13 @@ class MatchingThread(PyQt5.QtCore.QThread):
             run_status, match_status = start_match.start_match_click(i, loop_times, screen_method, target_info,
                                                                      debug_status)
 
-            # 计算匹配成功的次数,每成功匹配30次，休息2分钟，避免异常
+            # 计算匹配成功的次数,每成功匹配100次，休息2分钟，避免异常
             if match_status:
                 success_times = success_times + 1
                 print(f"已成功匹配 [ {success_times} ] 次")
-                if success_times % 30 == 0:
+                if success_times % 100 == 0:
                     for t in range(120):
-                        print(f"已成功匹配30次，为防止异常，[ {120 - t} ] 秒后继续……")
+                        print(f"已成功匹配100次，为防止异常，[ {120 - t} ] 秒后继续……")
                         sleep(1)
 
             # 检测是否正常运行，否则终止
@@ -344,15 +344,17 @@ class MatchingThread(PyQt5.QtCore.QThread):
                 break
 
             # 每匹配11次后，随机在窗口点击3次，防止点击太规律被识别为异常
-            if (i + 1) % 11 == 0:
-                start_match.simulates_real_clicks()
-                start_match.simulates_real_clicks()
-                start_match.simulates_real_clicks()
+            # if (i + 1) % 11 == 0:
+            #     print("----------------每循环11次后模拟真实点击-----------------")
+            #     start_match.simulates_real_clicks()
+            #     start_match.simulates_real_clicks()
+            #     start_match.simulates_real_clicks()
 
             # 判断是否结束
             if i == loop_times - 1:
                 print("---已执行完成!---")
                 self.end_do(if_end, info[2])
+                self.mutex.unlock()
                 break
             else:
                 # 倒推剩余时间（时分秒格式）
