@@ -60,7 +60,7 @@
 - [ ] 兼容常用安卓模拟器后台点击（已兼容雷电模拟器）
 
 ### 更新记录
-- 2022年4月26日 调整部分默认参数，更新雷电模拟器后台点击方法（感谢 @zyhazwraith 提供的思路 https://github.com/aicezam/SmartOnmyoji/issues/7 ）
+- 2022年4月26日 调整部分默认参数，更新雷电模拟器后台点击方法（感谢 @zyhazwraith https://github.com/zyhazwraith 提供的思路 https://github.com/aicezam/SmartOnmyoji/issues/7 ）
 - 2022年4月07日 更新防检测异常的逻辑（虽然可能没什么用）
 - 2022年4月03日 增加选择自定义匹配目标图片文件夹的功能
 - 2022年4月02日 修复bug：停止匹配后，偶尔会触发继续匹配运行的bug
