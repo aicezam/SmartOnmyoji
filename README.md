@@ -24,6 +24,8 @@
 - 除了阴阳师，也可以其他点点点的游戏，比如连手机抢微信红包啥的~
 - 只要每天正常时间内，不刷满300次，理论上不会收到鬼使黑的信，**请按正常时间运行脚本，偶尔还是用一下樱饼，使用脚本有被封号的风险**
 - 不想使用cmd编译的，可以自行编译为win程序，编译后需要把img文件夹和modules文件夹放进根目录中，手动编译可使用：pyinstaller --distpath Release/ -w -i logo.ico --clean .\smart_onmyoji_start.py
+- 支持游戏多开，需要运行多个脚本，然后勾选多开并点击“选择窗体”，以获取窗口句柄编号，用于每个脚本对应一个窗口；
+
 
 ### 功能预览
 
@@ -43,6 +45,11 @@
 
 ![image](https://user-images.githubusercontent.com/39365915/158009257-97dbc188-aa5a-4eb6-a559-03cae7e0a5d1.png)
 
+
+### 已知BUG
+1. 桌面分辨率如果进行了缩放，会导致匹配失败 https://github.com/aicezam/SmartOnmyoji/issues/8
+
+![image](https://user-images.githubusercontent.com/39365915/165800895-f8501812-7ab5-478f-ac48-9a4733777448.png)
 
 
 ### 计划
