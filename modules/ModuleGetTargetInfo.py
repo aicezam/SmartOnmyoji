@@ -45,7 +45,7 @@ class GetTargetPicInfo:
         return target_folder_path
 
     @property
-    def get_target_info(self, img_type='.jpg'):
+    def get_target_info(self):
         """获取目标图片文件夹路径下的所有图片信息"""
         target_img_sift = {}
         img_hw = {}
@@ -62,7 +62,9 @@ class GetTargetPicInfo:
             for cur_dir, sub_dir, included_file in walk(folder_path):
                 if included_file:
                     for file in included_file:
-                        if search(img_type, file):
+                        if search(r'.jpg', file):
+                            img_file_path.append(cur_dir + "\\" + file)
+                        elif search(r'.png', file):  # 兼容png格式
                             img_file_path.append(cur_dir + "\\" + file)
             if len(img_file_path) == 0:
                 print("未找到目标文件夹或图片地址！")
@@ -74,7 +76,7 @@ class GetTargetPicInfo:
                 img = cv2.imdecode(fromfile(img_file_path[i], dtype=uint8), -1)  # 修复中文路径下opencv报错问题
                 img_process = ImgProcess()
                 img_hw[i] = img.shape[:2]  # 获取目标图片宽高
-                img_name.append(self.trans_path_to_name(img_file_path[i]) + '.jpg')  # 获取目标图片名称
+                img_name.append(self.trans_path_to_name(img_file_path[i]))  # 获取目标图片名称
                 img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
                 # img_process.show_img(img)
                 target_img_sift[i] = img_process.get_sift(img)  # 获取目标图片特征点信息

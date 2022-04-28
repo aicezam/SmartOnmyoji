@@ -9,25 +9,28 @@ from subprocess import Popen, PIPE
 
 
 class HandleSet:
-    def __init__(self, handle_title=''):
+    def __init__(self, handle_title, handle_num):
         super(HandleSet, self).__init__()
         self.handle_pos = None
         self.handle_title = handle_title
-        self.handle_num = None
+        self.handle_num = handle_num
         self.handle_pid = None
 
     @property
     def get_handle_num(self):
         """通过句柄标题获取句柄编号"""
-        self.handle_num = FindWindow(None, self.handle_title)  # 搜索句柄标题，获取句柄编号
-        if self.handle_title == "雷电模拟器":
-            self.handle_num = FindWindowEx(self.handle_num, 0, None, "TheRender")  # 兼容雷电模拟器后台点击
+        if self.handle_num is not None:
+            return self.handle_num
         else:
-            if self.handle_num == 0:
-                print("目标程序未启动,即将中止！")
-                return None  # 返回异常
+            self.handle_num = FindWindow(None, self.handle_title)  # 搜索句柄标题，获取句柄编号
+            if self.handle_title == "雷电模拟器":
+                self.handle_num = FindWindowEx(self.handle_num, 0, None, "TheRender")  # 兼容雷电模拟器后台点击
             else:
-                return self.handle_num
+                if self.handle_num == 0:
+                    print("目标程序未启动,即将中止！")
+                    return None  # 返回异常
+                else:
+                    return self.handle_num
 
     @staticmethod
     def get_handle_title(handle_num=None):

@@ -135,8 +135,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     # 获取目标窗体的槽函数
     def __on_click_btn_select_handle(self):
-        self.thread_1 = GetActiveWindowThread()
-        self.thread_1.active_window_signal.connect(self.show_handle_title.setText)
+        self.run_log.setText('')  # 清空运行日志
+        self.thread_1 = GetActiveWindowThread(self)
+        if self.process_num_one.isChecked():  # 如果单开
+            self.thread_1.active_window_signal.connect(self.show_handle_title.setText)
+        else:  # 如果多开
+            self.thread_1.active_window_signal.connect(self.show_handle_num.setText)
         self.thread_1.start()
 
     def __on_click_btn_select_custom_path(self):
@@ -170,6 +174,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.loop_min.setEnabled(bool_val)
         self.click_deviation.setEnabled(bool_val)
         self.image_compression.setEnabled(bool_val)
+        self.process_num_one.setEnabled(bool_val)
+        self.process_num_more.setEnabled(bool_val)
+        self.show_handle_num.setEnabled(bool_val)
 
 
 class EmitStr(PyQt5.QtCore.QObject):
@@ -189,12 +196,16 @@ class GetActiveWindowThread(PyQt5.QtCore.QThread):
     """
     active_window_signal = PyQt5.QtCore.pyqtSignal(str)
 
-    def __init__(self):
+    def __init__(self, main_window_ui):
         super(GetActiveWindowThread, self).__init__()
+        self.ui_info = main_window_ui
 
     def run(self):
-        hand_title = get_active_window()
-        self.active_window_signal.emit(hand_title)
+        hand_title, hand_num = get_active_window()
+        if self.ui_info.process_num_one.isChecked():
+            self.active_window_signal.emit(hand_title)
+        else:
+            self.active_window_signal.emit(str(hand_num))
 
 
 class MatchingThread(PyQt5.QtCore.QThread):
@@ -268,7 +279,15 @@ class MatchingThread(PyQt5.QtCore.QThread):
         elif self.ui_info.rd_btn_android_adb.isChecked():
             connect_mod = self.ui_info.rd_btn_android_adb.text()
         target_path_mode = str(self.ui_info.select_target_path_mode_combobox.currentText())  # 待匹配模板图片所在文件夹
-        handle_title = str(self.ui_info.show_handle_title.text())  # 待匹配窗体标题名称
+        process_num = None  # 游戏单开还是多开
+        handle_title = None  # 待匹配窗体标题名称
+        handle_num = None  # 待匹配窗体句柄编号
+        if self.ui_info.process_num_one.isChecked():
+            process_num = self.ui_info.process_num_one.text()
+            handle_title = str(self.ui_info.show_handle_title.text())  # 待匹配窗体标题名称
+        elif self.ui_info.process_num_more.isChecked():
+            process_num = self.ui_info.process_num_more.text()
+            handle_num = int(self.ui_info.show_handle_num.text())  # 待匹配窗体句柄编号
         img_compress_val = int(self.ui_info.image_compression.value()) / 100  # 图片压缩率
         match_method = None  # 匹配方法，模板匹配或特征点匹配
         if self.ui_info.template_matching.isChecked():
@@ -286,7 +305,7 @@ class MatchingThread(PyQt5.QtCore.QThread):
         if self.ui_info.select_target_path_mode_combobox.currentText() == '自定义':
             custom_target_path = self.ui_info.show_target_path.text()
 
-        return connect_mod, target_path_mode, handle_title, click_deviation, interval_seconds, loop_min, img_compress_val, match_method, run_mode, custom_target_path, if_end, debug_status
+        return connect_mod, target_path_mode, handle_title, click_deviation, interval_seconds, loop_min, img_compress_val, match_method, run_mode, custom_target_path, process_num, handle_num, if_end, debug_status
 
     # 运行(入口)
     def run(self):
@@ -295,10 +314,16 @@ class MatchingThread(PyQt5.QtCore.QThread):
         """
         # print("线程开始")
         info = self.get_ui_info()
-        if_end = info[10]
-        debug_status = info[11]
+
+        if info[0] == "Windows程序窗体" and info[11] == 0:  # 检测如果选择多开，是否已经获取句柄编号
+            print("请运行多个脚本，并点击【选择窗体】获取目标窗体的句柄编号！")
+            self.finished_signal.emit(True)
+            return
+
+        if_end = info[12]
+        debug_status = info[13]
         interval_seconds = int(info[4])
-        start_match = StartMatch(info[:10])
+        start_match = StartMatch(info[:12])
         print("初始化中…")
 
         # 对UI参数初始化，计算匹配的次数、导入需要检测的目标图片
@@ -341,6 +366,7 @@ class MatchingThread(PyQt5.QtCore.QThread):
             # 检测是否正常运行，否则终止
             if not run_status:
                 self.mutex.unlock()
+                self.finished_signal.emit(True)
                 break
 
             # 每匹配11次后，随机在窗口点击3次，防止点击太规律被识别为异常
@@ -355,6 +381,7 @@ class MatchingThread(PyQt5.QtCore.QThread):
                 print("---已执行完成!---")
                 self.end_do(if_end, info[2])
                 self.mutex.unlock()
+                self.finished_signal.emit(True)
                 break
             else:
                 # 倒推剩余时间（时分秒格式）
@@ -385,7 +412,7 @@ if __name__ == '__main__':
         sys.excepthook = except_out_config
         app = QApplication(sys.argv)
         myWindow = MainWindow()
-        myWindow.setWindowTitle('护肝小助手')  # 设置窗口标题
+        myWindow.setWindowTitle('痒痒鼠护肝小助手')  # 设置窗口标题
         myWindow.show()
         sys.exit(app.exec_())
     else:

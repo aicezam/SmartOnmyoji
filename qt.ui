@@ -286,7 +286,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>260</y>
+       <y>270</y>
        <width>194</width>
        <height>22</height>
       </rect>
@@ -334,7 +334,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>220</y>
+       <y>240</y>
        <width>190</width>
        <height>22</height>
       </rect>
@@ -382,7 +382,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>180</y>
+       <y>210</y>
        <width>212</width>
        <height>22</height>
       </rect>
@@ -430,7 +430,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>110</y>
+       <y>140</y>
        <width>154</width>
        <height>22</height>
       </rect>
@@ -502,45 +502,6 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>70</y>
-       <width>282</width>
-       <height>25</height>
-      </rect>
-     </property>
-     <layout class="QHBoxLayout" name="horizontalLayout_2">
-      <item>
-       <widget class="QLabel" name="label_2">
-        <property name="text">
-         <string>窗体名称：</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLineEdit" name="show_handle_title">
-        <property name="text">
-         <string>阴阳师-网易游戏</string>
-        </property>
-        <property name="placeholderText">
-         <string>请输入窗体标题或选择窗体</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="btn_select_handle">
-        <property name="cursor">
-         <cursorShape>PointingHandCursor</cursorShape>
-        </property>
-        <property name="text">
-         <string>选择窗体</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QWidget" name="layoutWidget">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
        <y>30</y>
        <width>282</width>
        <height>18</height>
@@ -583,7 +544,7 @@
      <property name="geometry">
       <rect>
        <x>80</x>
-       <y>140</y>
+       <y>170</y>
        <width>216</width>
        <height>25</height>
       </rect>
@@ -610,6 +571,99 @@
        </widget>
       </item>
      </layout>
+    </widget>
+    <widget class="QWidget" name="">
+     <property name="geometry">
+      <rect>
+       <x>11</x>
+       <y>70</y>
+       <width>168</width>
+       <height>18</height>
+      </rect>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>选择窗体：</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="process_num_one">
+        <property name="cursor">
+         <cursorShape>PointingHandCursor</cursorShape>
+        </property>
+        <property name="text">
+         <string>单开</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="process_num_more">
+        <property name="cursor">
+         <cursorShape>PointingHandCursor</cursorShape>
+        </property>
+        <property name="whatsThis">
+         <string/>
+        </property>
+        <property name="text">
+         <string>多开</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+    <widget class="QLineEdit" name="show_handle_num">
+     <property name="geometry">
+      <rect>
+       <x>80</x>
+       <y>100</y>
+       <width>133</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>0</string>
+     </property>
+     <property name="placeholderText">
+      <string>请输入窗体标题或选择窗体</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="show_handle_title">
+     <property name="geometry">
+      <rect>
+       <x>81</x>
+       <y>100</y>
+       <width>131</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>阴阳师-网易游戏</string>
+     </property>
+     <property name="placeholderText">
+      <string>请输入窗体标题或选择窗体</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btn_select_handle">
+     <property name="geometry">
+      <rect>
+       <x>220</x>
+       <y>100</y>
+       <width>75</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="cursor">
+      <cursorShape>PointingHandCursor</cursorShape>
+     </property>
+     <property name="text">
+      <string>选择窗体</string>
+     </property>
     </widget>
    </widget>
    <widget class="QWidget" name="layoutWidget">
@@ -836,6 +890,134 @@
     <hint type="destinationlabel">
      <x>307</x>
      <y>101</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>process_num_more</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>show_handle_num</receiver>
+   <slot>show()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>164</x>
+     <y>98</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>156</x>
+     <y>129</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>process_num_more</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>show_handle_title</receiver>
+   <slot>hide()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>164</x>
+     <y>98</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>156</x>
+     <y>129</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>process_num_one</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>show_handle_num</receiver>
+   <slot>hide()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>111</x>
+     <y>98</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>156</x>
+     <y>129</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>process_num_one</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>show_handle_title</receiver>
+   <slot>show()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>111</x>
+     <y>98</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>156</x>
+     <y>129</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>rd_btn_android_adb</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>process_num_more</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>253</x>
+     <y>58</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>164</x>
+     <y>98</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>rd_btn_android_adb</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>process_num_one</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>253</x>
+     <y>58</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>111</x>
+     <y>98</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>rd_btn_windows_mod</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>process_num_more</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>143</x>
+     <y>58</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>164</x>
+     <y>98</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>rd_btn_windows_mod</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>process_num_one</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>143</x>
+     <y>58</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>111</x>
+     <y>98</y>
     </hint>
    </hints>
   </connection>

@@ -30,27 +30,27 @@ def get_active_window(loop_times=5):
     :param loop_times: 倒计时/循环次数
     :return: 窗体标题名称
     """
-    hand_win = ""
+    hand_num = ""
     hand_win_title = ""
     for t in range(loop_times):
         print(f'请在倒计时 [ {loop_times} ] 秒结束前，点击目标窗口')
         loop_times -= 1
-        hand_win = GetForegroundWindow()
-        hand_win_title = GetWindowText(hand_win)
-        print(f"目标窗口： [ {hand_win_title} ] [ {hand_win} ] ")
+        hand_num = GetForegroundWindow()
+        hand_win_title = GetWindowText(hand_num)
+        print(f"目标窗口： [ {hand_win_title} ] [ {hand_num} ] ")
         sleep(1)  # 每1s输出一次
-    left, top, right, bottom = GetWindowRect(hand_win)
+    left, top, right, bottom = GetWindowRect(hand_num)
     print("-----------------------------------------------------------")
     print(f"目标窗口: [ {hand_win_title} ] 窗口大小：[ {right - left} X {bottom - top} ]")
     print("-----------------------------------------------------------")
-    return hand_win_title
+    return hand_win_title, hand_num
 
 
 class StartMatch:
 
     def __init__(self, gui_info):
         super(StartMatch, self).__init__()
-        self.connect_mod, self.target_modname, self.hwd_title, self.click_deviation, self.interval_seconds, self.loop_min, self.compress_val, self.match_method, self.scr_and_click_method, self.custom_target_path = gui_info
+        self.connect_mod, self.target_modname, self.hwd_title, self.click_deviation, self.interval_seconds, self.loop_min, self.compress_val, self.match_method, self.scr_and_click_method, self.custom_target_path, self.process_num, self.handle_num = gui_info
 
     def set_init(self):
         """
@@ -81,7 +81,7 @@ class StartMatch:
         # 句柄操作（获取句柄编号、设置优先级、检测程序是否运行）
         screen_method = GetScreenCapture()
         if connect_mod == 'Windows程序窗体':
-            handle_set = HandleSet(self.hwd_title)
+            handle_set = HandleSet(self.hwd_title, self.handle_num)
             handle_num = handle_set.get_handle_num
             handle_width = handle_set.get_handle_pos[2] - handle_set.get_handle_pos[0]  # 右x - 左x 计算宽度
             handle_height = handle_set.get_handle_pos[3] - handle_set.get_handle_pos[1]  # 下y - 上y 计算高度
@@ -126,7 +126,7 @@ class StartMatch:
         print('正在截图…')
         screen_img = None
         if connect_mod == 'Windows程序窗体':
-            handle_set = HandleSet(self.hwd_title)
+            handle_set = HandleSet(self.hwd_title, self.handle_num)
             if not handle_set.handle_is_active():
                 run_status = False
                 return run_status, match_status
@@ -197,7 +197,7 @@ class StartMatch:
 
             # 开始点击
             if connect_mod == 'Windows程序窗体':
-                handle_set = HandleSet(self.hwd_title)
+                handle_set = HandleSet(self.hwd_title, self.handle_num)
                 handle_set.handle_is_active()
                 handle_num = handle_set.get_handle_num
                 doclick = DoClick(pos, click_deviation, handle_num)
@@ -225,7 +225,7 @@ class StartMatch:
         """模拟真实点击：屏幕随机点击多次"""
 
         if self.connect_mod == 'Windows程序窗体':
-            handle_set = HandleSet(self.hwd_title)
+            handle_set = HandleSet(self.hwd_title, self.handle_num)
             handle_width = handle_set.get_handle_pos[2] - handle_set.get_handle_pos[0]  # 右x - 左x 计算宽度
             handle_height = handle_set.get_handle_pos[3] - handle_set.get_handle_pos[1]  # 下y - 上y 计算高度
             pos = [int(handle_width/2), int(handle_height/2)]
