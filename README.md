@@ -29,7 +29,7 @@
 
 - UI界面、可配置参数：可修改执行时间、间隔时间、匹配方式、压缩率、执行完成后的操作等
 
-![image](https://user-images.githubusercontent.com/39365915/160885083-5ffc81ad-7779-4a16-a82b-c0cf4426122b.png)
+![image](https://user-images.githubusercontent.com/39365915/165800269-7ed503ed-8f05-4853-bb32-91486d705694.png)
 
 
 
