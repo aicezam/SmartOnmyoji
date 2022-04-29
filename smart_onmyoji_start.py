@@ -37,6 +37,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.run_log.setReadOnly(True)
         self.click_deviation.setValue(35)  # 设置默认偏移量
         self.select_targetpic_path_btn.hide()
+        # self.show_handle_num.setEnabled(False)
         self.setWindowIcon(QIcon('img/logo.ico'))
 
         # 绑定信号
@@ -201,11 +202,15 @@ class GetActiveWindowThread(PyQt5.QtCore.QThread):
         self.ui_info = main_window_ui
 
     def run(self):
-        hand_title, hand_num = get_active_window()
+        hand_title, hand_num = get_active_window()  # 鼠标点击获取句柄编号和标题
         if self.ui_info.process_num_one.isChecked():
-            self.active_window_signal.emit(hand_title)
+            self.active_window_signal.emit(hand_title)  # 单开获取标题
         else:
-            self.active_window_signal.emit(str(hand_num))
+            if self.ui_info.show_handle_num.text() == '0':
+                hand_num = str(hand_num)  # 获取的句柄编号拼接到UI中
+            else:
+                hand_num = self.ui_info.show_handle_num.text() + ',' + str(hand_num)  # 新获取的编号拼接到UI中
+            self.active_window_signal.emit(str(hand_num))  # 多开获取多个编号
 
 
 class MatchingThread(PyQt5.QtCore.QThread):
@@ -281,13 +286,13 @@ class MatchingThread(PyQt5.QtCore.QThread):
         target_path_mode = str(self.ui_info.select_target_path_mode_combobox.currentText())  # 待匹配模板图片所在文件夹
         process_num = None  # 游戏单开还是多开
         handle_title = None  # 待匹配窗体标题名称
-        handle_num = None  # 待匹配窗体句柄编号
+        handle_num = 0  # 待匹配窗体句柄编号
         if self.ui_info.process_num_one.isChecked():
             process_num = self.ui_info.process_num_one.text()
             handle_title = str(self.ui_info.show_handle_title.text())  # 待匹配窗体标题名称
         elif self.ui_info.process_num_more.isChecked():
             process_num = self.ui_info.process_num_more.text()
-            handle_num = int(self.ui_info.show_handle_num.text())  # 待匹配窗体句柄编号
+            handle_num = self.ui_info.show_handle_num.text()  # 待匹配窗体句柄编号
         img_compress_val = int(self.ui_info.image_compression.value()) / 100  # 图片压缩率
         match_method = None  # 匹配方法，模板匹配或特征点匹配
         if self.ui_info.template_matching.isChecked():
@@ -315,8 +320,9 @@ class MatchingThread(PyQt5.QtCore.QThread):
         # print("线程开始")
         info = self.get_ui_info()
 
-        if info[0] == "Windows程序窗体" and info[11] == 0:  # 检测如果选择多开，是否已经获取句柄编号
-            print("请运行多个脚本，并点击【选择窗体】获取目标窗体的句柄编号！")
+        if info[0] == "Windows程序窗体" and info[10] == "多开" and info[11] == '0':  # 检测如果选择多开，是否已经获取句柄编号
+            # 多开使用循环，每个循环针对一个窗口
+            print("请运行多个脚本，并点击【选择窗体】获取目标窗体的句柄编号，支持选择多个游戏窗口！")
             self.finished_signal.emit(True)
             return
 
@@ -327,7 +333,7 @@ class MatchingThread(PyQt5.QtCore.QThread):
         print("初始化中…")
 
         # 对UI参数初始化，计算匹配的次数、导入需要检测的目标图片
-        loop_times, screen_method, target_info, t1 = start_match.set_init()
+        loop_times, target_info, t1 = start_match.set_init()
 
         # 检测游戏时间是否太晚，进行提示
         start_match.time_warming()
@@ -351,8 +357,7 @@ class MatchingThread(PyQt5.QtCore.QThread):
             # 下面是Qthread中的循环匹配代码--------------
 
             # 开始匹配
-            run_status, match_status = start_match.start_match_click(i, loop_times, screen_method, target_info,
-                                                                     debug_status)
+            run_status, match_status = start_match.start_match_click(i, loop_times, target_info, debug_status)
 
             # 计算匹配成功的次数,每成功匹配100次，休息2分钟，避免异常
             if match_status:
@@ -368,13 +373,6 @@ class MatchingThread(PyQt5.QtCore.QThread):
                 self.mutex.unlock()
                 self.finished_signal.emit(True)
                 break
-
-            # 每匹配11次后，随机在窗口点击3次，防止点击太规律被识别为异常
-            # if (i + 1) % 11 == 0:
-            #     print("----------------每循环11次后模拟真实点击-----------------")
-            #     start_match.simulates_real_clicks()
-            #     start_match.simulates_real_clicks()
-            #     start_match.simulates_real_clicks()
 
             # 判断是否结束
             if i == loop_times - 1:

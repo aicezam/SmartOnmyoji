@@ -3,6 +3,7 @@ from os import system
 from os.path import abspath, dirname
 from time import sleep
 from random import randint
+import win32com.client
 from win32gui import SetForegroundWindow, GetWindowRect
 from win32api import MAKELONG, SendMessage
 from win32con import WM_LBUTTONUP, MK_LBUTTON, WM_LBUTTONDOWN
@@ -77,6 +78,8 @@ class DoClick:
         jy = cy + y1
 
         # 把窗口置顶，并进行点击
+        shell = win32com.client.Dispatch("WScript.Shell")
+        shell.SendKeys('%')
         SetForegroundWindow(handle_num)
         sleep(0.2)  # 置顶后等0.2秒再点击
         now_pos = position()

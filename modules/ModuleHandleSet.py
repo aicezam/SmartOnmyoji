@@ -9,7 +9,7 @@ from subprocess import Popen, PIPE
 
 
 class HandleSet:
-    def __init__(self, handle_title, handle_num):
+    def __init__(self, handle_title, handle_num=0):
         super(HandleSet, self).__init__()
         self.handle_pos = None
         self.handle_title = handle_title
@@ -19,7 +19,7 @@ class HandleSet:
     @property
     def get_handle_num(self):
         """通过句柄标题获取句柄编号"""
-        if self.handle_num is not None:
+        if self.handle_num != 0:
             return self.handle_num
         else:
             self.handle_num = FindWindow(None, self.handle_title)  # 搜索句柄标题，获取句柄编号

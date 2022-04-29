@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
+import random
 from gc import collect
 from time import sleep, localtime, strftime
-from win32gui import GetWindowText, GetWindowRect, GetForegroundWindow
+
+import win32com.client
+from win32gui import GetWindowText, GetWindowRect, GetForegroundWindow, SetForegroundWindow
 from modules.ModuleGetTargetInfo import GetTargetPicInfo
 from modules.ModuleGetScreenCapture import GetScreenCapture
 from modules.ModuleHandleSet import HandleSet
@@ -58,8 +61,11 @@ class StartMatch:
         # 参数初始化
         target_modname = self.target_modname
         custom_target_path = self.custom_target_path
+        connect_mod = self.connect_mod
         interval_seconds = self.interval_seconds
         loop_min = self.loop_min
+        scr_and_click_method = self.scr_and_click_method
+        handle_num = str(self.handle_num).split(",")
         # 获取待检测目标图片信息
         print('目标图片读取中……')
         target_info = GetTargetPicInfo(target_modname, custom_target_path,
@@ -73,33 +79,61 @@ class StartMatch:
         interval_seconds = int(interval_seconds)  # 初始化间隔秒数
         loop_times = int(loop_min * (60 / (interval_seconds + t1)))  # 计算要一共要执行的次数
 
-        return loop_times, target_info, t1
+        # 句柄操作（获取句柄编号、设置优先级、检测程序是否运行）
+        screen_method = GetScreenCapture()
+        if connect_mod == 'Windows程序窗体':
+            if len(handle_num) == 1:  # 如果只获取到一个窗口句柄
+                handle_num = int(handle_num[0])
+                handle_set = HandleSet(self.hwd_title, handle_num)
+                handle_num = handle_set.get_handle_num
+                handle_width = handle_set.get_handle_pos[2] - handle_set.get_handle_pos[0]  # 右x - 左x 计算宽度
+                handle_height = handle_set.get_handle_pos[3] - handle_set.get_handle_pos[1]  # 下y - 上y 计算高度
+                # 设置目标程序优先级，避免程序闪退（痒痒鼠在我电脑总是闪退，设置优先级后就不闪退了），若需要可以打开，脚本打包成exe可执行程序运行时，会报错，不知道什么原因
+                # self.handle_set.set_priority(4)
+                screen_method = GetScreenCapture(handle_num, handle_width, handle_height)
 
-    def matching(self, connect_mod, handle_num, scr_and_click_method, screen_method, debug_status, match_method,
-                 compress_val, target_info, click_deviation, run_status, match_status):
-        """
-        核心代码~
-        :param connect_mod: 运行方式，windows或安卓
-        :param handle_num: windows句柄编号
-        :param scr_and_click_method: 是否兼容模式运行，两种方法不同
-        :param screen_method: 截图方法
-        :param debug_status: 是否启用调试模式
-        :param match_method: 匹配方法、模板匹配、特征点匹配
-        :param compress_val: 压缩参数，越高越不压缩
-        :param target_info: 匹配目标图片
-        :param click_deviation: 点击偏移量
-        :param run_status: 运行状态
-        :param match_status: 匹配状态
-        :return: 运行状态、匹配状态
-        """
+                # 通过pywin32模块下的SetForegroundWindow函数调用时，会出现
+                # error: (0, 'SetForegroundWindow', 'No error message is available')报错，为pywin32模块下的一个小bug，
+                # 在该函数调用前，需要先发送一个其他键给屏幕
+                if scr_and_click_method == '兼容模式':
+                    shell = win32com.client.Dispatch("WScript.Shell")
+                    shell.SendKeys('%')
+                    SetForegroundWindow(handle_num)  # 窗口置顶
+                    sleep(0.2)
+            else:
+                print("暂不支持一次选择多个窗口！")
+                return False
 
+        # 检测安卓设备是否正常连接
+        elif connect_mod == 'Android-Adb':
+            adb_device_connect_status, device_id = HandleSet.adb_device_status()
+            if adb_device_connect_status:
+                print(f'已连接设备[ {device_id} ]')
+            else:
+                print(device_id)
+                return False
+        return loop_times, screen_method, target_info, t1
+
+    def start_match_click(self, i, loop_times, screen_method, target_info, debug_status):
+        match_status = False
+        run_status = True
+        connect_mod = self.connect_mod
+        scr_and_click_method = self.scr_and_click_method
+        match_method = self.match_method
+        compress_val = float(self.compress_val)
+        click_deviation = int(self.click_deviation)
         target_img_sift, target_img_hw, target_img_name, target_img_file_path, target_img = target_info
+
+        # 计算进度
+        now_time = strftime("%Y-%m-%d %H:%M:%S", localtime())
+        progress = format((i + 1) / loop_times, '.2%')
+        print(f"第 [ {i + 1} ] 次匹配, 还剩 [ {loop_times - i - 1} ] 次 \n当前进度 [ {progress} ] \n当前时间 [ {now_time} ]")
 
         # 获取截图
         print('正在截图…')
         screen_img = None
         if connect_mod == 'Windows程序窗体':
-            handle_set = HandleSet(self.hwd_title, handle_num)
+            handle_set = HandleSet(self.hwd_title, self.handle_num)
             if not handle_set.handle_is_active():
                 run_status = False
                 return run_status, match_status
@@ -170,7 +204,7 @@ class StartMatch:
 
             # 开始点击
             if connect_mod == 'Windows程序窗体':
-                handle_set = HandleSet(self.hwd_title, handle_num)
+                handle_set = HandleSet(self.hwd_title, self.handle_num)
                 handle_set.handle_is_active()
                 handle_num = handle_set.get_handle_num
                 doclick = DoClick(pos, click_deviation, handle_num)
@@ -194,69 +228,27 @@ class StartMatch:
         collect()  # 清理内存
         return run_status, match_status
 
-    def start_match_click(self, i, loop_times, target_info, debug_status):
-        """不同场景下的匹配方式"""
-        match_status = False
-        run_status = True
-        connect_mod = self.connect_mod
-        scr_and_click_method = self.scr_and_click_method
-        match_method = self.match_method
-        compress_val = float(self.compress_val)
-        click_deviation = int(self.click_deviation)
-        handle_num_list = str(self.handle_num).split(",")
+    def simulates_real_clicks(self):
+        """模拟真实点击：屏幕随机点击多次"""
 
-        # 计算进度
-        now_time = strftime("%Y-%m-%d %H:%M:%S", localtime())
-        progress = format((i + 1) / loop_times, '.2%')
-        print(f"第 [ {i + 1} ] 次匹配, 还剩 [ {loop_times - i - 1} ] 次 \n当前进度 [ {progress} ] \n当前时间 [ {now_time} ]")
-
-        # 多开场景下，针对每个窗口进行截图、匹配、点击
-        if self.process_num == '多开' and connect_mod == 'Windows程序窗体':
-            for handle_num_loop in range(len(handle_num_list)):
-                handle_num = int(handle_num_list[handle_num_loop])
-                print("--------------------------------------------")
-                print(f"正在匹配 [{GetWindowText(handle_num)}] [{handle_num}]")
-                handle_set = HandleSet(self.hwd_title, handle_num)
-                handle_width = handle_set.get_handle_pos[2] - handle_set.get_handle_pos[0]  # 右x - 左x 计算宽度
-                handle_height = handle_set.get_handle_pos[3] - handle_set.get_handle_pos[1]  # 下y - 上y 计算高度
-                screen_method = GetScreenCapture(handle_num, handle_width, handle_height)
-                run_status, match_status = self.matching(connect_mod, handle_num, scr_and_click_method, screen_method,
-                                                         debug_status, match_method,
-                                                         compress_val, target_info, click_deviation, run_status,
-                                                         match_status)
-
-        # 单开场景下，通过标题找到窗口句柄
-        elif self.process_num == '单开' and connect_mod == 'Windows程序窗体':
-            handle_set = HandleSet(self.hwd_title)
+        if self.connect_mod == 'Windows程序窗体':
+            handle_set = HandleSet(self.hwd_title, self.handle_num)
             handle_width = handle_set.get_handle_pos[2] - handle_set.get_handle_pos[0]  # 右x - 左x 计算宽度
             handle_height = handle_set.get_handle_pos[3] - handle_set.get_handle_pos[1]  # 下y - 上y 计算高度
-            handle_num = handle_set.get_handle_num
-            screen_method = GetScreenCapture(handle_num, handle_width, handle_height)
-            run_status, match_status = self.matching(connect_mod, handle_num, scr_and_click_method, screen_method,
-                                                     debug_status, match_method,
-                                                     compress_val, target_info, click_deviation, run_status,
-                                                     match_status)
+            pos = [int(handle_width / 2), int(handle_height / 2)]
+            real_clicks = DoClick(pos, 200, handle_set.get_handle_num)
+            if self.scr_and_click_method == '正常-可后台':
+                real_clicks.windows_click()
+            elif self.scr_and_click_method == '兼容-不可后台':
+                real_clicks.windows_click_bk()
 
-        # adb模式下，仅支持单开
-        # elif connect_mod == 'Android-Adb':
-        else:
-            adb_device_connect_status, device_id = HandleSet.adb_device_status()
-            if adb_device_connect_status:
-                print(f'已连接设备[ {device_id} ]')
-                screen_method = GetScreenCapture()
-                run_status, match_status = self.matching(connect_mod, 0, scr_and_click_method, screen_method, debug_status,
-                                                         match_method,
-                                                         compress_val, target_info, click_deviation, run_status,
-                                                         match_status)
-            else:
-                print(device_id)
-                run_status = False
-                return run_status, match_status
-
-        del target_info, screen_method, connect_mod, scr_and_click_method, match_method, compress_val, click_deviation, handle_num_list  # 删除变量
-        collect()  # 清理内存
-
-        return run_status, match_status
+        elif self.connect_mod == 'Android-手机':
+            pos = [random.randint(400, 500), random.randint(400, 500)]
+            real_clicks = DoClick(pos, 200)
+            real_clicks.adb_click()
+        yc = random.uniform(0.2, 0.8)
+        # print(f'{round(yc,2)}秒后继续')
+        sleep(yc)  # 延迟
 
     @staticmethod
     def time_warming():
