@@ -9,7 +9,7 @@ from subprocess import Popen, PIPE
 
 
 class HandleSet:
-    def __init__(self, handle_title, handle_num=0):
+    def __init__(self, handle_title, handle_num):
         super(HandleSet, self).__init__()
         self.handle_pos = None
         self.handle_title = handle_title
@@ -19,7 +19,7 @@ class HandleSet:
     @property
     def get_handle_num(self):
         """通过句柄标题获取句柄编号"""
-        if self.handle_num != 0:
+        if self.handle_num != 0 or self.handle_title == '':
             return self.handle_num
         else:
             self.handle_num = FindWindow(None, self.handle_title)  # 搜索句柄标题，获取句柄编号
@@ -27,7 +27,6 @@ class HandleSet:
                 self.handle_num = FindWindowEx(self.handle_num, 0, None, "TheRender")  # 兼容雷电模拟器后台点击
             else:
                 if self.handle_num == 0:
-                    print("目标程序未启动,即将中止！")
                     return None  # 返回异常
                 else:
                     return self.handle_num
@@ -48,11 +47,8 @@ class HandleSet:
     @property
     def get_handle_pid(self):
         """通过句柄标题获取句柄进程id"""
-        if self.get_handle_num is None:
-            return None
-        else:
-            self.handle_pid = GetWindowThreadProcessId(self.get_handle_num)  # 获取进程Pid
-            return self.handle_pid[1]
+        self.handle_pid = GetWindowThreadProcessId(self.get_handle_num)  # 获取进程Pid
+        return self.handle_pid[1]
 
     @property
     def get_handle_pos(self):
@@ -66,13 +62,18 @@ class HandleSet:
             self.handle_pos = GetWindowRect(self.get_handle_num)
             return self.handle_pos
 
-    def handle_is_active(self):
+    def handle_is_active(self, process_num):
         """检测句柄是否停止"""
-        if self.get_handle_num is None:
-            print("目标窗体未运行！")
-            return False
-        else:
-            return True
+        if self.handle_num != 0 and process_num == '多开':  # 多开时，通过编号找标题是否存在
+            if self.get_handle_title(self.handle_num) == '':
+                return False
+            else:
+                return True
+        elif self.handle_title != '' and process_num == '单开':  # 单开时，通过标题找编号是否存在
+            if self.get_handle_num is None:
+                return False
+            else:
+                return True
 
     def set_priority(self, priority=4):
         """
@@ -86,32 +87,27 @@ class HandleSet:
                             ABOVE_NORMAL_PRIORITY_CLASS,
                             HIGH_PRIORITY_CLASS,
                             REALTIME_PRIORITY_CLASS]
-        if pid is None:
-            # pid = win32api.GetCurrentProcessId()  # 获取当前进程pid
-            print("进程pid查找失败,即将中止！")
-            # exit(0)  # 脚本结束
-            return None
-        else:
-            # print(pid)
-            handle = OpenProcess(PROCESS_ALL_ACCESS, True, pid)
-            SetPriorityClass(handle, priority_classes[priority])
 
-            handle_title = self.handle_title
-            priority_name = None
-            if priority == 0:
-                priority_name = "最低"
-            if priority == 1:
-                priority_name = "低于正常"
-            if priority == 2:
-                priority_name = "正常"
-            if priority == 3:
-                priority_name = "高于正常"
-            if priority == 4:
-                priority_name = "高"
-            if priority == 5:
-                priority_name = "最高"
-            print(f"已设置进程 [{handle_title}] 的优先级为 [{priority_name}] ")
-            print("-----------------------------")
+        # print(pid)
+        handle = OpenProcess(PROCESS_ALL_ACCESS, True, pid)
+        SetPriorityClass(handle, priority_classes[priority])
+
+        handle_title = self.get_handle_title(self.get_handle_num)
+        priority_name = None
+        if priority == 0:
+            priority_name = "最低"
+        if priority == 1:
+            priority_name = "低于正常"
+        if priority == 2:
+            priority_name = "正常"
+        if priority == 3:
+            priority_name = "高于正常"
+        if priority == 4:
+            priority_name = "高"
+        if priority == 5:
+            priority_name = "最高"
+        print(f"已设置进程 [{handle_title} {self.handle_num}] 的优先级为 [{priority_name}] ")
+        print("-----------------------------")
 
     @staticmethod
     def deal_cmd(cmd):

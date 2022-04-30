@@ -40,6 +40,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # self.show_handle_num.setEnabled(False)
         self.image_compression.setSliderPosition(100)  # 压缩截图默认值
         self.setWindowIcon(QIcon('img/logo.ico'))
+        self.run_log.setText("\n\n git仓库：\n\n https://github.com/aicezam/SmartOnmyoji")
 
         # 绑定信号
         self.btn_start.clicked.connect(self.__on_clicked_btn_begin)
@@ -179,6 +180,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.process_num_one.setEnabled(bool_val)
         self.process_num_more.setEnabled(bool_val)
         self.show_handle_num.setEnabled(bool_val)
+        self.set_priority.setEnabled(bool_val)
 
 
 class EmitStr(PyQt5.QtCore.QObject):
@@ -310,8 +312,9 @@ class MatchingThread(PyQt5.QtCore.QThread):
         custom_target_path = None
         if self.ui_info.select_target_path_mode_combobox.currentText() == '自定义':
             custom_target_path = self.ui_info.show_target_path.text()
+        set_priority_status = self.ui_info.set_priority.isChecked()  # 是否启用调试
 
-        return connect_mod, target_path_mode, handle_title, click_deviation, interval_seconds, loop_min, img_compress_val, match_method, run_mode, custom_target_path, process_num, handle_num, if_end, debug_status
+        return connect_mod, target_path_mode, handle_title, click_deviation, interval_seconds, loop_min, img_compress_val, match_method, run_mode, custom_target_path, process_num, handle_num, if_end, debug_status, set_priority_status
 
     # 运行(入口)
     def run(self):
@@ -329,12 +332,18 @@ class MatchingThread(PyQt5.QtCore.QThread):
 
         if_end = info[12]
         debug_status = info[13]
+        set_priority_status = info[14]
         interval_seconds = int(info[4])
         start_match = StartMatch(info[:12])
         print("初始化中…")
 
         # 对UI参数初始化，计算匹配的次数、导入需要检测的目标图片
-        loop_times, target_info, t1 = start_match.set_init()
+        init_value = start_match.set_init(set_priority_status)
+        if init_value is None:
+            self.finished_signal.emit(True)
+            return
+        else:
+            loop_times, target_info, t1 = init_value
 
         # 检测游戏时间是否太晚，进行提示
         start_match.time_warming()

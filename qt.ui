@@ -224,12 +224,12 @@
       </item>
      </layout>
     </widget>
-    <widget class="QWidget" name="layoutWidget">
+    <widget class="QWidget" name="">
      <property name="geometry">
       <rect>
-       <x>11</x>
+       <x>12</x>
        <y>190</y>
-       <width>139</width>
+       <width>240</width>
        <height>18</height>
       </rect>
      </property>
@@ -237,7 +237,7 @@
       <item>
        <widget class="QLabel" name="label_11">
         <property name="text">
-         <string>调试模式：</string>
+         <string>其他设置：</string>
         </property>
        </widget>
       </item>
@@ -248,6 +248,16 @@
         </property>
         <property name="text">
          <string>开启调试</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="set_priority">
+        <property name="cursor">
+         <cursorShape>PointingHandCursor</cursorShape>
+        </property>
+        <property name="text">
+         <string>桌面版防闪退</string>
         </property>
        </widget>
       </item>
@@ -572,7 +582,7 @@
       </item>
      </layout>
     </widget>
-    <widget class="QWidget" name="">
+    <widget class="QWidget" name="layoutWidget">
      <property name="geometry">
       <rect>
        <x>11</x>

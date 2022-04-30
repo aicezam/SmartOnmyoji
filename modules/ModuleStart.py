@@ -50,7 +50,7 @@ class StartMatch:
         super(StartMatch, self).__init__()
         self.connect_mod, self.target_modname, self.hwd_title, self.click_deviation, self.interval_seconds, self.loop_min, self.compress_val, self.match_method, self.scr_and_click_method, self.custom_target_path, self.process_num, self.handle_num = gui_info
 
-    def set_init(self):
+    def set_init(self, set_priority_status):
         """
         获取待匹配的目标图片信息、计算循环次数、时间、截图方法
         :return: 循环次数、截图方法、图片信息、每次循环大约需要执行的时间
@@ -64,14 +64,37 @@ class StartMatch:
         print('目标图片读取中……')
         target_info = GetTargetPicInfo(target_modname, custom_target_path,
                                        compress_val=1).get_target_info  # 目标图片不压缩（本身就小）
+        if target_info is None:
+            return None
+
         target_img_sift, target_img_hw, target_img_name, target_img_file_path, target_img = target_info
+
         print(f'读取完成！共[ {len(target_img)} ]张图片\n{target_img_name}')
+        print("--------------------------------------------")
 
         # 计算循环次数、时间
         t1 = len(target_img) / 30  # 每次循环匹配找图需要消耗的时间, 脚本每次匹配一般平均需要2.5秒（30个匹配目标）
         loop_min = int(loop_min)  # 初始化执行时间，因为不能使用字符串，所以要转一下
         interval_seconds = int(interval_seconds)  # 初始化间隔秒数
         loop_times = int(loop_min * (60 / (interval_seconds + t1)))  # 计算要一共要执行的次数
+
+        # 设置游戏进程优先级，避免闪退（部分电脑可能有bug，会报错）
+        if set_priority_status:
+            if self.process_num == '多开' and self.connect_mod == 'Windows程序窗体':
+                handle_num_list = str(self.handle_num).split(",")
+                for handle_num_loop in range(len(handle_num_list)):
+                    handle_num = int(handle_num_list[handle_num_loop])
+                    handle_set = HandleSet(self.hwd_title, handle_num)
+                    if not handle_set.handle_is_active(self.process_num):
+                        print("待匹配目标程序窗口异常终止！")
+                        return None
+                    handle_set.set_priority(4)
+            elif self.process_num == '单开' and self.connect_mod == 'Windows程序窗体':
+                handle_set = HandleSet(self.hwd_title, self.handle_num)
+                if not handle_set.handle_is_active(self.process_num):
+                    print("待匹配目标程序窗口异常终止！")
+                    return None
+                handle_set.set_priority(4)
 
         return loop_times, target_info, t1
 
@@ -99,10 +122,6 @@ class StartMatch:
         print('正在截图…')
         screen_img = None
         if connect_mod == 'Windows程序窗体':
-            handle_set = HandleSet(self.hwd_title, handle_num)
-            if not handle_set.handle_is_active():
-                run_status = False
-                return run_status, match_status
             # 如果部分窗口不能点击、截图出来是黑屏，可以使用兼容模式
             if scr_and_click_method == '正常-可后台':
                 screen_img = screen_method.window_screen()
@@ -171,7 +190,6 @@ class StartMatch:
             # 开始点击
             if connect_mod == 'Windows程序窗体':
                 handle_set = HandleSet(self.hwd_title, handle_num)
-                handle_set.handle_is_active()
                 handle_num = handle_set.get_handle_num
                 doclick = DoClick(pos, click_deviation, handle_num)
 
@@ -217,17 +235,26 @@ class StartMatch:
                 print("--------------------------------------------")
                 print(f"正在匹配 [{GetWindowText(handle_num)}] [{handle_num}]")
                 handle_set = HandleSet(self.hwd_title, handle_num)
+                if not handle_set.handle_is_active(self.process_num):
+                    print("待匹配目标程序窗口异常终止！")
+                    run_status = False
+                    return run_status, match_status
                 handle_width = handle_set.get_handle_pos[2] - handle_set.get_handle_pos[0]  # 右x - 左x 计算宽度
                 handle_height = handle_set.get_handle_pos[3] - handle_set.get_handle_pos[1]  # 下y - 上y 计算高度
                 screen_method = GetScreenCapture(handle_num, handle_width, handle_height)
-                run_status, match_status = self.matching(connect_mod, handle_num, scr_and_click_method, screen_method,
+                run_status, match_status = self.matching(connect_mod, handle_num, scr_and_click_method,
+                                                         screen_method,
                                                          debug_status, match_method,
                                                          compress_val, target_info, click_deviation, run_status,
                                                          match_status)
 
         # 单开场景下，通过标题找到窗口句柄
         elif self.process_num == '单开' and connect_mod == 'Windows程序窗体':
-            handle_set = HandleSet(self.hwd_title)
+            handle_set = HandleSet(self.hwd_title, self.handle_num)
+            if not handle_set.handle_is_active(self.process_num):
+                print("待匹配目标程序窗口异常终止！")
+                run_status = False
+                return run_status, match_status
             handle_width = handle_set.get_handle_pos[2] - handle_set.get_handle_pos[0]  # 右x - 左x 计算宽度
             handle_height = handle_set.get_handle_pos[3] - handle_set.get_handle_pos[1]  # 下y - 上y 计算高度
             handle_num = handle_set.get_handle_num
