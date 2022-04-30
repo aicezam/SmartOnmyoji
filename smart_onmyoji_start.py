@@ -38,6 +38,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.click_deviation.setValue(35)  # 设置默认偏移量
         self.select_targetpic_path_btn.hide()
         # self.show_handle_num.setEnabled(False)
+        self.image_compression.setSliderPosition(100)  # 压缩截图默认值
         self.setWindowIcon(QIcon('img/logo.ico'))
 
         # 绑定信号
@@ -322,7 +323,7 @@ class MatchingThread(PyQt5.QtCore.QThread):
 
         if info[0] == "Windows程序窗体" and info[10] == "多开" and info[11] == '0':  # 检测如果选择多开，是否已经获取句柄编号
             # 多开使用循环，每个循环针对一个窗口
-            print("请运行多个脚本，并点击【选择窗体】获取目标窗体的句柄编号，支持选择多个游戏窗口！")
+            print("请点击【选择窗体】获取目标窗体的句柄编号，支持选择多个游戏窗口！")
             self.finished_signal.emit(True)
             return
 

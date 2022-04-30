@@ -81,7 +81,7 @@ class GetScreenCapture:
 
     @staticmethod
     def adb_screen():
-        """安卓手机adb截图"""r'\adb.exe shell input tap {0} {1}'
+        """安卓手机adb截图"""
         # commend = Popen("adb shell screencap -p",stdin=PIPE,stdout=PIPE,shell=True)  # 截图
         commend = Popen(abspath(dirname(__file__)) + r'\adb shell screencap -p',
                         stdin=PIPE,

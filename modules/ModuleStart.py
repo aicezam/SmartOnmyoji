@@ -120,7 +120,7 @@ class StartMatch:
                 return run_status, match_status
 
         if debug_status:
-            ImgProcess.show_img(screen_img)  # test显示截图
+            ImgProcess.show_img(screen_img)  # test显示压缩后截图
 
         # 开始匹配
         print("正在匹配…")
@@ -132,7 +132,7 @@ class StartMatch:
         if match_method == '模板匹配':
             if compress_val != 1:  # 压缩图片，模板和截图必须一起压缩
                 screen_img = ImgProcess.img_compress(screen_img, compress_val)
-                if debug_status:
+                if debug_status and compress_val != 1:
                     ImgProcess.show_img(screen_img)  # test显示压缩后截图
                 target_img_tm = []
                 for k in range(len(target_img)):
@@ -146,7 +146,7 @@ class StartMatch:
         elif match_method == '特征点匹配':
             if compress_val != 1:  # 压缩图片，特征点匹配方法，只压缩截图
                 screen_img = ImgProcess.img_compress(screen_img, compress_val)
-                if debug_status:
+                if debug_status and compress_val != 1:
                     ImgProcess.show_img(screen_img)  # test显示压缩后截图
             screen_sift = ImgProcess.get_sift(screen_img)  # 获取截图的特征点
 
@@ -210,7 +210,7 @@ class StartMatch:
         progress = format((i + 1) / loop_times, '.2%')
         print(f"第 [ {i + 1} ] 次匹配, 还剩 [ {loop_times - i - 1} ] 次 \n当前进度 [ {progress} ] \n当前时间 [ {now_time} ]")
 
-        # 多开场景下，针对每个窗口进行截图、匹配、点击
+        # 多开场景下，针对每个窗口遍历：截图、匹配、点击
         if self.process_num == '多开' and connect_mod == 'Windows程序窗体':
             for handle_num_loop in range(len(handle_num_list)):
                 handle_num = int(handle_num_list[handle_num_loop])
@@ -244,7 +244,8 @@ class StartMatch:
             if adb_device_connect_status:
                 print(f'已连接设备[ {device_id} ]')
                 screen_method = GetScreenCapture()
-                run_status, match_status = self.matching(connect_mod, 0, scr_and_click_method, screen_method, debug_status,
+                run_status, match_status = self.matching(connect_mod, 0, scr_and_click_method, screen_method,
+                                                         debug_status,
                                                          match_method,
                                                          compress_val, target_info, click_deviation, run_status,
                                                          match_status)
