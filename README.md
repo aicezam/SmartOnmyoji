@@ -9,6 +9,7 @@
 2. 克隆或下载本项目
 3. 运行power shell 或 cmd 进入主目录：cd .\SmartOnmyoji\ 安装依赖库：pip install -r requirements.txt
 ```
+直接下载使用已打包的程序：https://github.com/aicezam/SmartOnmyoji/releases
 
 ### 使用方法
 - 使用前警告：请谨慎使用辅助脚本
