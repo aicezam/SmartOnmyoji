@@ -5,6 +5,7 @@ from re import search, compile
 from numpy import uint8, fromfile
 from cv2 import cv2
 from modules.ModuleImgProcess import ImgProcess
+from modules.ModuleGetConfig import ReadConfigFile
 
 
 class GetTargetPicInfo:
@@ -20,29 +21,22 @@ class GetTargetPicInfo:
         不同的模式下，匹配对应文件夹的图片
         :returns: 需要匹配的目标图片地址，如果没有返回空值
         """
+        rc = ReadConfigFile()
+        file_name = rc.read_config_target_path_files_name()  # 读取配置文件中的待匹配目标的名字信息
+
         parent_path = path.abspath(path.dirname(path.dirname(__file__)))  # 父路径
-        current_path = abspath(dirname(__file__))  # 当前路径
-        if self.modname == "御魂":
-            target_folder_path = parent_path + r'\img\yuhun'
-            # target_folder_path = current_path + r'\img\yuhun'
-            # print(target_folder_path)
-        elif self.modname == "探索":
-            target_folder_path = parent_path + r'\img\tansuo'
-        elif self.modname == "突破":
-            target_folder_path = parent_path + r'\img\tupo'
-        elif self.modname == "活动":
-            target_folder_path = parent_path + r'\img\huodong'
-        elif self.modname == "觉醒":
-            target_folder_path = parent_path + r'\img\juexing'
-        elif self.modname == "百鬼夜行":
-            target_folder_path = parent_path + r'\img\baigui'
-        elif self.modname == "御灵":
-            target_folder_path = parent_path + r'\img\yuling'
-        elif self.modname == "自定义":
+
+        # 通过界面上的选择目标，定位待匹配的目标文件夹
+        for i in range(6):
+            if self.modname == file_name[i][0]:
+                target_folder_path = parent_path + r'/img/' + file_name[i][1]
+                return target_folder_path
+
+        if self.modname == "自定义":
             target_folder_path = self.custom_target_path
+            return target_folder_path
         else:
-            target_folder_path = None
-        return target_folder_path
+            return None
 
     @property
     def get_target_info(self):

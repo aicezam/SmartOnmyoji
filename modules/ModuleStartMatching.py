@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
 from gc import collect
 from time import sleep, localtime, strftime
-from win32gui import GetWindowText, GetWindowRect, GetForegroundWindow
-from modules.ModuleGetTargetInfo import GetTargetPicInfo
+
+from win32gui import GetWindowText
+
+from modules.ModuleDoClick import DoClick
+from modules.ModuleGetPos import GetPosByTemplateMatch, GetPosBySiftMatch
 from modules.ModuleGetScreenCapture import GetScreenCapture
+from modules.ModuleGetTargetInfo import GetTargetPicInfo
 from modules.ModuleHandleSet import HandleSet
 from modules.ModuleImgProcess import ImgProcess
-from modules.ModuleGetPos import GetPosByTemplateMatch, GetPosBySiftMatch
-from modules.ModuleDoClick import DoClick
+from modules.ModuleGetConfig import ReadConfigFile
 
 
 def time_transform(seconds):
@@ -22,33 +25,13 @@ def time_transform(seconds):
     return run_time
 
 
-def get_active_window(loop_times=5):
-    """
-    点击鼠标获取目标窗口句柄
-    :param loop_times: 倒计时/循环次数
-    :return: 窗体标题名称
-    """
-    hand_num = ""
-    hand_win_title = ""
-    for t in range(loop_times):
-        print(f'请在倒计时 [ {loop_times} ] 秒结束前，点击目标窗口')
-        loop_times -= 1
-        hand_num = GetForegroundWindow()
-        hand_win_title = GetWindowText(hand_num)
-        print(f"目标窗口： [ {hand_win_title} ] [ {hand_num} ] ")
-        sleep(1)  # 每1s输出一次
-    left, top, right, bottom = GetWindowRect(hand_num)
-    print("-----------------------------------------------------------")
-    print(f"目标窗口: [ {hand_win_title} ] 窗口大小：[ {right - left} X {bottom - top} ]")
-    print("-----------------------------------------------------------")
-    return hand_win_title, hand_num
-
-
 class StartMatch:
 
     def __init__(self, gui_info):
         super(StartMatch, self).__init__()
         self.connect_mod, self.target_modname, self.hwd_title, self.click_deviation, self.interval_seconds, self.loop_min, self.compress_val, self.match_method, self.scr_and_click_method, self.custom_target_path, self.process_num, self.handle_num = gui_info
+        rc = ReadConfigFile()
+        self.other_setting = rc.read_config_other_setting()
 
     def set_init(self, set_priority_status):
         """
@@ -82,19 +65,25 @@ class StartMatch:
         if set_priority_status:
             if self.process_num == '多开' and self.connect_mod == 'Windows程序窗体':
                 handle_num_list = str(self.handle_num).split(",")
+                if handle_num_list[0] == '' or handle_num_list[0] == '0' or handle_num_list[0] is None:
+                    print("【运行异常：请选择待匹配目标窗口！】")
+                    return None
                 for handle_num_loop in range(len(handle_num_list)):
                     handle_num = int(handle_num_list[handle_num_loop])
-                    handle_set = HandleSet(self.hwd_title, handle_num)
+                    handle_set = HandleSet('', handle_num)
                     if not handle_set.handle_is_active(self.process_num):
-                        print("待匹配目标程序窗口异常终止！")
+                        print("【运行异常：未选择待匹配目标程序，或程序异常终止！】")
                         return None
-                    handle_set.set_priority(4)
+                    handle_set.set_priority(int(self.other_setting[6]))
             elif self.process_num == '单开' and self.connect_mod == 'Windows程序窗体':
-                handle_set = HandleSet(self.hwd_title, self.handle_num)
-                if not handle_set.handle_is_active(self.process_num):
-                    print("待匹配目标程序窗口异常终止！")
+                if self.hwd_title == '' or self.hwd_title is None:
+                    print("【运行异常：请选择待匹配目标窗口！】")
                     return None
-                handle_set.set_priority(4)
+                handle_set = HandleSet(self.hwd_title, 0)
+                if not handle_set.handle_is_active(self.process_num):
+                    print("【运行异常：未选择待匹配目标程序，或程序异常终止！】")
+                    return None
+                handle_set.set_priority(int(self.other_setting[6]))
 
         return loop_times, target_info, t1
 
@@ -139,7 +128,8 @@ class StartMatch:
                 return run_status, match_status
 
         if debug_status:
-            ImgProcess.show_img(screen_img)  # test显示压缩后截图
+            if self.other_setting[5]:
+                ImgProcess.show_img(screen_img)  # test显示压缩后截图
 
         # 开始匹配
         print("正在匹配…")
@@ -152,7 +142,8 @@ class StartMatch:
             if compress_val != 1:  # 压缩图片，模板和截图必须一起压缩
                 screen_img = ImgProcess.img_compress(screen_img, compress_val)
                 if debug_status and compress_val != 1:
-                    ImgProcess.show_img(screen_img)  # test显示压缩后截图
+                    if self.other_setting[5]:
+                        ImgProcess.show_img(screen_img)  # test显示压缩后截图
                 target_img_tm = []
                 for k in range(len(target_img)):
                     target_img_tm.append(ImgProcess.img_compress(target_img[k], compress_val))
@@ -166,7 +157,8 @@ class StartMatch:
             if compress_val != 1:  # 压缩图片，特征点匹配方法，只压缩截图
                 screen_img = ImgProcess.img_compress(screen_img, compress_val)
                 if debug_status and compress_val != 1:
-                    ImgProcess.show_img(screen_img)  # test显示压缩后截图
+                    if self.other_setting[5]:
+                        ImgProcess.show_img(screen_img)  # test显示压缩后截图
             screen_sift = ImgProcess.get_sift(screen_img)  # 获取截图的特征点
 
             # 开始匹配
@@ -230,13 +222,17 @@ class StartMatch:
 
         # 多开场景下，针对每个窗口遍历：截图、匹配、点击
         if self.process_num == '多开' and connect_mod == 'Windows程序窗体':
+            if handle_num_list[0] == '' or handle_num_list[0] == '0' or handle_num_list[0] is None:
+                print("【运行异常：请选择待匹配目标窗口！】")
+                run_status = False
+                return run_status, match_status
             for handle_num_loop in range(len(handle_num_list)):
                 handle_num = int(handle_num_list[handle_num_loop])
                 print("--------------------------------------------")
                 print(f"正在匹配 [{GetWindowText(handle_num)}] [{handle_num}]")
-                handle_set = HandleSet(self.hwd_title, handle_num)
+                handle_set = HandleSet('', handle_num)
                 if not handle_set.handle_is_active(self.process_num):
-                    print("待匹配目标程序窗口异常终止！")
+                    print("【运行异常：未选择待匹配目标程序，或程序异常终止！】")
                     run_status = False
                     return run_status, match_status
                 handle_width = handle_set.get_handle_pos[2] - handle_set.get_handle_pos[0]  # 右x - 左x 计算宽度
@@ -250,9 +246,13 @@ class StartMatch:
 
         # 单开场景下，通过标题找到窗口句柄
         elif self.process_num == '单开' and connect_mod == 'Windows程序窗体':
-            handle_set = HandleSet(self.hwd_title, self.handle_num)
+            if self.hwd_title == '' or self.hwd_title is None:
+                print("【运行异常：请选择待匹配目标窗口！】")
+                run_status = False
+                return run_status, match_status
+            handle_set = HandleSet(self.hwd_title, 0)
             if not handle_set.handle_is_active(self.process_num):
-                print("待匹配目标程序窗口异常终止！")
+                print("【运行异常：未选择待匹配目标程序，或程序异常终止！】")
                 run_status = False
                 return run_status, match_status
             handle_width = handle_set.get_handle_pos[2] - handle_set.get_handle_pos[0]  # 右x - 左x 计算宽度
@@ -293,7 +293,7 @@ class StartMatch:
         if localtime().tm_hour < 8:
             now_time = strftime("%H:%M:%S", localtime())
             print("----------------------------------------------------------")
-            print(f"现在 [ {now_time} ]【非正常游戏时间，请谨慎使用】")
+            print(f"警告：现在 [ {now_time} ]【非正常游戏时间，请谨慎使用】")
             print("----------------------------------------------------------")
             for t in range(8):
                 print(f"[ {8 - t} ] 秒后开始……")

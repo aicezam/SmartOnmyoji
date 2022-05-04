@@ -5,6 +5,10 @@ import time
 from numpy import int32, float32
 from cv2 import cv2
 from modules.ModuleImgProcess import ImgProcess
+from modules.ModuleGetConfig import ReadConfigFile
+
+rc = ReadConfigFile()
+other_setting = rc.read_config_other_setting()
 
 
 class GetPosByTemplateMatch:
@@ -37,8 +41,9 @@ class GetPosByTemplateMatch:
                                                           i)
             if pos is not None:
                 if debug_status:
-                    draw_img = ImgProcess.draw_pos_in_img(screen_capture, pos, [screen_high / 10, screen_width / 10])
-                    ImgProcess.show_img(draw_img)
+                    if other_setting[5]:
+                        draw_img = ImgProcess.draw_pos_in_img(screen_capture, pos, [screen_high / 10, screen_width / 10])
+                        ImgProcess.show_img(draw_img)
                 break
         return pos, i
 
@@ -141,14 +146,15 @@ class GetPosBySiftMatch:
 
             # 绘制匹配成功的连线
             if debug_status:
-                matches_mask = mask.ravel().tolist()  # ravel方法将数据降维处理，最后并转换成列表格式
-                draw_params = dict(matchColor=(0, 255, 0),  # draw matches in green color
-                                   singlePointColor=None,
-                                   matchesMask=matches_mask,  # draw only inliers
-                                   flags=2)
-                img3 = cv2.drawMatches(target_img, kp1, screen_img, kp2, good, None, **draw_params)  # 生成cv2格式图片
-                img3 = cv2.cvtColor(img3, cv2.COLOR_BGR2RGB)  # 转RGB
-                ImgProcess.show_img(img3)  # 测试显示
+                if other_setting[5]:
+                    matches_mask = mask.ravel().tolist()  # ravel方法将数据降维处理，最后并转换成列表格式
+                    draw_params = dict(matchColor=(0, 255, 0),  # draw matches in green color
+                                       singlePointColor=None,
+                                       matchesMask=matches_mask,  # draw only inliers
+                                       flags=2)
+                    img3 = cv2.drawMatches(target_img, kp1, screen_img, kp2, good, None, **draw_params)  # 生成cv2格式图片
+                    img3 = cv2.cvtColor(img3, cv2.COLOR_BGR2RGB)  # 转RGB
+                    ImgProcess.show_img(img3)  # 测试显示
 
             # 计算中心坐标
             h, w = target_hw

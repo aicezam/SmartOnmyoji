@@ -224,7 +224,7 @@
       </item>
      </layout>
     </widget>
-    <widget class="QWidget" name="">
+    <widget class="QWidget" name="layoutWidget">
      <property name="geometry">
       <rect>
        <x>12</x>
@@ -1028,6 +1028,22 @@
     <hint type="destinationlabel">
      <x>111</x>
      <y>98</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>rd_btn_android_adb</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>show_handle_num</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>253</x>
+     <y>58</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>156</x>
+     <y>129</y>
     </hint>
    </hints>
   </connection>

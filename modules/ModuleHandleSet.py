@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 from os.path import abspath, dirname
+from subprocess import Popen, PIPE
+from time import sleep
+
 from win32api import OpenProcess
 from win32con import PROCESS_ALL_ACCESS
-from win32gui import GetWindowText, GetWindowRect, FindWindow, FindWindowEx
+from win32gui import GetWindowText, FindWindow, FindWindowEx, GetWindowRect, GetForegroundWindow
 from win32process import NORMAL_PRIORITY_CLASS, REALTIME_PRIORITY_CLASS, SetPriorityClass, IDLE_PRIORITY_CLASS, \
     HIGH_PRIORITY_CLASS, GetWindowThreadProcessId, BELOW_NORMAL_PRIORITY_CLASS, ABOVE_NORMAL_PRIORITY_CLASS
-from subprocess import Popen, PIPE
 
 
 class HandleSet:
@@ -13,7 +15,7 @@ class HandleSet:
         super(HandleSet, self).__init__()
         self.handle_pos = None
         self.handle_title = handle_title
-        self.handle_num = handle_num
+        self.handle_num = int(handle_num)
         self.handle_pid = None
 
     @property
@@ -140,3 +142,25 @@ class HandleSet:
                 return True, device_list
             else:
                 return False, "设备不在线，请重新连接，或打开安卓调试模式"
+
+    @staticmethod
+    def get_active_window(loop_times=5):
+        """
+        点击鼠标获取目标窗口句柄
+        :param loop_times: 倒计时/循环次数
+        :return: 窗体标题名称
+        """
+        hand_num = ""
+        hand_win_title = ""
+        for t in range(loop_times):
+            print(f'请在倒计时 [ {loop_times} ] 秒结束前，点击目标窗口')
+            loop_times -= 1
+            hand_num = GetForegroundWindow()
+            hand_win_title = GetWindowText(hand_num)
+            print(f"目标窗口： [ {hand_win_title} ] [ {hand_num} ] ")
+            sleep(1)  # 每1s输出一次
+        left, top, right, bottom = GetWindowRect(hand_num)
+        print("-----------------------------------------------------------")
+        print(f"目标窗口: [ {hand_win_title} ] 窗口大小：[ {right - left} X {bottom - top} ]")
+        print("-----------------------------------------------------------")
+        return hand_win_title, hand_num
