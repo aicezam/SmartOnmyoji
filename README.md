@@ -11,8 +11,9 @@
 1. python安装（版本大于3.7.6都行）：https://www.python.org/ftp/python/3.7.6/python-3.7.6-amd64.exe
 2. 克隆或下载本项目
 3. 运行power shell 或 cmd 进入主目录：cd .\SmartOnmyoji\ 安装依赖库：pip install -r requirements.txt
+4. 运行power shell 或 cmd ：python smart_onmyoji_start.py
 ```
-**或直接下载使用已打包的程序：https://github.com/aicezam/SmartOnmyoji/releases**
+**或直接下载使用已打包的程序：https://github.com/aicezam/SmartOnmyoji/releases** 运行 **smart_onmyoji_start.exe**
 
 ### 使用方法
 - 使用前警告：请谨慎使用辅助脚本，所有不公平游戏行为都可能被官方检测导致封号（坐标偏移量越小、点击频率越快，越容易被检测）
