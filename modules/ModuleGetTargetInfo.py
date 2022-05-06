@@ -27,7 +27,7 @@ class GetTargetPicInfo:
         parent_path = path.abspath(path.dirname(path.dirname(__file__)))  # 父路径
 
         # 通过界面上的选择目标，定位待匹配的目标文件夹
-        for i in range(6):
+        for i in range(7):
             if self.modname == file_name[i][0]:
                 target_folder_path = parent_path + r'/img/' + file_name[i][1]
                 return target_folder_path

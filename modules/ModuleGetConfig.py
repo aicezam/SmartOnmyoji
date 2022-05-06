@@ -56,9 +56,9 @@ class ReadConfigFile:
         file_name_5 = config_ini.get('target_path_files_name', 'file_name_5')
         file_name_6 = config_ini.get('target_path_files_name', 'file_name_6')
 
-        target_file_name_list = [file_name_0.split(","), file_name_0.split(","), file_name_1.split(","),
-                                 file_name_2.split(","), file_name_3.split(","), file_name_4.split(","),
-                                 file_name_5.split(","), file_name_6.split(",")
+        target_file_name_list = [file_name_0.split(","), file_name_1.split(","), file_name_2.split(","),
+                                 file_name_3.split(","), file_name_4.split(","), file_name_5.split(","),
+                                 file_name_6.split(",")
                                  ]
 
         return target_file_name_list

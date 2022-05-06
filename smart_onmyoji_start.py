@@ -92,7 +92,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.rd_btn_android_adb.setChecked(True)
 
         # 设置界面上显示的匹配目标文件夹的选项名称
-        for i in range(6):
+        for i in range(7):
             self.select_target_path_mode_combobox.setItemText(i, target_file_name_list[i][0])
 
         # 绑定信号
