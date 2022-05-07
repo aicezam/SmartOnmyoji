@@ -23,13 +23,13 @@ class GetPosByTemplateMatch:
         """
         screen_width = screen_capture.shape[1]
         screen_high = screen_capture.shape[0]
-        # print(len(target_pic))
+        # print("<br>"+len(target_pic))
 
         # 获取目标点位置
         pos = None
         val = 0.90  # 设置相似度
         i = 0
-        # print("正在匹配…")
+        # print("<br>正在匹配…")
         for i in range(len(target_pic)):
             # print(i)
             pos = GetPosByTemplateMatch.template_matching(screen_capture,
@@ -60,7 +60,7 @@ class GetPosByTemplateMatch:
             res = cv2.matchTemplate(img_src, template, cv2.TM_CCOEFF_NORMED)
             min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)  # 最小匹配度，最大匹配度，最小匹配度的坐标，最大匹配度的坐标
             if debug_status:
-                print(f" 第 [ {i+1} ] 张图片，匹配分数：[ {round(max_val,2)} ]")
+                print(f"<br>第 [ {i+1} ] 张图片，匹配分数：[ {round(max_val,2)} ]")
             if max_val >= val:  # 计算相对坐标
                 position = [int(screen_width / img_src_width * (max_loc[0] + img_tmp_width / 2)),
                             int(screen_height / img_src_height * (max_loc[1] + img_tmp_height / 2))]
@@ -138,7 +138,7 @@ class GetPosBySiftMatch:
             if m.distance < 0.6 * n.distance:  # m表示大图像上最匹配点的距离，n表示次匹配点的距离，若比值小于0.5则舍弃
                 good.append(m)
         if debug_status:
-            print(f"第 [ {i+1} ] 张图片，匹配角点数量：[ {len(good)} ] ,目标数量：[ {min_match_count} ]")
+            print(f"<br>第 [ {i+1} ] 张图片，匹配角点数量：[ {len(good)} ] ,目标数量：[ {min_match_count} ]")
         if len(good) > min_match_count:
             src_pts = float32([kp1[m.queryIdx].pt for m in good]).reshape(-1, 1, 2)
             dst_pts = float32([kp2[m.trainIdx].pt for m in good]).reshape(-1, 1, 2)

@@ -694,11 +694,14 @@
       </widget>
      </item>
      <item>
-      <widget class="QTextEdit" name="run_log">
+      <widget class="QTextBrowser" name="run_log">
        <property name="cursor" stdset="0">
         <cursorShape>IBeamCursor</cursorShape>
        </property>
        <property name="readOnly">
+        <bool>true</bool>
+       </property>
+       <property name="openExternalLinks">
         <bool>true</bool>
        </property>
       </widget>

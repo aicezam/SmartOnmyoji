@@ -36,7 +36,7 @@ class DoClick:
             sleep(0.05)
             SendMessage(handle_num, WM_LBUTTONUP, MK_LBUTTON, long_position)  # 模拟鼠标弹起
 
-            print(f"点击坐标: [ {cx} , {cy} ] 窗口名称: [ {HandleSet.get_handle_title(handle_num)} ]")
+            print(f"<br>点击坐标: [ {cx} , {cy} ] <br>窗口名称: [ {HandleSet.get_handle_title(handle_num)} ]")
 
             return True
 
@@ -53,7 +53,7 @@ class DoClick:
             command = abspath(dirname(__file__)) + r'\adb.exe shell input tap {0} {1}'.format(cx, cy)
             # command = "adb shell input tap {0} {1}".format(cx, cy)
             system(command)
-            print(f"点击坐标: [ {cx} , {cy} ]")
+            print(f"<br>点击坐标: [ {cx} , {cy} ]")
 
             return True
 
@@ -87,6 +87,6 @@ class DoClick:
         click(jx, jy)
         moveTo(now_pos[0], now_pos[1])
 
-        print(f"点击坐标: [ {cx} , {cy} ] 窗口名称: [ {HandleSet.get_handle_title(handle_num)} ]")
+        print(f"<br>点击坐标: [ {cx} , {cy} ] 窗口名称: [ {HandleSet.get_handle_title(handle_num)} ]")
 
         return True

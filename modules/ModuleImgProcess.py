@@ -13,7 +13,7 @@ class ImgProcess:
     def save_img(img, img_path_name=r'\screen_img\screen_pic.jpg'):
         """保存内存中cv2格式的图片为本地文件"""
         if img is None:
-            print("未获取到需要保存的图片！")
+            print("<br>未获取到需要保存的图片！")
         else:
             file_path = abspath(dirname(__file__)) + img_path_name  # 截图的存储位置，程序路径里面
             cv2.imwrite(file_path, img, [int(cv2.IMWRITE_JPEG_QUALITY), 20])  # 保存截图 质量（0-100）
@@ -22,7 +22,7 @@ class ImgProcess:
     def show_img(img):
         """查看内存中cv2格式的图片"""
         if img is None:
-            print("未获取到需要显示的图片！")
+            print("<br>未获取到需要显示的图片！")
         else:
             cv2.namedWindow('scr_img')  # 命名窗口
             cv2.imshow("scr_img", img)  # 显示
@@ -39,7 +39,7 @@ class ImgProcess:
         :return: 返回坐标(x,y) 与opencv坐标系对应
         """
         if pos is None:
-            print("未获取坐标点位置！")
+            print("<br>未获取坐标点位置！")
         else:
             img = cv2.rectangle(img,
                                 (pos[0] - int(height_width[1] * 0.5), pos[1] - int(height_width[0] * 0.5)),

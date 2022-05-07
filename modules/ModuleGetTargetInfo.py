@@ -29,7 +29,7 @@ class GetTargetPicInfo:
         # 通过界面上的选择目标，定位待匹配的目标文件夹
         for i in range(7):
             if self.modname == file_name[i][0]:
-                target_folder_path = parent_path + r'/img/' + file_name[i][1]
+                target_folder_path = parent_path + r"\img\\" + file_name[i][1]
                 return target_folder_path
 
         if self.modname == "自定义":
@@ -50,7 +50,7 @@ class GetTargetPicInfo:
 
         # 获取每张图片的路径地址
         if folder_path is None:
-            print("未找到目标文件夹或图片地址！即将退出！")
+            print("<br>未找到目标文件夹或图片地址！即将退出！")
             return None  # 脚本结束
         else:
             for cur_dir, sub_dir, included_file in walk(folder_path):
@@ -61,7 +61,7 @@ class GetTargetPicInfo:
                         elif search(r'.png', file):  # 兼容png格式
                             img_file_path.append(cur_dir + "\\" + file)
             if len(img_file_path) == 0:
-                print("未找到目标文件夹或图片地址！")
+                print("<br>未找到目标文件夹或图片地址！")
                 return None  # 脚本结束
 
             # 通过图片地址获取每张图片的信息
@@ -72,6 +72,7 @@ class GetTargetPicInfo:
                 img_hw[i] = img.shape[:2]  # 获取目标图片宽高
                 img_name.append(self.trans_path_to_name(img_file_path[i]))  # 获取目标图片名称
                 img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                # print(f"<br><img src='{img_file_path[i]}' />")
                 # img_process.show_img(img)
                 target_img_sift[i] = img_process.get_sift(img)  # 获取目标图片特征点信息
                 cv2_img[i] = img  # 将图片信息读取到内存

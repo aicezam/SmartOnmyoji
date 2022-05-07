@@ -50,10 +50,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.btn_stop.hide()
         self.btn_exit.show()
         self.loop_progress.setValue(0)
-        self.run_log.setReadOnly(True)
         self.select_targetpic_path_btn.hide()
         self.setWindowIcon(QIcon('img/logo.ico'))
-        self.run_log.setText("\n\n git仓库：\n\n https://github.com/aicezam/SmartOnmyoji")
+        self.run_log.setText("<br>"
+                             "<p>本软件完全开源免费，作者不对使用该软件产生的一切后果负责。</p>"
+                             "<p>你可以在以下地址下载：</p>"
+                             "<a href='https://github.com/aicezam/SmartOnmyoji'>"
+                             "https://github.com/aicezam/SmartOnmyoji</a> "
+                             )
 
         # 加载config.ini文件中的默认参数
         self.click_deviation.setValue(self.click_deviation_value)  # 设置默认偏移量
@@ -106,12 +110,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.btn_select_handle.clicked.connect(self.__on_click_btn_select_handle)
         self.select_targetpic_path_btn.clicked.connect(self.__on_click_btn_select_custom_path)
 
-    # 控制台消息重定向槽函数，字符追加到 run_log中
+    # 控制台消息重定向槽函数，控制台字符追加到 run_log中
     def output_write(self, text):
         # self.run_log.insertPlainText(text)
         # self.run_log.append(text)
         cursor = self.run_log.textCursor()
-        cursor.insertText(text)
+        # cursor.insertText(text)
+        cursor.insertHtml(text)
         self.run_log.setTextCursor(cursor)
         self.run_log.ensureCursorVisible()
 
@@ -125,6 +130,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     # 开始按钮被点击的槽函数
     def __on_clicked_btn_begin(self):
+        # self.run_log.setTextInteractionFlags(PyQt5.QtCore.Qt.NoTextInteraction)  # 禁止选中
         self.btn_start.setEnabled(False)
         self.btn_pause.setEnabled(True)
         self.btn_resume.setEnabled(False)
@@ -249,10 +255,10 @@ class EmitStr(PyQt5.QtCore.QObject):
 
 
 def except_out_config(exc_type, value, tb):
-    print('Error Information:')
-    print('Type:', exc_type)
-    print('Value:', value)
-    print('Traceback:', tb)
+    print('<br>Error Information:')
+    print('<br>Type:', exc_type)
+    print('<br>Value:', value)
+    print('<br>Traceback:', tb)
 
 
 if __name__ == '__main__':
@@ -266,7 +272,7 @@ if __name__ == '__main__':
         target_file_name = config_ini.read_config_target_path_files_name()
         myWindow = MainWindow(default_info, target_file_name)
 
-        myWindow.setWindowTitle('护肝小助手 - https://github.com/aicezam/SmartOnmyoji')  # 设置窗口标题
+        myWindow.setWindowTitle('痒痒鼠护肝小助手 - https://github.com/aicezam/SmartOnmyoji')  # 设置窗口标题
         myWindow.show()
         sys.exit(app.exec_())
     else:

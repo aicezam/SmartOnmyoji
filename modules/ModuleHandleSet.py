@@ -108,8 +108,8 @@ class HandleSet:
             priority_name = "高"
         if priority == 5:
             priority_name = "最高"
-        print(f"已设置进程 [{handle_title} {self.handle_num}] 的优先级为 [{priority_name}] ")
-        print("-----------------------------")
+        print(f"<br>已设置进程 [{handle_title} {self.handle_num}] 的优先级为 [{priority_name}] ")
+        print("<br>-----------------------------")
 
     @staticmethod
     def deal_cmd(cmd):
@@ -135,13 +135,13 @@ class HandleSet:
                         device_list.append(device_detail[0])
                     elif device_detail[1] == 'offline':
                         print(device_detail[0])
-                        return False, '连接出现异常，设备无响应'
+                        return False, '<br>连接出现异常，设备无响应'
                     elif device_detail[1] == 'unknown':
                         print(device_detail[0])
-                        return False, '设备不在线，请重新连接，或打开安卓调试模式'
+                        return False, '<br>设备不在线，请重新连接，或打开安卓调试模式'
                 return True, device_list
             else:
-                return False, "设备不在线，请重新连接，或打开安卓调试模式"
+                return False, "<br>设备不在线，请重新连接，或打开安卓调试模式"
 
     @staticmethod
     def get_active_window(loop_times=5):
@@ -153,14 +153,14 @@ class HandleSet:
         hand_num = ""
         hand_win_title = ""
         for t in range(loop_times):
-            print(f'请在倒计时 [ {loop_times} ] 秒结束前，点击目标窗口')
+            print(f'<br>请在倒计时 [ {loop_times} ] 秒结束前，点击目标窗口')
             loop_times -= 1
             hand_num = GetForegroundWindow()
             hand_win_title = GetWindowText(hand_num)
-            print(f"目标窗口： [ {hand_win_title} ] [ {hand_num} ] ")
+            print(f"<br>目标窗口： [ {hand_win_title} ] [ {hand_num} ] ")
             sleep(1)  # 每1s输出一次
         left, top, right, bottom = GetWindowRect(hand_num)
-        print("-----------------------------------------------------------")
-        print(f"目标窗口: [ {hand_win_title} ] 窗口大小：[ {right - left} X {bottom - top} ]")
-        print("-----------------------------------------------------------")
+        print("<br>-----------------------------------------------------------")
+        print(f"<br>目标窗口: [ {hand_win_title} ] 窗口大小：[ {right - left} X {bottom - top} ]")
+        print("<br>-----------------------------------------------------------")
         return hand_win_title, hand_num

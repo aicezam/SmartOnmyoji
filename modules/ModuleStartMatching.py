@@ -44,7 +44,7 @@ class StartMatch:
         interval_seconds = self.interval_seconds
         loop_min = self.loop_min
         # 获取待检测目标图片信息
-        print('目标图片读取中……')
+        print('<br>目标图片读取中……')
         target_info = GetTargetPicInfo(target_modname, custom_target_path,
                                        compress_val=1).get_target_info  # 目标图片不压缩（本身就小）
         if target_info is None:
@@ -52,8 +52,8 @@ class StartMatch:
 
         target_img_sift, target_img_hw, target_img_name, target_img_file_path, target_img = target_info
 
-        print(f'读取完成！共[ {len(target_img)} ]张图片\n{target_img_name}')
-        print("--------------------------------------------")
+        print(f'<br>读取完成！共[ {len(target_img)} ]张图片\n{target_img_name}')
+        print("<br>--------------------------------------------")
 
         # 计算循环次数、时间
         t1 = len(target_img) / 30  # 每次循环匹配找图需要消耗的时间, 脚本每次匹配一般平均需要2.5秒（30个匹配目标）
@@ -66,22 +66,22 @@ class StartMatch:
             if self.process_num == '多开' and self.connect_mod == 'Windows程序窗体':
                 handle_num_list = str(self.handle_num).split(",")
                 if handle_num_list[0] == '' or handle_num_list[0] == '0' or handle_num_list[0] is None:
-                    print("【运行异常：请选择待匹配目标窗口！】")
+                    print("<br>【运行异常：请选择待匹配目标窗口！】")
                     return None
                 for handle_num_loop in range(len(handle_num_list)):
                     handle_num = int(handle_num_list[handle_num_loop])
                     handle_set = HandleSet('', handle_num)
                     if not handle_set.handle_is_active(self.process_num):
-                        print("【运行异常：未选择待匹配目标程序，或程序异常终止！】")
+                        print("<br>【运行异常：未选择待匹配目标程序，或程序异常终止！】")
                         return None
                     handle_set.set_priority(int(self.other_setting[6]))
             elif self.process_num == '单开' and self.connect_mod == 'Windows程序窗体':
                 if self.hwd_title == '' or self.hwd_title is None:
-                    print("【运行异常：请选择待匹配目标窗口！】")
+                    print("<br>【运行异常：请选择待匹配目标窗口！】")
                     return None
                 handle_set = HandleSet(self.hwd_title, 0)
                 if not handle_set.handle_is_active(self.process_num):
-                    print("【运行异常：未选择待匹配目标程序，或程序异常终止！】")
+                    print("<br>【运行异常：未选择待匹配目标程序，或程序异常终止！】")
                     return None
                 handle_set.set_priority(int(self.other_setting[6]))
 
@@ -108,7 +108,7 @@ class StartMatch:
         target_img_sift, target_img_hw, target_img_name, target_img_file_path, target_img = target_info
 
         # 获取截图
-        print('正在截图…')
+        print('<br>正在截图…')
         screen_img = None
         if connect_mod == 'Windows程序窗体':
             # 如果部分窗口不能点击、截图出来是黑屏，可以使用兼容模式
@@ -132,7 +132,7 @@ class StartMatch:
                 ImgProcess.show_img(screen_img)  # test显示压缩后截图
 
         # 开始匹配
-        print("正在匹配…")
+        print("<br>正在匹配…")
         pos = None
         target_num = None
         target_img_tm = target_img
@@ -176,8 +176,13 @@ class StartMatch:
                 pos = [pos[0] / compress_val, pos[1] / compress_val]
 
             # 打印匹配到的实际坐标点和匹配到的图片信息
-            print(f"匹配成功! 匹配到第 [ {target_num + 1} ] 张图片: [ {target_img_name[target_num]} ]\n"
-                  f"坐标位置: [ {int(pos[0])} , {int(pos[1])} ] ")
+            print(f"<br>匹配成功! ")
+            # if debug_status:
+            # if self.other_setting[5]:  # 显示匹配成功的图片
+            print(f"<br><img height=\"30\" src='{target_img_file_path[target_num]}'>")
+            print(
+                f"<br>匹配到第 [ {target_num + 1} ] 张图片: [ {target_img_name[target_num]} ]"
+                f"<br>坐标位置: [ {int(pos[0])} , {int(pos[1])} ] ")
 
             # 开始点击
             if connect_mod == 'Windows程序窗体':
@@ -196,7 +201,7 @@ class StartMatch:
                 doclick = DoClick(pos, click_deviation)
                 doclick.adb_click()
         else:
-            print("匹配失败！")
+            print("<br>匹配失败！")
             match_status = False
 
         # 内存清理
@@ -218,21 +223,22 @@ class StartMatch:
         # 计算进度
         now_time = strftime("%Y-%m-%d %H:%M:%S", localtime())
         progress = format((i + 1) / loop_times, '.2%')
-        print(f"第 [ {i + 1} ] 次匹配, 还剩 [ {loop_times - i - 1} ] 次 \n当前进度 [ {progress} ] \n当前时间 [ {now_time} ]")
+        print(f"<br>第 [ {i + 1} ] 次匹配, 还剩 [ {loop_times - i - 1} ] 次 当前进度 [ {progress} ] "
+              f"<br>当前时间 [ {now_time} ]")
 
         # 多开场景下，针对每个窗口遍历：截图、匹配、点击
         if self.process_num == '多开' and connect_mod == 'Windows程序窗体':
             if handle_num_list[0] == '' or handle_num_list[0] == '0' or handle_num_list[0] is None:
-                print("【运行异常：请选择待匹配目标窗口！】")
+                print("<br>【运行异常：请选择待匹配目标窗口！】")
                 run_status = False
                 return run_status, match_status
             for handle_num_loop in range(len(handle_num_list)):
                 handle_num = int(handle_num_list[handle_num_loop])
-                print("--------------------------------------------")
-                print(f"正在匹配 [{GetWindowText(handle_num)}] [{handle_num}]")
+                print("<br>--------------------------------------------")
+                print(f"<br>正在匹配 [{GetWindowText(handle_num)}] [{handle_num}]")
                 handle_set = HandleSet('', handle_num)
                 if not handle_set.handle_is_active(self.process_num):
-                    print("【运行异常：未选择待匹配目标程序，或程序异常终止！】")
+                    print("<br>【运行异常：未选择待匹配目标程序，或程序异常终止！】")
                     run_status = False
                     return run_status, match_status
                 handle_width = handle_set.get_handle_pos[2] - handle_set.get_handle_pos[0]  # 右x - 左x 计算宽度
@@ -247,12 +253,12 @@ class StartMatch:
         # 单开场景下，通过标题找到窗口句柄
         elif self.process_num == '单开' and connect_mod == 'Windows程序窗体':
             if self.hwd_title == '' or self.hwd_title is None:
-                print("【运行异常：请选择待匹配目标窗口！】")
+                print("<br>【运行异常：请选择待匹配目标窗口！】")
                 run_status = False
                 return run_status, match_status
             handle_set = HandleSet(self.hwd_title, 0)
             if not handle_set.handle_is_active(self.process_num):
-                print("【运行异常：未选择待匹配目标程序，或程序异常终止！】")
+                print("<br>【运行异常：未选择待匹配目标程序，或程序异常终止！】")
                 run_status = False
                 return run_status, match_status
             handle_width = handle_set.get_handle_pos[2] - handle_set.get_handle_pos[0]  # 右x - 左x 计算宽度
@@ -269,7 +275,7 @@ class StartMatch:
         else:
             adb_device_connect_status, device_id = HandleSet.adb_device_status()
             if adb_device_connect_status:
-                print(f'已连接设备[ {device_id} ]')
+                print(f'<br>已连接设备[ {device_id} ]')
                 screen_method = GetScreenCapture()
                 run_status, match_status = self.matching(connect_mod, 0, scr_and_click_method, screen_method,
                                                          debug_status,
@@ -292,10 +298,10 @@ class StartMatch:
 
         if localtime().tm_hour < 8:
             now_time = strftime("%H:%M:%S", localtime())
-            print("----------------------------------------------------------")
-            print(f"警告：现在 [ {now_time} ]【非正常游戏时间，请谨慎使用】")
-            print("----------------------------------------------------------")
+            print("<br>----------------------------------------------------------")
+            print(f"<br>警告：现在 [ {now_time} ]【非正常游戏时间，请谨慎使用】")
+            print("<br>----------------------------------------------------------")
             for t in range(8):
-                print(f"[ {8 - t} ] 秒后开始……")
+                print(f"<br>[ {8 - t} ] 秒后开始……")
                 sleep(1)
-            print("----------------------------------------------------------")
+            print("<br>----------------------------------------------------------")

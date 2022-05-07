@@ -46,7 +46,7 @@ class GetScreenCapture:
         im_opencv.shape = (screen_height, screen_width, 4)
         im_opencv = cv2.cvtColor(im_opencv, cv2.COLOR_BGRA2GRAY)
         # im_opencv = cv2.cvtColor(im_opencv, cv2.COLOR_BGRA2BGR)
-        print("截图成功！")
+        print("<br>截图成功！")
 
         # 测试显示截图图片
         # cv2.namedWindow('scr_img')  # 命名窗口
@@ -90,5 +90,5 @@ class GetScreenCapture:
         img_bytes = commend.stdout.read().replace(b'\r\n', b'\n')  # 传输
         scr_img = cv2.imdecode(frombuffer(img_bytes, uint8), cv2.IMREAD_COLOR)  # 转格式
         scr_img = cv2.cvtColor(scr_img, cv2.COLOR_BGRA2GRAY)
-        print("截图成功！")
+        print("<br>截图成功！")
         return scr_img

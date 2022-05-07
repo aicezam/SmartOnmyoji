@@ -85,12 +85,12 @@ class MatchingThread(QtCore.QThread):
         connect_mod = info[0]
 
         if if_end == '电脑关机':
-            print("已完成，60秒后自动关机！")
+            print("<br>已完成，60秒后自动关机！")
             system('shutdown /s /t 60')
         elif if_end == '不执行任何操作':
-            print("已完成！")
+            print("<br>已完成！")
         elif if_end == '关闭匹配目标窗体':
-            print("已完成，正在退出程序！")
+            print("<br>已完成，正在退出程序！")
             if process_num == '多开' and connect_mod == 'Windows程序窗体':
                 handle_num_list = str(handle_num_list).split(",")
                 for handle_num_loop in range(len(handle_num_list)):
@@ -100,7 +100,7 @@ class MatchingThread(QtCore.QThread):
                 handle_num = handle_set.get_handle_num
                 PostMessage(handle_num, WM_CLOSE, 0, 0)  # 关闭程序
         elif if_end == '关闭脚本':
-            print("已完成，%s即将退出！" % '护肝小能手')
+            print("<br>已完成，%s即将退出！" % '护肝小能手')
             sys.exit(0)
 
     # 获取GUI界面参数
@@ -166,7 +166,7 @@ class MatchingThread(QtCore.QThread):
 
         if info[0] == "Windows程序窗体" and info[10] == "多开" and info[11] == '0':  # 检测如果选择多开，是否已经获取句柄编号
             # 多开使用循环，每个循环针对一个窗口
-            print("请点击【选择窗体】获取目标窗体的句柄编号，支持选择多个游戏窗口！")
+            print("<br>请点击【选择窗体】获取目标窗体的句柄编号，支持选择多个游戏窗口！")
             self.finished_signal.emit(True)
             return
 
@@ -174,7 +174,7 @@ class MatchingThread(QtCore.QThread):
         set_priority_status = info[14]
         interval_seconds = int(info[4])
         start_match = StartMatch(info[:12])
-        print("初始化中…")
+        print("<br>初始化中…")
 
         # 对UI参数初始化，计算匹配的次数、导入需要检测的目标图片
         init_value = start_match.set_init(set_priority_status)
@@ -214,11 +214,11 @@ class MatchingThread(QtCore.QThread):
             # 计算匹配成功的次数,每成功匹配x次，休息x秒，避免异常
             if match_status:
                 success_times = success_times + 1
-                print(f"已成功匹配 [ {success_times} ] 次")
+                print(f"<br>已成功匹配 [ {success_times} ] 次")
                 if other_setting[2] is True:
                     if success_times % int(other_setting[3]) == 0:
                         for t in range(int(other_setting[4])):
-                            print(f"已成功匹配100次，为防止异常，[ {int(other_setting[4]) - t} ] 秒后继续……")
+                            print(f"<br>已成功匹配100次，为防止异常，[ {int(other_setting[4]) - t} ] 秒后继续……")
                             sleep(1)
 
             # 检测是否正常运行，否则终止
@@ -229,7 +229,7 @@ class MatchingThread(QtCore.QThread):
 
             # 判断是否结束
             if i == loop_times - 1:
-                print("---已执行完成!---")
+                print("<br>---已执行完成!---")
                 self.end_do(info)
                 self.mutex.unlock()
                 self.finished_signal.emit(True)
@@ -238,8 +238,8 @@ class MatchingThread(QtCore.QThread):
                 # 倒推剩余时间（时分秒格式）
                 ts = uniform(0.1, 1.5)  # 设置随机延时，防检测
                 remaining_time = time_transform(int(((loop_times - i - 1) / (60 / (interval_seconds + t1))) * 60 - ts))
-                print(f"--- [ {round(interval_seconds + ts, 2)} ] 秒后继续，[ {remaining_time} ] 后结束---")
-                print("----------------------------------------------------------")
+                print(f"<br>--- [ {round(interval_seconds + ts, 2)} ] 秒后继续，[ {remaining_time} ] 后结束---")
+                print("<br>----------------------------------------------------------")
                 sleep(interval_seconds + ts)
 
             # 上面是Qthread中的循环匹配代码--------------
