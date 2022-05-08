@@ -5,8 +5,9 @@ from time import sleep
 from random import randint
 import win32com.client
 from win32gui import SetForegroundWindow, GetWindowRect
-from win32api import MAKELONG, SendMessage
-from win32con import WM_LBUTTONUP, MK_LBUTTON, WM_LBUTTONDOWN
+from win32api import MAKELONG, SendMessage, mouse_event, SetCursorPos
+from win32con import WM_LBUTTONUP, MK_LBUTTON, WM_LBUTTONDOWN, WM_ACTIVATE, WA_ACTIVE, MOUSEEVENTF_LEFTUP, \
+    MOUSEEVENTF_LEFTDOWN
 from pyautogui import position, click, moveTo
 from modules.ModuleHandleSet import HandleSet
 
@@ -26,15 +27,20 @@ class DoClick:
             pos = self.pos
             handle_num = self.handle_num
             click_deviation = int(self.click_deviation)
-            px = randint(-click_deviation, click_deviation)  # 设置随机偏移范围，避免封号
-            py = randint(-click_deviation, click_deviation)
+            px = randint(-click_deviation - 5, click_deviation + 5)  # 设置随机偏移范围，避免封号
+            py = randint(-click_deviation - 5, click_deviation + 5)
             cx = int(px + pos[0])
             cy = int(py + pos[1])
 
-            long_position = MAKELONG(cx, cy)  # 模拟鼠标指针 传送到指定坐标
-            SendMessage(handle_num, WM_LBUTTONDOWN, MK_LBUTTON, long_position)  # 模拟鼠标按下
+            # 模拟鼠标指针 点击指定位置
+            long_position = MAKELONG(cx, cy)
+            SendMessage(handle_num, WM_ACTIVATE, WA_ACTIVE, 0)
+            # SendMessage(handle_num, WM_LBUTTONDOWN, MK_LBUTTON, long_position)  # 模拟鼠标按下
+            # sleep(0.05)
+            # SendMessage(handle_num, WM_LBUTTONUP, MK_LBUTTON, long_position)  # 模拟鼠标弹起
+            SendMessage(handle_num, WM_LBUTTONDOWN, 0, long_position)  # 模拟鼠标按下
             sleep(0.05)
-            SendMessage(handle_num, WM_LBUTTONUP, MK_LBUTTON, long_position)  # 模拟鼠标弹起
+            SendMessage(handle_num, WM_LBUTTONUP, 0, long_position)  # 模拟鼠标弹起
 
             print(f"<br>点击坐标: [ {cx} , {cy} ] <br>窗口名称: [ {HandleSet.get_handle_title(handle_num)} ]")
 
@@ -45,8 +51,8 @@ class DoClick:
         if self.pos is not None:
             pos = self.pos
             click_deviation = int(self.click_deviation)
-            px = randint(-click_deviation, click_deviation)  # 设置随机偏移范围，避免封号
-            py = randint(-click_deviation, click_deviation)
+            px = randint(-click_deviation - 5, click_deviation + 5)  # 设置随机偏移范围，避免封号
+            py = randint(-click_deviation - 5, click_deviation + 5)
             cx = int(px + pos[0])
             cy = int(py + pos[1])
             # 使用modules下的adb工具执行adb命令
@@ -59,7 +65,7 @@ class DoClick:
 
     def windows_click_bk(self):
         """
-        点击目标位置,只能后台点击（兼容所有窗体程序）
+        点击目标位置,只能前台点击（兼容所有窗体程序）
         """
         # 前台点击，窗口必须置顶，兼容所有窗口（模拟器、云游戏等）点击
         pos = self.pos
@@ -68,8 +74,8 @@ class DoClick:
         x1, y1, x2, y2 = GetWindowRect(handle_num)
 
         # 设置随机偏移范围，避免封号
-        px = randint(-click_deviation, click_deviation)
-        py = randint(-click_deviation, click_deviation)
+        px = randint(-click_deviation - 5, click_deviation + 5)
+        py = randint(-click_deviation - 5, click_deviation + 5)
         cx = int(px + pos[0])
         cy = int(py + pos[1])
 

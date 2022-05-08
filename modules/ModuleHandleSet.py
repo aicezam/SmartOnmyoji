@@ -26,7 +26,11 @@ class HandleSet:
         else:
             self.handle_num = FindWindow(None, self.handle_title)  # 搜索句柄标题，获取句柄编号
             if self.handle_title == "雷电模拟器":
-                self.handle_num = FindWindowEx(self.handle_num, 0, None, "TheRender")  # 兼容雷电模拟器后台点击
+                self.handle_num = FindWindowEx(self.handle_num, None, None, "TheRender")  # 兼容雷电模拟器后台点击
+                if self.handle_num == 0:
+                    return None  # 返回异常
+                else:
+                    return self.handle_num
             else:
                 if self.handle_num == 0:
                     return None  # 返回异常
@@ -118,8 +122,10 @@ class HandleSet:
 
     @staticmethod
     def adb_device_status():
+        HandleSet.deal_cmd(abspath(dirname(__file__)) + r'\adb.exe kill-server')
         command = abspath(dirname(__file__)) + r'\adb.exe devices'  # adb放在modules目录下，不用那么麻烦安装adb命令了
         # result = HandleSet.deal_cmd('adb devices')
+        # command = abspath(dirname(__file__)) + r'\adb.exe connect 127.0.0.1:7555'
         result = HandleSet.deal_cmd(command)
         result = result.decode("utf-8")
         if result.startswith('List of devices attached'):
