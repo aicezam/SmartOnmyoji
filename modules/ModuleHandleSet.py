@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import winsound
+from re import search
 from os.path import abspath, dirname
 from subprocess import Popen, PIPE
 from time import sleep
@@ -9,6 +11,8 @@ from win32gui import GetWindowText, FindWindow, FindWindowEx, GetWindowRect, Get
 from win32process import NORMAL_PRIORITY_CLASS, REALTIME_PRIORITY_CLASS, SetPriorityClass, IDLE_PRIORITY_CLASS, \
     HIGH_PRIORITY_CLASS, GetWindowThreadProcessId, BELOW_NORMAL_PRIORITY_CLASS, ABOVE_NORMAL_PRIORITY_CLASS
 
+from modules.ModuleGetConfig import ReadConfigFile
+
 
 class HandleSet:
     def __init__(self, handle_title, handle_num):
@@ -17,6 +21,8 @@ class HandleSet:
         self.handle_title = handle_title
         self.handle_num = int(handle_num)
         self.handle_pid = None
+        set_config = ReadConfigFile()
+        self.other_setting = set_config.read_config_other_setting()
 
     @property
     def get_handle_num(self):
@@ -25,7 +31,7 @@ class HandleSet:
             return self.handle_num
         else:
             self.handle_num = FindWindow(None, self.handle_title)  # 搜索句柄标题，获取句柄编号
-            if self.handle_title == "雷电模拟器":
+            if search("雷电模拟器", self.handle_title):
                 self.handle_num = FindWindowEx(self.handle_num, None, None, "TheRender")  # 兼容雷电模拟器后台点击
                 if self.handle_num == 0:
                     return None  # 返回异常
@@ -72,11 +78,15 @@ class HandleSet:
         """检测句柄是否停止"""
         if self.handle_num != 0 and process_num == '多开':  # 多开时，通过编号找标题是否存在
             if self.get_handle_title(self.handle_num) == '':
+                if self.other_setting[7]:
+                    self.play_sounds("warming")  # 播放提示音
                 return False
             else:
                 return True
         elif self.handle_title != '' and process_num == '单开':  # 单开时，通过标题找编号是否存在
             if self.get_handle_num is None:
+                if self.other_setting[7]:
+                    self.play_sounds("warming")  # 播放提示音
                 return False
             else:
                 return True
@@ -170,3 +180,12 @@ class HandleSet:
         print(f"<br>目标窗口: [ {hand_win_title} ] 窗口大小：[ {right - left} X {bottom - top} ]")
         print("<br>-----------------------------------------------------------")
         return hand_win_title, hand_num
+
+    @staticmethod
+    def play_sounds(flag):
+        if flag == "warming":
+            sound = abspath(dirname(__file__)) + r'\sounds\warming.wav'
+            winsound.PlaySound(sound, winsound.SND_ALIAS)
+        elif flag == "end":
+            sound = abspath(dirname(__file__)) + r'\sounds\end.wav'
+            winsound.PlaySound(sound, winsound.SND_ALIAS)

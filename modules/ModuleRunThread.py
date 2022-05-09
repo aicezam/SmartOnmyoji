@@ -161,6 +161,10 @@ class MatchingThread(QtCore.QThread):
         """
         多线程执行，避免界面卡顿，通过线程锁实现暂停、终止的操作，通过信号实现传参到界面
         """
+        # 加载配置参数设置
+        set_config = ReadConfigFile()
+        other_setting = set_config.read_config_other_setting()
+
         # print("线程开始")
         info = self.get_ui_info()
 
@@ -185,8 +189,6 @@ class MatchingThread(QtCore.QThread):
             loop_times, target_info, t1 = init_value
 
         # 检测游戏时间是否太晚，进行提示
-        set_config = ReadConfigFile()
-        other_setting = set_config.read_config_other_setting()
         if other_setting[1] is True:
             start_match.time_warming()
 
@@ -217,12 +219,17 @@ class MatchingThread(QtCore.QThread):
                 print(f"<br>已成功匹配 [ {success_times} ] 次")
                 if other_setting[2] is True:
                     if success_times % int(other_setting[3]) == 0:
+                        print(f"<br>已成功匹配{other_setting[3]}次，为防止异常检测，在此期间请等待或手动操作！")
+                        if other_setting[7]:
+                            HandleSet.play_sounds("warming")  # 播放提示音
                         for t in range(int(other_setting[4])):
-                            print(f"<br>已成功匹配100次，为防止异常，[ {int(other_setting[4]) - t} ] 秒后继续……")
+                            print(f"<br>为防止异常，[ {int(other_setting[4]) - t} ] 秒后继续……")
                             sleep(1)
 
             # 检测是否正常运行，否则终止
             if not run_status:
+                if other_setting[7]:
+                    HandleSet.play_sounds("warming")  # 播放提示音
                 self.mutex.unlock()
                 self.finished_signal.emit(True)
                 break
@@ -230,6 +237,8 @@ class MatchingThread(QtCore.QThread):
             # 判断是否结束
             if i == loop_times - 1:
                 print("<br>---已执行完成!---")
+                if other_setting[7]:
+                    HandleSet.play_sounds("end")  # 播放提示音
                 self.end_do(info)
                 self.mutex.unlock()
                 self.finished_signal.emit(True)
