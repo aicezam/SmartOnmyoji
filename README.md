@@ -6,17 +6,21 @@
 
 
 ### 安装方法
-启动windows命令行终端cmd或powershell，安装python，克隆仓库，进入根目录下，安装 requirements.txt 依赖库：pywin32、opencv-python、PyQt5、PyAutoGUI
+**推荐直接下载使用已编译打包的程序：https://github.com/aicezam/SmartOnmyoji/releases** 
+下载压缩包解压后双击运行 **smart_onmyoji_start.exe**
+
+或启动windows命令行终端cmd或powershell，安装python，克隆仓库，进入根目录下，安装 requirements.txt 依赖库：pywin32、opencv-python、PyQt5、PyAutoGUI
 ```
 1. python安装（版本大于3.7.6都行）：https://www.python.org/ftp/python/3.7.6/python-3.7.6-amd64.exe
 2. 克隆或下载本项目
 3. 运行power shell 或 cmd 进入主目录：cd .\SmartOnmyoji\ 安装依赖库：pip install -r requirements.txt
 4. 运行power shell 或 cmd ：python smart_onmyoji_start.py
 ```
-**或直接下载使用已编译打包的程序：https://github.com/aicezam/SmartOnmyoji/releases** 双击运行 **smart_onmyoji_start.exe**
+
 
 ### 使用方法
-- 使用前警告：请谨慎使用辅助脚本，所有不公平游戏行为都可能被官方检测导致封号（坐标偏移量越小、点击频率越快，越容易被检测）
+- **使用前警告：请谨慎使用辅助脚本，所有不公平游戏行为都可能被官方检测导致封号（坐标偏移量越小、点击频率越快，越容易被检测）**
+- 推荐阴阳师桌面版（[NGA论坛](https://g37.gdl.netease.com/onmyoji_setup_11.12.0.zip)）、雷电模拟器([官网](https://www.ldmnq.com/))
 - 阴阳师电脑版使用模板匹配时，不要调分辨率，如果要调分辨率，需要重新截图，然后放到/img目录的对应文件夹下面
 - 如果发现总是匹配失败，可能是/img模板图片问题，可以重新截图，或使用特征点匹配方法，或切换为 **兼容模式** ，也可自行调试代码看截图是否成功，找看看是哪儿的问题
 - **支持后台点击**，但不支持部分窗体（如网易MuMu、网易云游戏），可以切换为 **兼容模式** 以兼容这些窗体，兼容模式下不能后台点击
