@@ -28,20 +28,18 @@ class HandleSet:
     def get_handle_num(self):
         """通过句柄标题获取句柄编号"""
         if self.handle_num != 0 or self.handle_title == '':
-            return self.handle_num
+            if search("雷电模拟器", self.get_handle_title(self.handle_num)):
+                self.handle_num = FindWindowEx(self.handle_num, None, None, "TheRender")  # 兼容雷电模拟器后台点击
+                return None if self.handle_num == 0 else self.handle_num
+            else:
+                return self.handle_num
         else:
             self.handle_num = FindWindow(None, self.handle_title)  # 搜索句柄标题，获取句柄编号
             if search("雷电模拟器", self.handle_title):
                 self.handle_num = FindWindowEx(self.handle_num, None, None, "TheRender")  # 兼容雷电模拟器后台点击
-                if self.handle_num == 0:
-                    return None  # 返回异常
-                else:
-                    return self.handle_num
+                return None if self.handle_num == 0 else self.handle_num
             else:
-                if self.handle_num == 0:
-                    return None  # 返回异常
-                else:
-                    return self.handle_num
+                return None if self.handle_num == 0 else self.handle_num
 
     @staticmethod
     def get_handle_title(handle_num=None):
@@ -50,11 +48,12 @@ class HandleSet:
         :param handle_num: 句柄编号
         :returns: 句柄标题
         """
-        if handle_num is None:
-            return None
-        else:
-            handle_title = GetWindowText(handle_num)  # 获取句柄标题
-            return handle_title
+        return None if handle_num is None or handle_num == 0 or handle_num == '' else GetWindowText(handle_num)
+        # if handle_num is None or handle_num == 0 or handle_num == '':
+        #     return None
+        # else:
+        #     handle_title = GetWindowText(handle_num)  # 获取句柄标题
+        #     return handle_title
 
     @property
     def get_handle_pid(self):
