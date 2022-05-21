@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import winsound
+from os import system
 from re import search
 from os.path import abspath, dirname
 from subprocess import Popen, PIPE
@@ -21,12 +22,13 @@ class HandleSet:
         self.handle_title = handle_title
         self.handle_num = int(handle_num)
         self.handle_pid = None
-        set_config = ReadConfigFile()
+        set_config = ReadConfigFile()  # 读取配置文件
         self.other_setting = set_config.read_config_other_setting()
 
     @property
     def get_handle_num(self):
         """通过句柄标题获取句柄编号"""
+        # 如果编号不为0或者标题为空，说明是设置的多开，此时直接校验编号即可
         if self.handle_num != 0 or self.handle_title == '':
             if search("雷电模拟器", self.get_handle_title(self.handle_num)):
                 self.handle_num = FindWindowEx(self.handle_num, None, None, "TheRender")  # 兼容雷电模拟器后台点击
@@ -34,6 +36,7 @@ class HandleSet:
             else:
                 return self.handle_num
         else:
+            # 其他情况，说明设置的单开，此时需要通过标题名称来获取编号，再对编号进行校验
             self.handle_num = FindWindow(None, self.handle_title)  # 搜索句柄标题，获取句柄编号
             if search("雷电模拟器", self.handle_title):
                 self.handle_num = FindWindowEx(self.handle_num, None, None, "TheRender")  # 兼容雷电模拟器后台点击
@@ -67,11 +70,12 @@ class HandleSet:
         获取句柄的坐标
         :returns: 坐标，左上角（x1，y1），右下角（x2，y2）
         """
-        if self.get_handle_num is None:
-            return None
-        else:
-            self.handle_pos = GetWindowRect(self.get_handle_num)
-            return self.handle_pos
+        return None if self.get_handle_num is None else GetWindowRect(self.get_handle_num)
+        # if self.get_handle_num is None:
+        #     return None
+        # else:
+        #     self.handle_pos = GetWindowRect(self.get_handle_num)
+        #     return self.handle_pos
 
     def handle_is_active(self, process_num):
         """检测句柄是否停止"""
@@ -89,6 +93,10 @@ class HandleSet:
                 return False
             else:
                 return True
+
+    def set_priority_bk(self):
+        """尝试用自带的wmic设置优先级，但，已被弃用"""
+        system("wmic process where name=\"onmyoji.exe\" CALL setpriority 128")
 
     def set_priority(self, priority=4):
         """
@@ -126,37 +134,42 @@ class HandleSet:
 
     @staticmethod
     def deal_cmd(cmd):
+        """执行cmd命令"""
         pi = Popen(cmd, shell=True, stdout=PIPE)
         return pi.stdout.read()
 
     @staticmethod
     def adb_device_status():
-        HandleSet.deal_cmd(abspath(dirname(__file__)) + r'\adb.exe kill-server')
-        command = abspath(dirname(__file__)) + r'\adb.exe devices'  # adb放在modules目录下，不用那么麻烦安装adb命令了
-        # result = HandleSet.deal_cmd('adb devices')
-        # command = abspath(dirname(__file__)) + r'\adb.exe connect 127.0.0.1:7555'
-        result = HandleSet.deal_cmd(command)
-        result = result.decode("utf-8")
-        if result.startswith('List of devices attached'):
-            # 查看连接设备
-            result = result.strip().splitlines()
-            # 查看连接设备数量
-            device_size = len(result)
-            if device_size > 1:
-                device_list = []
-                for i in range(1, device_size):
-                    device_detail = result[1].split('\t')
-                    if device_detail[1] == 'device':
-                        device_list.append(device_detail[0])
-                    elif device_detail[1] == 'offline':
-                        print(device_detail[0])
-                        return False, '<br>连接出现异常，设备无响应'
-                    elif device_detail[1] == 'unknown':
-                        print(device_detail[0])
-                        return False, '<br>设备不在线，请重新连接，或打开安卓调试模式'
-                return True, device_list
-            else:
-                return False, "<br>设备不在线，请重新连接，或打开安卓调试模式"
+        """检测设备是否在线，如果在线返回True和在线设备列表，不在线则返回False和异常信息"""
+        try:
+            # HandleSet.deal_cmd(abspath(dirname(__file__)) + r'\adb.exe kill-server')
+            command = abspath(dirname(__file__)) + r'\adb.exe devices'  # adb放在modules目录下，不用那么麻烦安装adb命令了
+            # result = HandleSet.deal_cmd('adb devices')
+            # command = abspath(dirname(__file__)) + r'\adb.exe connect 127.0.0.1:7555'
+            result = HandleSet.deal_cmd(command)
+            result = result.decode("utf-8")
+            if result.startswith('List of devices attached'):
+                # 查看连接设备
+                result = result.strip().splitlines()
+                # 查看连接设备数量
+                device_size = len(result)
+                if device_size > 1:
+                    device_list = []
+                    for i in range(1, device_size):
+                        device_detail = result[1].split('\t')
+                        if device_detail[1] == 'device':
+                            device_list.append(device_detail[0])
+                        elif device_detail[1] == 'offline':
+                            print(device_detail[0])
+                            return False, '<br>连接出现异常，设备无响应'
+                        elif device_detail[1] == 'unknown':
+                            print(device_detail[0])
+                            return False, '<br>设备不在线，请重新连接，或打开安卓调试模式'
+                    return True, device_list
+                else:
+                    return False, "<br>设备不在线，请重新连接，或打开安卓调试模式"
+        except:
+            return False, '<br>连接出现异常，或设备无响应'
 
     @staticmethod
     def get_active_window(loop_times=5):
@@ -182,9 +195,10 @@ class HandleSet:
 
     @staticmethod
     def play_sounds(flag):
+        """播放声音"""
         if flag == "warming":
-            sound = abspath(dirname(__file__)) + r'\sounds\warming.wav'
+            sound = abspath(dirname(__file__)) + r'\sounds\\warming.wav'
             winsound.PlaySound(sound, winsound.SND_ALIAS)
         elif flag == "end":
-            sound = abspath(dirname(__file__)) + r'\sounds\end.wav'
+            sound = abspath(dirname(__file__)) + r'\sounds\\end.wav'
             winsound.PlaySound(sound, winsound.SND_ALIAS)

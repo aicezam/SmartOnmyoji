@@ -219,7 +219,7 @@ class MatchingThread(QtCore.QThread):
                 print(f"<br>已成功匹配 [ {success_times} ] 次")
                 if other_setting[2] is True:
                     if success_times % int(other_setting[3]) == 0:
-                        print(f"<br>已成功匹配{other_setting[3]}次，为防止异常检测，在此期间请等待或手动操作！")
+                        print(f"<br>已成功匹配{success_times}次，为防止异常检测，在此期间请等待或手动操作！")
                         if other_setting[7]:
                             HandleSet.play_sounds("warming")  # 播放提示音
                         for t in range(int(other_setting[4])):
@@ -230,9 +230,17 @@ class MatchingThread(QtCore.QThread):
             if not run_status:
                 if other_setting[7]:
                     HandleSet.play_sounds("warming")  # 播放提示音
-                self.mutex.unlock()
-                self.finished_signal.emit(True)
-                break
+                    # 如果运行异常重新尝试继续执行
+                print(f"<br>运行异常，请检查待匹配目标程序是否启动！")
+                for t in range(10):
+                    print(f"<br>{10 - t}秒后重试！")
+                    sleep(1)
+                pass
+
+                # 如果运行异常直接终止
+                # self.mutex.unlock()
+                # self.finished_signal.emit(True)
+                # break
 
             # 判断是否结束
             if i == loop_times - 1:

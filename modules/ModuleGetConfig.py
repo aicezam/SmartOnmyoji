@@ -81,10 +81,12 @@ class ReadConfigFile:
         debug_status_show_pics = self.str_to_bool(config_ini.get('other_setting', 'debug_status_show_pics'))
         set_priority_num = config_ini.get('other_setting', 'set_priority_num')
         play_sound_status = self.str_to_bool(config_ini.get('other_setting', 'play_sound_status'))
+        adb_wifi_status = self.str_to_bool(config_ini.get('other_setting', 'adb_wifi_status'))
+        adb_wifi_ip = config_ini.get('other_setting', 'adb_wifi_ip')
 
         other_setting = [save_ui_info_in_config, playtime_warming_status, success_times_warming_status,
                          success_times_warming_times, success_times_warming_waiting_seconds,
-                         debug_status_show_pics, set_priority_num, play_sound_status]
+                         debug_status_show_pics, set_priority_num, play_sound_status, adb_wifi_status, adb_wifi_ip]
 
         return other_setting
 

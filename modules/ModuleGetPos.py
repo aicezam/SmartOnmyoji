@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
-# get pos by template matching and sift matching
-import time
+# @Link    : https://github.com/aicezam/SmartOnmyoji
+# @Version : Python3.7.6
+# @MIT License Copyright (c) 2022 ACE
 
-from numpy import int32, float32
 from cv2 import cv2
-from modules.ModuleImgProcess import ImgProcess
+from numpy import int32, float32
+
 from modules.ModuleGetConfig import ReadConfigFile
+from modules.ModuleImgProcess import ImgProcess
 
 rc = ReadConfigFile()
 other_setting = rc.read_config_other_setting()

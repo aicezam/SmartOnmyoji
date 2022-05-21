@@ -61,7 +61,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # 加载config.ini文件中的默认参数
         self.click_deviation.setValue(self.click_deviation_value)  # 设置默认偏移量
-        self.image_compression.setSliderPosition(self.img_compress_val_value * 100)  # 压缩截图默认值
+        self.image_compression.setSliderPosition(int(self.img_compress_val_value * 100))  # 压缩截图默认值
         self.set_priority.setChecked(self.set_priority_status_value)
         self.debug.setChecked(self.debug_status_value)
         self.show_handle_title.setText(str(self.handle_title_value))
@@ -94,6 +94,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.rd_btn_windows_mod.setChecked(True)
         else:
             self.rd_btn_android_adb.setChecked(True)
+            self.btn_select_handle.setEnabled(False)
+            self.show_handle_title.setEnabled(False)
+            self.show_handle_num.setEnabled(False)
+            self.process_num_one.setEnabled(False)
+            self.process_num_more.setEnabled(False)
 
         # 设置界面上显示的匹配目标文件夹的选项名称
         for i in range(7):
@@ -169,7 +174,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         sleep(0.1)
         self.thread.resume()
 
-    # 取消按钮被点击的槽函数
+    # 停止按钮被点击的槽函数
     def __on_clicked_btn_cancel(self):
         self.btn_start.setEnabled(True)
         self.btn_pause.setEnabled(False)
@@ -226,9 +231,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.runmod_compatibility.setEnabled(bool_val)
         self.debug.setEnabled(bool_val)
         self.select_target_path_mode_combobox.setEnabled(bool_val)
-        self.show_handle_title.setEnabled(bool_val)
-        self.show_handle_title.setEnabled(bool_val)
-        self.btn_select_handle.setEnabled(bool_val)
+        if self.rd_btn_windows_mod.isChecked():
+            self.show_handle_title.setEnabled(bool_val)
+            self.show_handle_num.setEnabled(bool_val)
+            self.btn_select_handle.setEnabled(bool_val)
+            self.process_num_one.setEnabled(bool_val)
+            self.process_num_more.setEnabled(bool_val)
         self.rd_btn_windows_mod.setEnabled(bool_val)
         self.rd_btn_android_adb.setEnabled(bool_val)
         self.show_target_path.setEnabled(bool_val)
@@ -237,9 +245,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.loop_min.setEnabled(bool_val)
         self.click_deviation.setEnabled(bool_val)
         self.image_compression.setEnabled(bool_val)
-        self.process_num_one.setEnabled(bool_val)
-        self.process_num_more.setEnabled(bool_val)
-        self.show_handle_num.setEnabled(bool_val)
         self.set_priority.setEnabled(bool_val)
 
 

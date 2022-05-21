@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from gc import collect
 from time import sleep, localtime, strftime
+from os.path import abspath, dirname
+from re import search
 
 from win32gui import GetWindowText
 
@@ -60,6 +62,48 @@ class StartMatch:
         loop_min = int(loop_min)  # 初始化执行时间，因为不能使用字符串，所以要转一下
         interval_seconds = int(interval_seconds)  # 初始化间隔秒数
         loop_times = int(loop_min * (60 / (interval_seconds + t1)))  # 计算要一共要执行的次数
+
+        # 程序初始化时，如果设置的wifi或远程连接，先使用adb connect 连接设备
+        if self.connect_mod != 'Windows程序窗体':
+            HandleSet.deal_cmd(abspath(dirname(__file__)) + r'\adb.exe kill-server')
+            print("<br>正在尝试连接！如果失败请使用以下cmd命令重置adb，或使用USB连接手机")
+            print("<br>--------------------------------------------")
+            print(rf"<br>{abspath(dirname(__file__))}\adb.exe kill-server")
+            print(rf"<br>{abspath(dirname(__file__))}\adb.exe devices")
+            print("<br>--------------------------------------------")
+            adb_device_connect_status, device_id = HandleSet.adb_device_status()
+            if adb_device_connect_status:
+                print(rf"<br>已连接至：[ {device_id[0]} ]")
+            # print("<br>连接中……")
+            if self.other_setting[8]:
+                try:
+                    print(f"<br>正在尝试连接 [ {self.other_setting[9]} ] ……")
+                    command = abspath(dirname(__file__)) + rf'\adb.exe connect {self.other_setting[9]}'
+                    HandleSet.deal_cmd(command)
+                except:
+                    print("<br>连接出现异常，或设备无响应！")
+                    return None
+
+        elif self.connect_mod == 'Windows程序窗体':
+            if search("模拟器", self.hwd_title):
+                HandleSet.deal_cmd(abspath(dirname(__file__)) + r'\adb.exe kill-server')
+                print("<br>正在尝试连接模拟器！如果失败请使用以下cmd命令重置adb")
+                print(rf"<br>{abspath(dirname(__file__))}\adb.exe kill-server")
+                print(rf"<br>{abspath(dirname(__file__))}\adb.exe devices")
+                sleep(2)
+                if search("MuMu模拟器", self.hwd_title):
+                    HandleSet.deal_cmd(abspath(dirname(__file__)) + rf'\adb.exe connect 127.0.0.1:7555')
+                elif search("夜神模拟器", self.hwd_title):
+                    HandleSet.deal_cmd(abspath(dirname(__file__)) + rf'\adb.exe connect 127.0.0.1:62001')
+                elif search("逍遥模拟器", self.hwd_title):
+                    HandleSet.deal_cmd(abspath(dirname(__file__)) + rf'\adb.exe connect 127.0.0.1:21503')
+                elif search("腾讯手游助手", self.hwd_title):
+                    HandleSet.deal_cmd(abspath(dirname(__file__)) + rf'\adb.exe connect 127.0.0.1:6555')
+
+                adb_device_connect_status, device_id = HandleSet.adb_device_status()
+                if adb_device_connect_status:
+                    print(rf"<br>已连接至：[ {device_id[0]} ]")
+                    print("<br>--------------------------------------------")
 
         # 设置游戏进程优先级，避免闪退（部分电脑可能有bug，会报错）
         if set_priority_status:
@@ -121,7 +165,7 @@ class StartMatch:
         elif connect_mod == 'Android-手机':
             adb_device_connect_status, device_id = HandleSet.adb_device_status()
             if adb_device_connect_status:
-                screen_img = screen_method.adb_screen()
+                screen_img = screen_method.adb_screen(device_id[0])  # 暂仅支持找到的第一个设备
             else:
                 print(device_id)
                 run_status = False
@@ -180,26 +224,33 @@ class StartMatch:
             # if debug_status:
             # if self.other_setting[5]:  # 显示匹配成功的图片
             print(f"<br><img height=\"30\" src='{target_img_file_path[target_num]}'>")
-            print(
-                f"<br>匹配到第 [ {target_num + 1} ] 张图片: [ {target_img_name[target_num]} ]"
-                f"<br>坐标位置: [ {int(pos[0])} , {int(pos[1])} ] ")
+            print(f"<br>匹配到第 [ {target_num + 1} ] 张图片: [ {target_img_name[target_num]} ]"
+                  f"<br>坐标位置: [ {int(pos[0])} , {int(pos[1])} ] ")
 
             # 开始点击
             if connect_mod == 'Windows程序窗体':
-                handle_set = HandleSet(self.hwd_title, handle_num)
-                handle_num = handle_set.get_handle_num
-                doclick = DoClick(pos, click_deviation, handle_num)
+                if search("模拟器", self.hwd_title) or search("手游助手", self.hwd_title):
+                    # 针对 安卓模拟器 的兼容（使用ADB连接）
+                    adb_device_connect_status, device_id = HandleSet.adb_device_status()
+                    doclick = DoClick(pos, click_deviation)
+                    doclick.adb_click(device_id[0])
+                else:
+                    # 针对 windows 程序
+                    handle_set = HandleSet(self.hwd_title, handle_num)
+                    handle_num = handle_set.get_handle_num
+                    doclick = DoClick(pos, click_deviation, handle_num)
 
-                # 如果部分窗口不能点击、截图出来是黑屏，可以使用兼容模式
-                if scr_and_click_method == '正常-可后台':
-                    doclick.windows_click()
-                elif scr_and_click_method == '兼容-不可后台':
-                    doclick.windows_click_bk()
+                    # 如果部分窗口不能点击、截图出来是黑屏，可以使用兼容模式
+                    if scr_and_click_method == '正常-可后台':
+                        doclick.windows_click()
+                    elif scr_and_click_method == '兼容-不可后台':
+                        doclick.windows_click_bk()
 
             # 支持安卓adb连接
             elif connect_mod == 'Android-手机':
+                adb_device_connect_status, device_id = HandleSet.adb_device_status()
                 doclick = DoClick(pos, click_deviation)
-                doclick.adb_click()
+                doclick.adb_click(device_id[0])
         else:
             print("<br>匹配失败！")
             match_status = False
@@ -270,7 +321,7 @@ class StartMatch:
                                                      compress_val, target_info, click_deviation, run_status,
                                                      match_status)
 
-        # adb模式下，仅支持单开
+        # adb模式下，暂仅支持单开
         # elif connect_mod == 'Android-Adb':
         else:
             adb_device_connect_status, device_id = HandleSet.adb_device_status()
