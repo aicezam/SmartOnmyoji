@@ -66,7 +66,7 @@ class StartMatch:
         # 程序初始化时，如果设置的wifi或远程连接，先使用adb connect 连接设备
         if self.connect_mod != 'Windows程序窗体':
             HandleSet.deal_cmd(abspath(dirname(__file__)) + r'\adb.exe kill-server')
-            print("<br>正在尝试连接！如果失败请使用以下cmd命令重置adb，或使用USB连接手机")
+            print("<br>正在尝试连接！如果失败请使用以下cmd命令重置adb，或使用USB连接手机后重试")
             print("<br>--------------------------------------------")
             print(rf"<br>{abspath(dirname(__file__))}\adb.exe kill-server")
             print(rf"<br>{abspath(dirname(__file__))}\adb.exe devices")
@@ -74,6 +74,22 @@ class StartMatch:
             adb_device_connect_status, device_id = HandleSet.adb_device_status()
             if adb_device_connect_status:
                 print(rf"<br>已连接至：[ {device_id[0]} ]")
+            else:
+                print("<br>连接失败！"
+                      "<br>"
+                      f"<br>若使用模拟器或局域网连接安卓手机，请修改config配置："
+                      f"<br>adb_wifi_status = True"
+                      f"<br>adb_wifi_ip = 'ip及端口号'"
+                      f"<br>局域网使用，请先用USB连接安卓手机，打开调试模式！"
+                      f"<br>以下是各个模拟器默认端口号，但建议使用windows程序模式，也同时兼容以下几种模拟器："
+                      f"<br>MuMu模拟器：127.0.0.1:7555"
+                      f"<br>夜神模拟器：127.0.0.1:62001"
+                      f"<br>逍遥模拟器：127.0.0.1:21503"
+                      f"<br>腾讯手游助手：127.0.0.1:6555"
+                      f"<br>雷电模拟器：无需配置config文件"
+                      "<br>"
+                      "<br>--------------------------------------------")
+
             # print("<br>连接中……")
             if self.other_setting[8]:
                 try:
@@ -85,7 +101,7 @@ class StartMatch:
                     return None
 
         elif self.connect_mod == 'Windows程序窗体':
-            if search("模拟器", self.hwd_title):
+            if search("模拟器", self.hwd_title) and not search("雷电模拟器", self.hwd_title):
                 HandleSet.deal_cmd(abspath(dirname(__file__)) + r'\adb.exe kill-server')
                 print("<br>正在尝试连接模拟器！如果失败请使用以下cmd命令重置adb")
                 print(rf"<br>{abspath(dirname(__file__))}\adb.exe kill-server")
@@ -229,11 +245,25 @@ class StartMatch:
 
             # 开始点击
             if connect_mod == 'Windows程序窗体':
-                if search("模拟器", self.hwd_title) or search("手游助手", self.hwd_title):
+
+                if search("雷电模拟器", self.hwd_title):
+                    # 针对 雷电模拟器，特殊处理
+                    handle_set = HandleSet(self.hwd_title, handle_num)
+                    handle_num = handle_set.get_handle_num
+                    doclick = DoClick(pos, click_deviation, handle_num)
+
+                    # 如果部分窗口不能点击、截图出来是黑屏，可以使用兼容模式
+                    if scr_and_click_method == '正常-可后台':
+                        doclick.windows_click()
+                    elif scr_and_click_method == '兼容-不可后台':
+                        doclick.windows_click_bk()
+
+                elif search("模拟器", self.hwd_title) or search("手游助手", self.hwd_title):
                     # 针对 安卓模拟器 的兼容（使用ADB连接）
                     adb_device_connect_status, device_id = HandleSet.adb_device_status()
                     doclick = DoClick(pos, click_deviation)
                     doclick.adb_click(device_id[0])
+
                 else:
                     # 针对 windows 程序
                     handle_set = HandleSet(self.hwd_title, handle_num)
