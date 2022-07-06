@@ -2,7 +2,7 @@
 from os import system
 from os.path import abspath, dirname
 from time import sleep
-from random import randint
+import random
 import win32com.client
 from win32gui import SetForegroundWindow, GetWindowRect
 from win32api import MAKELONG, SendMessage, mouse_event, SetCursorPos
@@ -27,8 +27,8 @@ class DoClick:
             pos = self.pos
             handle_num = self.handle_num
             click_deviation = int(self.click_deviation)
-            px = randint(-click_deviation - 5, click_deviation + 5)  # 设置随机偏移范围，避免封号
-            py = randint(-click_deviation - 5, click_deviation + 5)
+            px = random.randint(-click_deviation - 5, click_deviation + 5)  # 设置随机偏移范围，避免封号
+            py = random.randint(-click_deviation - 5, click_deviation + 5)
             cx = int(px + pos[0])
             cy = int(py + pos[1])
 
@@ -44,6 +44,16 @@ class DoClick:
 
             print(f"<br>点击坐标: [ {cx} , {cy} ] <br>窗口名称: [ {HandleSet.get_handle_title(handle_num)} ]")
 
+            # 模拟真实点击，怀疑痒痒鼠会记录点击数据，这里模拟正常点击偶尔会多点一次的情况，增加混淆点击数据
+            if cx % 2 == 0:
+                sleep((random.randint(20, 80))/100)
+                mx = random.randint(-200, 200) + cx
+                my = random.randint(-200, 200) + cy
+                SendMessage(handle_num, WM_LBUTTONDOWN, 0, MAKELONG(mx, my))  # 模拟鼠标按下
+                sleep(0.05)
+                SendMessage(handle_num, WM_LBUTTONUP, 0, MAKELONG(mx, my))  # 模拟鼠标弹起
+                print(f"<br>点击偏移坐标: [ {mx}, {my} ]")
+
             return True
 
     def adb_click(self, device_id):
@@ -51,8 +61,8 @@ class DoClick:
         if self.pos is not None:
             pos = self.pos
             click_deviation = int(self.click_deviation)
-            px = randint(-click_deviation - 5, click_deviation + 5)  # 设置随机偏移范围，避免封号
-            py = randint(-click_deviation - 5, click_deviation + 5)
+            px = random.randint(-click_deviation - 5, click_deviation + 5)  # 设置随机偏移范围，避免封号
+            py = random.randint(-click_deviation - 5, click_deviation + 5)
             cx = int(px + pos[0])
             cy = int(py + pos[1])
             # 使用modules下的adb工具执行adb命令
@@ -73,8 +83,8 @@ class DoClick:
         x1, y1, x2, y2 = GetWindowRect(handle_num)
 
         # 设置随机偏移范围，避免封号
-        px = randint(-click_deviation - 5, click_deviation + 5)
-        py = randint(-click_deviation - 5, click_deviation + 5)
+        px = random.randint(-click_deviation - 5, click_deviation + 5)
+        py = random.randint(-click_deviation - 5, click_deviation + 5)
         cx = int(px + pos[0])
         cy = int(py + pos[1])
 
@@ -90,6 +100,9 @@ class DoClick:
         now_pos = position()
         moveTo(jx, jy)  # 鼠标移至目标
         click(jx, jy)
+        sleep((random.randint(20, 80))/100)
+        if jx % 2 == 0:
+            click(random.randint(-200, 200) + cx, random.randint(-200, 200) + cy)
         moveTo(now_pos[0], now_pos[1])
 
         print(f"<br>点击坐标: [ {cx} , {cy} ] 窗口名称: [ {HandleSet.get_handle_title(handle_num)} ]")
