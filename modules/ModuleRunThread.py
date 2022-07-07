@@ -253,7 +253,7 @@ class MatchingThread(QtCore.QThread):
                 break
             else:
                 # 倒推剩余时间（时分秒格式）
-                ts = uniform(0.5, 3.5)  # 设置随机延时，防检测
+                ts = uniform(0.2, 1.5)  # 设置随机延时，防检测
                 remaining_time = time_transform(int(((loop_times - i - 1) / (60 / (interval_seconds + t1))) * 60 - ts))
                 print(f"<br>--- [ {round(interval_seconds + ts, 2)} ] 秒后继续，[ {remaining_time} ] 后结束---")
                 print("<br>----------------------------------------------------------")

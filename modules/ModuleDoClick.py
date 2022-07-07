@@ -44,11 +44,22 @@ class DoClick:
 
             print(f"<br>点击坐标: [ {cx} , {cy} ] <br>窗口名称: [ {HandleSet.get_handle_title(handle_num)} ]")
 
-            # 模拟真实点击，怀疑痒痒鼠会记录点击数据，这里模拟正常点击偶尔会多点一次的情况，增加混淆点击数据
-            if cx % 2 == 0:
-                sleep((random.randint(20, 80))/100)
-                mx = random.randint(-200, 200) + cx
-                my = random.randint(-200, 200) + cy
+            # 以下代码模拟真实点击，怀疑痒痒鼠会记录点击坐标数据，然后AI判断是否规律（比如一段时间内，每次都总点某个按钮附近，不超过100像素，就有风险），
+            # 如果只是随机延迟+坐标偏移，可能骗不过后台
+            # 这里模拟正常点击偶尔会多点一次的情况，另外再增加混淆点击，使整体点击看起来不那么规律
+            dd = random.randint(0, 99)  # roll 0-99，20%的几率触发混淆点击
+            if dd < 10:  # 匹配坐标附近的，不偏移太远
+                sleep((random.randint(5, 15))/100)  # 随机延迟0.05-0.15秒
+                mx = random.randint(-50, 300) + cx
+                my = random.randint(-50, 300) + cy
+                SendMessage(handle_num, WM_LBUTTONDOWN, 0, MAKELONG(mx, my))  # 模拟鼠标按下
+                sleep(0.05)
+                SendMessage(handle_num, WM_LBUTTONUP, 0, MAKELONG(mx, my))  # 模拟鼠标弹起
+                print(f"<br>点击偏移坐标: [ {mx}, {my} ]")
+            elif 45 < dd < 50 or dd > 90:  # 随机点击其他地方
+                sleep((random.randint(5, 15))/100)
+                mx = random.randint(200, 1000)
+                my = random.randint(200, 1000)
                 SendMessage(handle_num, WM_LBUTTONDOWN, 0, MAKELONG(mx, my))  # 模拟鼠标按下
                 sleep(0.05)
                 SendMessage(handle_num, WM_LBUTTONUP, 0, MAKELONG(mx, my))  # 模拟鼠标弹起
@@ -70,6 +81,23 @@ class DoClick:
             HandleSet.deal_cmd(command)
             # system(command)
             print(f"<br>点击设备 [ {device_id} ] 坐标: [ {cx} , {cy} ]")
+
+            dd = random.randint(0, 99)
+            if dd < 10:
+                mx = random.randint(-50, 300) + cx
+                my = random.randint(-50, 300) + cy
+                sleep((random.randint(5, 15))/100)
+                command = abspath(dirname(__file__)) + rf'\adb.exe -s {device_id} shell input tap {mx} {my}'
+                HandleSet.deal_cmd(command)
+                print(f"<br>点击设备 [ {device_id} ] 坐标: [ {mx} , {my} ]")
+            elif 45 < dd < 50 or dd > 90:
+                mx = random.randint(200, 1000)
+                my = random.randint(200, 1000)
+                sleep((random.randint(5, 15))/100)
+                command = abspath(dirname(__file__)) + rf'\adb.exe -s {device_id} shell input tap {mx} {my}'
+                HandleSet.deal_cmd(command)
+                print(f"<br>点击设备 [ {device_id} ] 坐标: [ {mx} , {my} ]")
+
             return True
 
     def windows_click_bk(self):
@@ -100,9 +128,13 @@ class DoClick:
         now_pos = position()
         moveTo(jx, jy)  # 鼠标移至目标
         click(jx, jy)
-        sleep((random.randint(20, 80))/100)
-        if jx % 2 == 0:
-            click(random.randint(-200, 200) + cx, random.randint(-200, 200) + cy)
+        dd = random.randint(0, 99)
+        if dd < 10:
+            sleep((random.randint(5, 15))/100)
+            click(random.randint(-50, 300) + cx, random.randint(-50, 300) + cy)
+        elif 45 < dd < 50 or dd > 90:
+            sleep((random.randint(5, 15))/100)
+            click(random.randint(200, 1000), random.randint(200, 1000))
         moveTo(now_pos[0], now_pos[1])
 
         print(f"<br>点击坐标: [ {cx} , {cy} ] 窗口名称: [ {HandleSet.get_handle_title(handle_num)} ]")
