@@ -58,9 +58,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                              "<p>脚本源码(git)："
                              "<a href='https://github.com/aicezam/SmartOnmyoji'>"
                              "https://github.com/aicezam/SmartOnmyoji</a></p>"
-                             "<p>阿里云盘(高速)："
+                             "<p>蓝奏云(密码yys)："
                              "<a href='https://isu.ink/yys'>"
-                             "https://www.aliyundrive.com/s/Ucjh6p7haY1</a></p>"
+                             "https://wwu.lanzouq.com/b03d5mdli</a></p>"
                              )
 
         # 加载config.ini文件中的默认参数
