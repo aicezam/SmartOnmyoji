@@ -55,8 +55,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.run_log.setText("<br>"
                              "<p>本软件完全开源免费，作者不对使用该软件产生的一切后果负责。</p>"
                              "<p>你可以在以下地址下载：</p>"
+                             "<p>脚本源码(git)："
                              "<a href='https://github.com/aicezam/SmartOnmyoji'>"
-                             "https://github.com/aicezam/SmartOnmyoji</a> "
+                             "https://github.com/aicezam/SmartOnmyoji</a></p>"
+                             "<p>阿里云盘(高速)："
+                             "<a href='https://isu.ink/yys'>"
+                             "https://www.aliyundrive.com/s/Ucjh6p7haY1</a></p>"
                              )
 
         # 加载config.ini文件中的默认参数
@@ -277,7 +281,7 @@ if __name__ == '__main__':
         target_file_name = config_ini.read_config_target_path_files_name()
         myWindow = MainWindow(default_info, target_file_name)
 
-        myWindow.setWindowTitle('痒痒鼠护肝小助手 - https://github.com/aicezam/SmartOnmyoji')  # 设置窗口标题
+        myWindow.setWindowTitle('痒痒鼠护肝小助手 - v0.20')  # 设置窗口标题
         myWindow.show()
         sys.exit(app.exec_())
     else:
