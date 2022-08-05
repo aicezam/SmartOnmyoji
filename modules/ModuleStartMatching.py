@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+# @Link    : https://github.com/aicezam/SmartOnmyoji
+# @Version : Python3.7.6
+# @MIT License Copyright (c) 2022 ACE
+
 from gc import collect
 from time import sleep, localtime, strftime
 from os.path import abspath, dirname
@@ -261,8 +265,13 @@ class StartMatch:
                 elif search("模拟器", self.hwd_title) or search("手游助手", self.hwd_title):
                     # 针对 安卓模拟器 的兼容（使用ADB连接）
                     adb_device_connect_status, device_id = HandleSet.adb_device_status()
-                    doclick = DoClick(pos, click_deviation)
-                    doclick.adb_click(device_id[0])
+                    doclick = DoClick(pos, click_deviation, handle_num)
+
+                    # 如果部分窗口不能点击、截图出来是黑屏，可以使用兼容模式
+                    if scr_and_click_method == '正常-可后台':
+                        doclick.adb_click(device_id[0])
+                    elif scr_and_click_method == '兼容-不可后台':
+                        doclick.windows_click_bk()
 
                 else:
                     # 针对 windows 程序

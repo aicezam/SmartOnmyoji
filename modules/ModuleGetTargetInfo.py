@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
+# @Link    : https://github.com/aicezam/SmartOnmyoji
+# @Version : Python3.7.6
+# @MIT License Copyright (c) 2022 ACE
+
 from os import path, walk
-from os.path import abspath, dirname
 from re import search, compile
 from numpy import uint8, fromfile
 from cv2 import cv2

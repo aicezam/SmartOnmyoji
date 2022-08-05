@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+# @Link    : https://github.com/aicezam/SmartOnmyoji
+# @Version : Python3.7.6
+# @MIT License Copyright (c) 2022 ACE
+
 import sys
 from ctypes import windll
 from os.path import abspath, dirname
@@ -281,7 +285,7 @@ if __name__ == '__main__':
         target_file_name = config_ini.read_config_target_path_files_name()
         myWindow = MainWindow(default_info, target_file_name)
 
-        myWindow.setWindowTitle('痒痒鼠护肝小助手 - v0.20')  # 设置窗口标题
+        myWindow.setWindowTitle('痒痒鼠护肝小助手 - v0.21')  # 设置窗口标题
         myWindow.show()
         sys.exit(app.exec_())
     else:

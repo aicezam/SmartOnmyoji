@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+# @Link    : https://github.com/aicezam/SmartOnmyoji
+# @Version : Python3.7.6
+# @MIT License Copyright (c) 2022 ACE
+
 import sys
 from os import system
 from random import uniform

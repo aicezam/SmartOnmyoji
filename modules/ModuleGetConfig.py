@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+# @Link    : https://github.com/aicezam/SmartOnmyoji
+# @Version : Python3.7.6
+# @MIT License Copyright (c) 2022 ACE
+
 from configparser import ConfigParser
 from os.path import abspath, dirname, exists
 
@@ -13,9 +17,9 @@ class ReadConfigFile:
 
         # 校验文件是否存在
         if not exists(self.file_path):
-            raise FileNotFoundError("文件不存在")
+            raise FileNotFoundError("配置文件不存在！")
 
-        config_ini.read(self.file_path, encoding='utf-8')  # 读配置文件
+        config_ini.read(self.file_path, encoding="utf-8")  # 读配置文件
 
         # 读取confing.ini的参数
         connect_mod = config_ini.get('ui_info', 'connect_mod')
@@ -43,9 +47,9 @@ class ReadConfigFile:
 
         # 校验文件是否存在
         if not exists(self.file_path):
-            raise FileNotFoundError("文件不存在")
+            raise FileNotFoundError("配置文件不存在！")
 
-        config_ini.read(self.file_path, encoding='utf-8')  # 读配置文件
+        config_ini.read(self.file_path, encoding="utf-8")  # 读配置文件
 
         # 读取confing.ini的参数
         file_name_0 = config_ini.get('target_path_files_name', 'file_name_0')
@@ -68,9 +72,9 @@ class ReadConfigFile:
 
         # 校验文件是否存在
         if not exists(self.file_path):
-            raise FileNotFoundError("文件不存在")
+            raise FileNotFoundError("配置文件不存在！")
 
-        config_ini.read(self.file_path, encoding='utf-8')  # 读配置文件
+        config_ini.read(self.file_path, encoding="utf-8")  # 读配置文件
 
         # 读取confing.ini的参数
         save_ui_info_in_config = self.str_to_bool(config_ini.get('other_setting', 'save_ui_info_in_config'))
@@ -83,25 +87,27 @@ class ReadConfigFile:
         play_sound_status = self.str_to_bool(config_ini.get('other_setting', 'play_sound_status'))
         adb_wifi_status = self.str_to_bool(config_ini.get('other_setting', 'adb_wifi_status'))
         adb_wifi_ip = config_ini.get('other_setting', 'adb_wifi_ip')
+        ex_click = self.str_to_bool(config_ini.get('other_setting', 'ex_click'))
 
         other_setting = [save_ui_info_in_config, playtime_warming_status, success_times_warming_status,
                          success_times_warming_times, success_times_warming_waiting_seconds,
-                         debug_status_show_pics, set_priority_num, play_sound_status, adb_wifi_status, adb_wifi_ip]
+                         debug_status_show_pics, set_priority_num, play_sound_status, adb_wifi_status, adb_wifi_ip,
+                         ex_click]
 
         return other_setting
 
     def writ_config_ui_info(self, info):
-        config_ini = ConfigParser()
+        config_ini = ConfigParser(comment_prefixes='/', allow_no_value=True)  # 保留注释
 
         # 校验文件是否存在
         if not exists(self.file_path):
-            raise FileNotFoundError("文件不存在")
+            raise FileNotFoundError("配置文件不存在！")
 
         # 先把所有参数转为str格式，否则写入会报错
         for i in range(len(info)):
             info[i] = str(info[i])
 
-        config_ini.read(self.file_path, encoding='utf-8')  # 读配置文件
+        config_ini.read(self.file_path, encoding="utf-8")  # 读配置文件
 
         # 写入confing.ini的参数
         config_ini.set("ui_info", "connect_mod", info[0])
@@ -121,7 +127,7 @@ class ReadConfigFile:
         config_ini.set("ui_info", "set_priority_status", info[14])
 
         # 写入文件
-        config_ini.write(open(self.file_path, 'w', encoding='utf-8'))
+        config_ini.write(open(self.file_path, 'w', encoding="utf-8"))
 
     @staticmethod
     def str_to_bool(str_val):
