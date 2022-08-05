@@ -19,7 +19,7 @@ class ReadConfigFile:
         if not exists(self.file_path):
             raise FileNotFoundError("配置文件不存在！")
 
-        config_ini.read(self.file_path, encoding="utf-8")  # 读配置文件
+        config_ini.read(self.file_path, encoding="utf-8-sig")  # 读配置文件
 
         # 读取confing.ini的参数
         connect_mod = config_ini.get('ui_info', 'connect_mod')
@@ -49,7 +49,7 @@ class ReadConfigFile:
         if not exists(self.file_path):
             raise FileNotFoundError("配置文件不存在！")
 
-        config_ini.read(self.file_path, encoding="utf-8")  # 读配置文件
+        config_ini.read(self.file_path, encoding="utf-8-sig")  # 读配置文件
 
         # 读取confing.ini的参数
         file_name_0 = config_ini.get('target_path_files_name', 'file_name_0')
@@ -74,7 +74,7 @@ class ReadConfigFile:
         if not exists(self.file_path):
             raise FileNotFoundError("配置文件不存在！")
 
-        config_ini.read(self.file_path, encoding="utf-8")  # 读配置文件
+        config_ini.read(self.file_path, encoding="utf-8-sig")  # 读配置文件
 
         # 读取confing.ini的参数
         save_ui_info_in_config = self.str_to_bool(config_ini.get('other_setting', 'save_ui_info_in_config'))
@@ -107,7 +107,7 @@ class ReadConfigFile:
         for i in range(len(info)):
             info[i] = str(info[i])
 
-        config_ini.read(self.file_path, encoding="utf-8")  # 读配置文件
+        config_ini.read(self.file_path, encoding="utf-8-sig")  # 读配置文件
 
         # 写入confing.ini的参数
         config_ini.set("ui_info", "connect_mod", info[0])
