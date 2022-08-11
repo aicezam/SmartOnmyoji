@@ -4,6 +4,7 @@
 # @MIT License Copyright (c) 2022 ACE
 
 import sys
+import time
 from os import system
 from random import uniform
 from time import sleep
@@ -182,6 +183,11 @@ class MatchingThread(QtCore.QThread):
         set_priority_status = info[14]
         interval_seconds = int(info[4])
         start_match = StartMatch(info[:12])
+        loop_seconds = int(info[5] * 60)
+        start_time = time.mktime(time.localtime())  # 开始时间的时间戳
+        end_time = start_time + loop_seconds  # 结束时间的时间戳
+        str_start_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(start_time))  # 开始时间
+        str_end_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(end_time))  # 结束时间
         print("<br>初始化中…")
 
         # 对UI参数初始化，计算匹配的次数、导入需要检测的目标图片
@@ -209,13 +215,18 @@ class MatchingThread(QtCore.QThread):
                 break
 
             # 进度条，进度数值传递给UI界面的进度条，实时更新
-            progress = int((i + 1) / loop_times * 100)
+            # progress = int((i + 1) / loop_times * 100)  # 根据次数计算进度
+
+            now_time = time.mktime(time.localtime())  # 当前时间的时间戳
+            progress = int((now_time - start_time) / loop_seconds * 100)  # 根据时间戳计算进度[（当前时间-开始时间）/总时间]
+            if now_time >= end_time:
+                progress = 100
             self.progress_val_signal.emit(progress)
 
             # 下面是Qthread中的循环匹配代码--------------
 
             # 开始匹配
-            run_status, match_status = start_match.start_match_click(i, loop_times, target_info, debug_status)
+            run_status, match_status = start_match.start_match_click(i, loop_times, target_info, debug_status, start_time, end_time, now_time, loop_seconds)
 
             # 计算匹配成功的次数,每成功匹配x次，休息x秒，避免异常
             if match_status:
@@ -247,7 +258,8 @@ class MatchingThread(QtCore.QThread):
                 # break
 
             # 判断是否结束
-            if i == loop_times - 1:
+            # if i == loop_times - 1:  # 根据执行次数判断结束时间
+            if now_time >= end_time:  # 根据时间判断结束时间
                 print("<br>---已执行完成!---")
                 if other_setting[7]:
                     HandleSet.play_sounds("end")  # 播放提示音
@@ -258,7 +270,8 @@ class MatchingThread(QtCore.QThread):
             else:
                 # 倒推剩余时间（时分秒格式）
                 ts = uniform(0.2, 1.5)  # 设置随机延时，防检测
-                remaining_time = time_transform(int(((loop_times - i - 1) / (60 / (interval_seconds + t1))) * 60 - ts))
+                # remaining_time = time_transform(int(((loop_times - i - 1) / (60 / (interval_seconds + t1))) * 60 - ts))  # 根据次数推算剩余时间
+                remaining_time = time_transform(end_time-now_time)  # 根据时间来计算剩余时间
                 print(f"<br>--- [ {round(interval_seconds + ts, 2)} ] 秒后继续，[ {remaining_time} ] 后结束---")
                 print("<br>----------------------------------------------------------")
                 sleep(interval_seconds + ts)
