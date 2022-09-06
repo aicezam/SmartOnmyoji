@@ -16,15 +16,18 @@ from win32ui import CreateDCFromHandle, CreateBitmap
 from win32api import GetSystemMetrics
 from cv2 import cv2
 from PIL import ImageGrab
+from modules.ModuleGetConfig import ReadConfigFile
 
 
 class GetScreenCapture:
-    def __init__(self, handle_num=0, handle_width=0, handle_height=0, srceen_scale_rate=1.25):
+    def __init__(self, handle_num=0, handle_width=0, handle_height=0):
         super(GetScreenCapture, self).__init__()
         self.hwd_num = handle_num
         self.screen_width = handle_width
         self.screen_height = handle_height
-        self.srceen_scale_rate = srceen_scale_rate
+        rc = ReadConfigFile()
+        self.other_setting = rc.read_config_other_setting()
+        self.srceen_scale_rate = float(self.other_setting[11])  # 根据屏幕分辨率截图，可在配置文件中修改，默认1.25
 
     def window_screen(self):
         """windows api 窗体截图方法，可后台截图，可被遮挡，不兼容部分窗口"""
