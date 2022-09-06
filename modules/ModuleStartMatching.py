@@ -337,7 +337,7 @@ class StartMatch:
                     return run_status, match_status
                 handle_width = handle_set.get_handle_pos[2] - handle_set.get_handle_pos[0]  # 右x - 左x 计算宽度
                 handle_height = handle_set.get_handle_pos[3] - handle_set.get_handle_pos[1]  # 下y - 上y 计算高度
-                screen_method = GetScreenCapture(handle_num, handle_width, handle_height)
+                screen_method = GetScreenCapture(handle_num, handle_width, handle_height, other_setting[11])
                 run_status, match_status = self.matching(connect_mod, handle_num, scr_and_click_method,
                                                          screen_method,
                                                          debug_status, match_method,

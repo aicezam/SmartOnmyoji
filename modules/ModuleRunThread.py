@@ -270,6 +270,7 @@ class MatchingThread(QtCore.QThread):
             else:
                 # 倒推剩余时间（时分秒格式）
                 ts = uniform(0.2, 1.5)  # 设置随机延时，防检测
+                ts = 0
                 # remaining_time = time_transform(int(((loop_times - i - 1) / (60 / (interval_seconds + t1))) * 60 - ts))  # 根据次数推算剩余时间
                 remaining_time = time_transform(end_time-now_time)  # 根据时间来计算剩余时间
                 print(f"<br>--- [ {round(interval_seconds + ts, 2)} ] 秒后继续，[ {remaining_time} ] 后结束---")
