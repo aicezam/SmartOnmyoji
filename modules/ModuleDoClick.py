@@ -39,7 +39,8 @@ class DoClick:
             cy = int(py + pos[1])
 
             # 模拟鼠标指针 点击指定位置
-            long_position = MAKELONG(cx, cy)
+            # 减去40是因为window这个框占用40单位的高度
+            long_position = MAKELONG(cx, cy-40)
             SendMessage(handle_num, WM_ACTIVATE, WA_ACTIVE, 0)
             # SendMessage(handle_num, WM_LBUTTONDOWN, MK_LBUTTON, long_position)  # 模拟鼠标按下
             # sleep(0.05)

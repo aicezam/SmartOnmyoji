@@ -181,7 +181,7 @@ class MatchingThread(QtCore.QThread):
 
         debug_status = info[13]
         set_priority_status = info[14]
-        interval_seconds = int(info[4])
+        interval_seconds = info[4]
         start_match = StartMatch(info[:12])
         loop_seconds = int(info[5] * 60)
         start_time = time.mktime(time.localtime())  # 开始时间的时间戳
@@ -226,7 +226,9 @@ class MatchingThread(QtCore.QThread):
             # 下面是Qthread中的循环匹配代码--------------
 
             # 开始匹配
+            match_start_time = time.time()
             run_status, match_status = start_match.start_match_click(i, loop_times, target_info, debug_status, start_time, end_time, now_time, loop_seconds)
+            match_end_time = time.time()
 
             # 计算匹配成功的次数,每成功匹配x次，休息x秒，避免异常
             if match_status:
@@ -269,12 +271,20 @@ class MatchingThread(QtCore.QThread):
                 break
             else:
                 # 倒推剩余时间（时分秒格式）
-                ts = uniform(0.2, 1.5)  # 设置随机延时，防检测
-                # remaining_time = time_transform(int(((loop_times - i - 1) / (60 / (interval_seconds + t1))) * 60 - ts))  # 根据次数推算剩余时间
-                remaining_time = time_transform(end_time-now_time)  # 根据时间来计算剩余时间
-                print(f"<br>--- [ {round(interval_seconds + ts, 2)} ] 秒后继续，[ {remaining_time} ] 后结束---")
-                print("<br>----------------------------------------------------------")
-                sleep(interval_seconds + ts)
+                # 设置随机延时，防检测
+                ts = uniform(-0.4, 0.4)
+                # 根据时间来计算剩余时间
+                remaining_time = time_transform(end_time-now_time)
+                # 执行一次匹配所需的时间
+                match_once_time = match_end_time - match_start_time
+                if match_once_time >= interval_seconds + ts:
+                    sleep_time = 0
+                else:
+                    sleep_time = interval_seconds - match_once_time +ts
+                print(f"<br>执行一次匹配运行时间是[{round(match_once_time, 2)}]秒,[ {round(sleep_time, 2)} ] 秒后继续，[ {remaining_time} ] 后结束")
+                print("<br>-------------------------------------------")
+                # 匹配间隔 机器计算时间不计入
+                sleep(sleep_time)
 
             # 上面是Qthread中的循环匹配代码--------------
 
