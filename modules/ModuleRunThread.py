@@ -46,6 +46,7 @@ class MatchingThread(QtCore.QThread):
     """
     # 线程值信号
     progress_val_signal = QtCore.pyqtSignal(int)
+    clean_run_log_signal = QtCore.pyqtSignal(str)
     finished_signal = QtCore.pyqtSignal(bool)
 
     # 构造函数，thread初始化创建时，传入UI窗体类，可以在run中直接获取GUI中的参数
@@ -227,7 +228,8 @@ class MatchingThread(QtCore.QThread):
 
             # 开始匹配
             match_start_time = time.time()
-            run_status, match_status = start_match.start_match_click(i, loop_times, target_info, debug_status, start_time, end_time, now_time, loop_seconds)
+            run_status, match_status = start_match.start_match_click(i, loop_times, target_info, debug_status,
+                                                                     start_time, end_time, now_time, loop_seconds)
             match_end_time = time.time()
 
             # 计算匹配成功的次数,每成功匹配x次，休息x秒，避免异常
@@ -274,17 +276,22 @@ class MatchingThread(QtCore.QThread):
                 # 设置随机延时，防检测
                 ts = uniform(-0.4, 0.4)
                 # 根据时间来计算剩余时间
-                remaining_time = time_transform(end_time-now_time)
+                remaining_time = time_transform(end_time - now_time)
                 # 执行一次匹配所需的时间
                 match_once_time = match_end_time - match_start_time
                 if match_once_time >= interval_seconds + ts:
                     sleep_time = 0
                 else:
-                    sleep_time = interval_seconds - match_once_time +ts
-                print(f"<br>执行一次匹配运行时间是[{round(match_once_time, 2)}]秒,[ {round(sleep_time, 2)} ] 秒后继续，[ {remaining_time} ] 后结束")
+                    sleep_time = interval_seconds - match_once_time + ts
+                print(
+                    f"<br>执行一次匹配运行时间是[{round(match_once_time, 2)}]秒,[ {round(sleep_time, 2)} ] 秒后继续，[ {remaining_time} ] 后结束")
                 print("<br>-------------------------------------------")
                 # 匹配间隔 机器计算时间不计入
                 sleep(sleep_time)
+
+                # 通过线程信号清除日志，避免日志过多导致运行缓慢(10次匹配清除1次)
+                if i % 10 == 0:
+                    self.clean_run_log_signal.emit('')
 
             # 上面是Qthread中的循环匹配代码--------------
 

@@ -157,6 +157,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.thread = MatchingThread(self)  # 创建线程
         self.thread.finished_signal.connect(self.thread_finished)  # 线程信号和槽连接，任务正常结束重置按钮状态
         self.thread.progress_val_signal.connect(self.loop_progress.setValue)  # 线程信号和槽连接，设置进度条
+        self.thread.clean_run_log_signal.connect(self.run_log.setText)  # 线程信号和槽连接，清空日志
         sleep(0.1)
         self.thread.start()
 
@@ -285,7 +286,7 @@ if __name__ == '__main__':
         target_file_name = config_ini.read_config_target_path_files_name()
         myWindow = MainWindow(default_info, target_file_name)
 
-        myWindow.setWindowTitle('痒痒鼠护肝小助手 - v0.23')  # 设置窗口标题
+        myWindow.setWindowTitle('痒痒鼠护肝小助手 - v0.24')  # 设置窗口标题
         myWindow.show()
         sys.exit(app.exec_())
     else:
