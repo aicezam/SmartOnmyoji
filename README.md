@@ -104,6 +104,7 @@
 
 ### 更新记录
 
+- 2022年9月22日 增加快捷打开“配置文件、img文件夹”的功能
 - 2022年9月21日 修复长时间运行导致匹配速度变慢的[bug](https://github.com/aicezam/SmartOnmyoji/issues/22)（日志过多）
 - 2022年9月06日 修复Window系统分辨率导致的失真[bug](https://github.com/aicezam/SmartOnmyoji/issues/8),优化匹配时间间隔达到设定值
 - 2022年8月11日 优化时间计算算法（之前根据次数计算，会因为设备性能原因导致计算不准确，现在说多久完成就多久，不再拖延）
