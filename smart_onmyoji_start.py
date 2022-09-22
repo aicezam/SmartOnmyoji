@@ -2,7 +2,8 @@
 # @Link    : https://github.com/aicezam/SmartOnmyoji
 # @Version : Python3.7.6
 # @MIT License Copyright (c) 2022 ACE
-
+import os
+import subprocess
 import sys
 from ctypes import windll
 from os.path import abspath, dirname
@@ -122,6 +123,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             lambda: self.select_target_path_mode_btn_enable(self.select_target_path_mode_combobox.currentIndex()))
         self.btn_select_handle.clicked.connect(self.__on_click_btn_select_handle)
         self.select_targetpic_path_btn.clicked.connect(self.__on_click_btn_select_custom_path)
+        self.config_set_btn.clicked.connect(self.__on_click_btn_config_set)
+        self.targetpic_path_btn.clicked.connect(self.__on_click_btn_target_pic_folder_open)
 
     # 控制台消息重定向槽函数，控制台字符追加到 run_log中
     def output_write(self, text):
@@ -225,6 +228,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         custom_path = QFileDialog.getExistingDirectory(None, "选择文件夹", current_path + r'\img')  # 起始路径
         self.show_target_path.setText(custom_path)  # 显示路径
 
+    # 配置文件修改按钮
+    @staticmethod
+    def __on_click_btn_config_set():
+        current_path = abspath(dirname(__file__))  # 当前路径
+        cmd = 'notepad ' + current_path + r'\modules\config.ini'
+        # os.system(cmd)  # 使用cmd命令打开配置文件,使用subprocess替换system后，打包成exe不会弹出cmd窗口
+        subprocess.call(cmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    # 打开模板文件夹按钮
+    @staticmethod
+    def __on_click_btn_target_pic_folder_open():
+        folder_path = abspath(dirname(__file__)) + r'\img'  # 当前路径
+        os.startfile(folder_path)
+
     # 退出程序的槽函数
     def __on_clicked_exit(self):
         if self.btn_start.isHidden():
@@ -255,6 +272,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.click_deviation.setEnabled(bool_val)
         self.image_compression.setEnabled(bool_val)
         self.set_priority.setEnabled(bool_val)
+        self.config_set_btn.setEnabled(bool_val)
+        self.targetpic_path_btn.setEnabled(bool_val)
 
 
 class EmitStr(PyQt5.QtCore.QObject):
@@ -286,7 +305,7 @@ if __name__ == '__main__':
         target_file_name = config_ini.read_config_target_path_files_name()
         myWindow = MainWindow(default_info, target_file_name)
 
-        myWindow.setWindowTitle('痒痒鼠护肝小助手 - v0.24')  # 设置窗口标题
+        myWindow.setWindowTitle('痒痒鼠护肝小助手 - v0.25')  # 设置窗口标题
         myWindow.show()
         sys.exit(app.exec_())
     else:
