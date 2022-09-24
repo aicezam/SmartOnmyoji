@@ -87,7 +87,7 @@ class ReadConfigFile:
         play_sound_status = self.str_to_bool(config_ini.get('other_setting', 'play_sound_status'))
         adb_wifi_status = self.str_to_bool(config_ini.get('other_setting', 'adb_wifi_status'))
         adb_wifi_ip = config_ini.get('other_setting', 'adb_wifi_ip')
-        ex_click = self.str_to_bool(config_ini.get('other_setting', 'ex_click'))
+        ex_click = config_ini.get('other_setting', 'ex_click')
         srceen_scale_rate = config_ini.get('other_setting', 'srceen_scale_rate')
 
         other_setting = [save_ui_info_in_config, playtime_warming_status, success_times_warming_status,

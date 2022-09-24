@@ -274,7 +274,7 @@ class MatchingThread(QtCore.QThread):
             else:
                 # 倒推剩余时间（时分秒格式）
                 # 设置随机延时，防检测
-                ts = uniform(-0.4, 0.4)
+                ts = uniform(-0.5, 0.5)
                 # 根据时间来计算剩余时间
                 remaining_time = time_transform(end_time - now_time)
                 # 执行一次匹配所需的时间
@@ -284,7 +284,7 @@ class MatchingThread(QtCore.QThread):
                 else:
                     sleep_time = interval_seconds - match_once_time + ts
                 print(
-                    f"<br>执行一次匹配运行时间是[{round(match_once_time, 2)}]秒,[ {round(sleep_time, 2)} ] 秒后继续，[ {remaining_time} ] 后结束")
+                    f"<br>匹配一次需 [ {round(match_once_time, 2)} ] 秒, [ {round(sleep_time, 2)} ] 秒后继续，[ {remaining_time} ] 后结束")
                 print("<br>-------------------------------------------")
                 # 匹配间隔 机器计算时间不计入
                 sleep(sleep_time)

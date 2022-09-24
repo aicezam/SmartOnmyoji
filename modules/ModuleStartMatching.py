@@ -393,7 +393,7 @@ class StartMatch:
         if localtime().tm_hour < 8:
             now_time = strftime("%H:%M:%S", localtime())
             print("<br>----------------------------------------------------------")
-            print(f"<br>警告：现在 [ {now_time} ]【非正常游戏时间，请谨慎使用】")
+            print(f"<br>警告：现在 [ {now_time} ]【非正常游戏时间，请勿过于奔放，否则后果自负】")
             print("<br>----------------------------------------------------------")
             for t in range(8):
                 print(f"<br>[ {8 - t} ] 秒后开始……")
