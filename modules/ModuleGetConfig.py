@@ -93,7 +93,7 @@ class ReadConfigFile:
         stop_target_img_name = config_ini.get('other_setting', 'stop_target_img_name')
 
         other_setting = [save_ui_info_in_config, playtime_warming_status, success_times_warming_status,
-                         success_times_warming_times, success_times_warming_waiting_seconds,
+                         success_times_warming_times, success_times_warming_waiting_seconds.split(","),
                          debug_status_show_pics, set_priority_num, play_sound_status, adb_wifi_status, adb_wifi_ip,
                          ex_click, screen_scale_rate, if_match_then_stop, stop_target_img_name.split(",")]
 

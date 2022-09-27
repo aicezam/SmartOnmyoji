@@ -255,15 +255,12 @@ class MatchingThread(QtCore.QThread):
                     # 新方法，先roll一个数字，根据配置文件中设置的概率来触发等待，随机性更强
                     roll_num = random.randint(0, 99)  # roll 0-99，触发几率在配置文件可设置
                     if roll_num < float(other_setting[3]) * 100:
-                        print("<br>概率：")
-                        print(float(other_setting[3]))
-                        print("<br>roll：")
-                        print(roll_num)
                         print(f"<br>已成功匹配{success_times}次，为防止异常检测，在此期间请等待或手动操作！")
                         if other_setting[7]:
                             HandleSet.play_sounds("warming")  # 播放提示音
-                        for t in range(int(other_setting[4])):
-                            print(f"<br>为防止异常，[ {int(other_setting[4]) - t} ] 秒后继续……")
+                        roll_wait_sec = random.randint(int(other_setting[4][0]), int(other_setting[4][1]))
+                        for t in range(int(roll_wait_sec)):
+                            print(f"<br>为防止异常，[ {int(roll_wait_sec) - t} ] 秒后继续……")
                             sleep(1)
 
             # 检测是否正常运行，否则重试
