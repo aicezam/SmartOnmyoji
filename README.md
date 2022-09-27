@@ -21,7 +21,7 @@
 ### 使用方法
 - **使用前警告：请谨慎使用辅助脚本，所有不公平游戏行为都可能被官方检测导致封号（坐标偏移量越小、点击频率越快，越容易被检测）**
 
-1. 选择使用的客户端，推荐使用**MuMu模拟器**([官网](https://yys.163.com/zmb/))、阴阳师桌面版（[NGA论坛](https://g.nga.cn/read.php?tid=29661629)）、雷电模拟器([官网](https://www.ldmnq.com/))
+1. 选择使用的客户端，推荐使用 **阴阳师桌面版**（[NGA论坛](https://g.nga.cn/read.php?tid=29661629)）、桌面版多开器推荐（[V5多开器](https://soft.3dmgame.com/down/167157.html)）、雷电模拟器([官网](https://www.ldmnq.com/))、MuMu模拟器([官网](https://yys.163.com/zmb/))
 2. 选择匹配目标Window或Android
 3. 选择单开模式还是多开模式，初次使用建议单开
 4. 点击选择窗体，在倒计时结束前点击窗体，结束后显示窗口标题
@@ -64,7 +64,11 @@
 
 - UI界面、可配置参数：可修改执行时间、间隔时间、匹配方式、压缩率、执行完成后的操作等
 
-![image](https://user-images.githubusercontent.com/39365915/165800269-7ed503ed-8f05-4853-bb32-91486d705694.png)
+![3](https://user-images.githubusercontent.com/39365915/192139849-77b1adc0-22f2-4b3f-b397-143ae6ddc8b0.jpg)
+
+![2](https://user-images.githubusercontent.com/39365915/192139814-8eee2bc4-f121-4b64-a75f-4f5675cc04b3.jpg)
+
+
 
 
 
