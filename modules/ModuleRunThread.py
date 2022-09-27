@@ -2,7 +2,7 @@
 # @Link    : https://github.com/aicezam/SmartOnmyoji
 # @Version : Python3.7.6
 # @MIT License Copyright (c) 2022 ACE
-
+import random
 import sys
 import time
 from os import system
@@ -228,16 +228,33 @@ class MatchingThread(QtCore.QThread):
 
             # 开始匹配
             match_start_time = time.time()
-            run_status, match_status = start_match.start_match_click(i, loop_times, target_info, debug_status,
-                                                                     start_time, end_time, now_time, loop_seconds)
+            run_status, match_status, stop_status = start_match.start_match_click(i, loop_times, target_info,
+                                                                                  debug_status,
+                                                                                  start_time, end_time, now_time,
+                                                                                  loop_seconds)
             match_end_time = time.time()
+
+            # 当匹配到需要终止脚本运行的图片时
+            if stop_status:
+                if other_setting[7]:
+                    HandleSet.play_sounds("warming")  # 播放提示音
+                self.mutex.unlock()
+                self.finished_signal.emit(True)
+                break
 
             # 计算匹配成功的次数,每成功匹配x次，休息x秒，避免异常
             if match_status:
                 success_times = success_times + 1
                 print(f"<br>已成功匹配 [ {success_times} ] 次")
                 if other_setting[2] is True:
-                    if success_times % int(other_setting[3]) == 0:
+
+                    # 老方法，匹配指定次数后，立即触发等待
+                    # if success_times % int(other_setting[3]) == 0:
+                    #     print(f"<br>已成功匹配{success_times}次，为防止异常检测，在此期间请等待或手动操作！")
+
+                    # 新方法，先roll一个数字，根据配置文件中设置的概率来触发等待，随机性更强
+                    roll_num = random.randint(0, 100)  # roll 0-99，触发几率在配置文件可设置
+                    if roll_num <= float(other_setting[3]) * 100:
                         print(f"<br>已成功匹配{success_times}次，为防止异常检测，在此期间请等待或手动操作！")
                         if other_setting[7]:
                             HandleSet.play_sounds("warming")  # 播放提示音
@@ -245,11 +262,11 @@ class MatchingThread(QtCore.QThread):
                             print(f"<br>为防止异常，[ {int(other_setting[4]) - t} ] 秒后继续……")
                             sleep(1)
 
-            # 检测是否正常运行，否则终止
+            # 检测是否正常运行，否则重试
             if not run_status:
                 if other_setting[7]:
                     HandleSet.play_sounds("warming")  # 播放提示音
-                    # 如果运行异常重新尝试继续执行
+                # 如果运行异常重新尝试继续执行
                 print(f"<br>运行异常，请检查待匹配目标程序是否启动！")
                 for t in range(10):
                     print(f"<br>{10 - t}秒后重试！")

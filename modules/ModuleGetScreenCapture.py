@@ -27,15 +27,15 @@ class GetScreenCapture:
         self.screen_height = handle_height
         rc = ReadConfigFile()
         self.other_setting = rc.read_config_other_setting()
-        self.srceen_scale_rate = float(self.other_setting[11])  # 根据屏幕分辨率截图，可在配置文件中修改，默认1.25
+        self.screen_scale_rate = float(self.other_setting[11])  # 根据屏幕分辨率截图，可在配置文件中修改，默认1.25
 
     def window_screen(self):
         """windows api 窗体截图方法，可后台截图，可被遮挡，不兼容部分窗口"""
         hwnd = self.hwd_num
         screen_width = self.screen_width
         screen_height = self.screen_height
-        screen_width_soruce = int(screen_width / self.srceen_scale_rate)
-        screen_height_soruce = int(screen_height / self.srceen_scale_rate)
+        screen_width_source = int(screen_width / self.screen_scale_rate)
+        screen_height_source = int(screen_height / self.screen_scale_rate)
 
         # 返回句柄窗口的设备环境，覆盖整个窗口，包括非客户区，标题栏，菜单，边框
         hwnd_dc = GetWindowDC(hwnd)
@@ -46,16 +46,16 @@ class GetScreenCapture:
         # 创建位图对象准备保存图片
         save_bit_map = CreateBitmap()
         # 为bitmap开辟存储空间
-        save_bit_map.CreateCompatibleBitmap(mfc_dc, screen_width_soruce, screen_height_soruce)
+        save_bit_map.CreateCompatibleBitmap(mfc_dc, screen_width_source, screen_height_source)
         # 将截图保存到saveBitMap中
         save_dc.SelectObject(save_bit_map)
         # 保存bitmap到内存设备描述表
-        save_dc.BitBlt((0, 0), (screen_width_soruce, screen_height_soruce), mfc_dc, (0, 0), SRCCOPY)
+        save_dc.BitBlt((0, 0), (screen_width_source, screen_height_source), mfc_dc, (0, 0), SRCCOPY)
 
         # 保存图像
         signed_ints_array = save_bit_map.GetBitmapBits(True)
         im_opencv = frombuffer(signed_ints_array, dtype='uint8')
-        im_opencv.shape = (screen_height_soruce, screen_width_soruce, 4)
+        im_opencv.shape = (screen_height_source, screen_width_source, 4)
         im_opencv = cv2.cvtColor(im_opencv, cv2.COLOR_BGRA2GRAY)
         # im_opencv = cv2.cvtColor(im_opencv, cv2.COLOR_BGRA2BGR)
         im_opencv = cv2.resize(im_opencv, (screen_width, screen_height))

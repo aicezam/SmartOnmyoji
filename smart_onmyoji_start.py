@@ -66,6 +66,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                              "<p>蓝奏云(密码yys)："
                              "<a href='https://isu.ink/yys'>"
                              "https://wwu.lanzouq.com/b03d5mdli</a></p>"
+                             "<br>"
+                             "<h3>使用说明：</h3>"
+                             "<p>1.如需多开，请点击”选择窗体“，在倒计时结束前点击窗体，结束后显示窗口标题；</p>"
+                             "<p>2.若匹配失败，先勾选调试模式，检查截图是否正常，若截图正常，查看日志中的匹配概率情况，有两种情况会导致匹配失败：</p>"
+                             "<p>----（1）截图不完整或截图每占满窗口，原因是分辨率不兼容，可打开配置文件config.ini修改屏幕缩放率，即 “screen_scale_rate” 改为1.25或1 </p>"
+                             "<p>----（2）日志中显示概率匹配小于0.9，原因是模板图片不正确，可能是缩放了窗口大小，可尝试使用“特征点匹配”，也可以重新截图放在“/img/”文件夹中</p>"
+                             "<p>3.肝绘卷不建议晚上12点-早8点刷，不建议进前二十；</p>"
+                             "<p>4.配置文件中有其他高级设置项，防检测触发概率等配置，可根据自己实际情况酌情修改；</p>"
                              )
 
         # 加载config.ini文件中的默认参数
@@ -305,7 +313,7 @@ if __name__ == '__main__':
         target_file_name = config_ini.read_config_target_path_files_name()
         myWindow = MainWindow(default_info, target_file_name)
 
-        myWindow.setWindowTitle('痒痒鼠护肝小助手 - v0.26')  # 设置窗口标题
+        myWindow.setWindowTitle('痒痒鼠护肝小助手 - v0.27')  # 设置窗口标题
         myWindow.show()
         sys.exit(app.exec_())
     else:

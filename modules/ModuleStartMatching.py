@@ -152,7 +152,7 @@ class StartMatch:
         return loop_times, target_info, t1
 
     def matching(self, connect_mod, handle_num, scr_and_click_method, screen_method, debug_status, match_method,
-                 compress_val, target_info, click_deviation, run_status, match_status):
+                 compress_val, target_info, click_deviation, run_status, match_status, stop_status):
         """
         核心代码~
         :param connect_mod: 运行方式，windows或安卓
@@ -166,6 +166,7 @@ class StartMatch:
         :param click_deviation: 点击偏移量
         :param run_status: 运行状态
         :param match_status: 匹配状态
+        :param stop_status: 终止状态
         :return: 运行状态、匹配状态
         """
 
@@ -247,6 +248,17 @@ class StartMatch:
             print(f"<br>匹配到第 [ {target_num + 1} ] 张图片: [ {target_img_name[target_num]} ]"
                   f"<br>坐标位置: [ {int(pos[0])} , {int(pos[1])} ] ")
 
+            # 检测是否匹配到终止脚本的模板图片
+            if self.other_setting[12]:
+                for i in range(len(self.other_setting[13])):
+                    if target_img_name[target_num] == self.other_setting[13][i]:
+                        print(f"<br>--------------------------------------------"
+                              f"<br>已匹配图片 [ {target_img_name[target_num]} ] ，触发终止条件，脚本停止运行！！！"
+                              f"<br>--------------------------------------------"
+                              )
+                        stop_status = True
+                        return run_status, match_status, stop_status
+
             # 开始点击
             if connect_mod == 'Windows程序窗体':
 
@@ -297,12 +309,13 @@ class StartMatch:
         # 内存清理
         del screen_img, pos, target_info, target_img, target_img_sift, screen_method  # 删除变量
         collect()  # 清理内存
-        return run_status, match_status
+        return run_status, match_status, stop_status
 
     def start_match_click(self, i, loop_times, target_info, debug_status, start_time, end_time, now_time, loop_seconds):
         """不同场景下的匹配方式"""
         match_status = False
         run_status = True
+        stop_status = False
         connect_mod = self.connect_mod
         scr_and_click_method = self.scr_and_click_method
         match_method = self.match_method
@@ -315,6 +328,7 @@ class StartMatch:
         # progress = format((i + 1) / loop_times, '.2%')
         # print(f"<br>第 [ {i + 1} ] 次匹配, 还剩 [ {loop_times - i - 1} ] 次 当前进度 [ {progress} ] "
         #       f"<br>当前时间 [ {now_time} ]")
+
         progress = format((now_time - start_time) / loop_seconds, '.2%')
         print(f"<br>第 [ {i + 1} ] 次匹配, 当前进度 [ {progress} ] "
               # f"<br>当前时间 [ {strftime('%Y-%m-%d %H:%M:%S', localtime(now_time))} ]"
@@ -338,11 +352,13 @@ class StartMatch:
                 handle_width = handle_set.get_handle_pos[2] - handle_set.get_handle_pos[0]  # 右x - 左x 计算宽度
                 handle_height = handle_set.get_handle_pos[3] - handle_set.get_handle_pos[1]  # 下y - 上y 计算高度
                 screen_method = GetScreenCapture(handle_num, handle_width, handle_height)
-                run_status, match_status = self.matching(connect_mod, handle_num, scr_and_click_method,
-                                                         screen_method,
-                                                         debug_status, match_method,
-                                                         compress_val, target_info, click_deviation, run_status,
-                                                         match_status)
+                run_status, match_status, stop_status = self.matching(connect_mod, handle_num, scr_and_click_method,
+                                                                      screen_method,
+                                                                      debug_status, match_method,
+                                                                      compress_val, target_info, click_deviation,
+                                                                      run_status,
+                                                                      match_status,
+                                                                      stop_status)
 
         # 单开场景下，通过标题找到窗口句柄
         elif self.process_num == '单开' and connect_mod == 'Windows程序窗体':
@@ -359,10 +375,13 @@ class StartMatch:
             handle_height = handle_set.get_handle_pos[3] - handle_set.get_handle_pos[1]  # 下y - 上y 计算高度
             handle_num = handle_set.get_handle_num
             screen_method = GetScreenCapture(handle_num, handle_width, handle_height)
-            run_status, match_status = self.matching(connect_mod, handle_num, scr_and_click_method, screen_method,
-                                                     debug_status, match_method,
-                                                     compress_val, target_info, click_deviation, run_status,
-                                                     match_status)
+            run_status, match_status, stop_status = self.matching(connect_mod, handle_num, scr_and_click_method,
+                                                                  screen_method,
+                                                                  debug_status, match_method,
+                                                                  compress_val, target_info, click_deviation,
+                                                                  run_status,
+                                                                  match_status,
+                                                                  stop_status)
 
         # adb模式下，暂仅支持单开
         # elif connect_mod == 'Android-Adb':
@@ -371,11 +390,13 @@ class StartMatch:
             if adb_device_connect_status:
                 print(f'<br>已连接设备[ {device_id} ]')
                 screen_method = GetScreenCapture()
-                run_status, match_status = self.matching(connect_mod, 0, scr_and_click_method, screen_method,
-                                                         debug_status,
-                                                         match_method,
-                                                         compress_val, target_info, click_deviation, run_status,
-                                                         match_status)
+                run_status, match_status, stop_status = self.matching(connect_mod, 0, scr_and_click_method,
+                                                                      screen_method,
+                                                                      debug_status,
+                                                                      match_method,
+                                                                      compress_val, target_info, click_deviation,
+                                                                      run_status,
+                                                                      match_status, stop_status)
             else:
                 print(device_id)
                 run_status = False
@@ -384,7 +405,7 @@ class StartMatch:
         del target_info, screen_method, connect_mod, scr_and_click_method, match_method, compress_val, click_deviation, handle_num_list  # 删除变量
         collect()  # 清理内存
 
-        return run_status, match_status
+        return run_status, match_status, stop_status
 
     @staticmethod
     def time_warming():
