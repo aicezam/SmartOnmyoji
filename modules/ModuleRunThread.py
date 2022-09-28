@@ -204,6 +204,7 @@ class MatchingThread(QtCore.QThread):
             start_match.time_warming()
 
         success_times = 0
+        success_target_list = [0, 1, 2, 3, 4, 5]  # 初始化匹配成功的图片数组，只记录5个
 
         # 开始循环
         for i in range(int(loop_times)):
@@ -228,10 +229,12 @@ class MatchingThread(QtCore.QThread):
 
             # 开始匹配
             match_start_time = time.time()
-            run_status, match_status, stop_status = start_match.start_match_click(i, loop_times, target_info,
-                                                                                  debug_status,
-                                                                                  start_time, end_time, now_time,
-                                                                                  loop_seconds)
+            run_status, match_status, stop_status, match_target_name = start_match.start_match_click(i, loop_times,
+                                                                                                     target_info,
+                                                                                                     debug_status,
+                                                                                                     start_time,
+                                                                                                     end_time, now_time,
+                                                                                                     loop_seconds)
             match_end_time = time.time()
 
             # 当匹配到需要终止脚本运行的图片时
@@ -262,6 +265,22 @@ class MatchingThread(QtCore.QThread):
                         for t in range(int(roll_wait_sec)):
                             print(f"<br>为防止异常，[ {int(roll_wait_sec) - t} ] 秒后继续……")
                             sleep(1)
+
+            # 当连续匹配同一个图片超过5次，则脚本终止（没体力时一直点击的情况）
+            if match_status:
+                success_target_list.insert(0, match_target_name)  # 插入最新的匹配成功的图片名称在数组头部
+                success_target_list.pop()  # 移除数组尾部最老的匹配成功的图片名称
+                if len(set(success_target_list)) == 1:  # 如果数组中所有元素都相同，则意味着连续5次匹配到了同一个目标，触发脚本终止
+                    print(f"<br>--------------------------------------------"
+                          f"<br>已连续5次匹配同一目标图片 [ {success_target_list[0]} ] ，触发终止条件，脚本停止运行！！！"
+                          f"<br>--------------------------------------------"
+                          )
+
+                    if other_setting[7]:
+                        HandleSet.play_sounds("warming")  # 播放提示音
+                    self.mutex.unlock()
+                    self.finished_signal.emit(True)
+                    break
 
             # 检测是否正常运行，否则重试
             if not run_status:
