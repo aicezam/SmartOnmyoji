@@ -205,6 +205,7 @@ class MatchingThread(QtCore.QThread):
 
         success_times = 0
         success_target_list = [0, 1, 2, 3, 4, 5]  # 初始化匹配成功的图片数组，只记录5个
+        warming_time = 0  # 记录警告提示的时间戳
 
         # 开始循环
         for i in range(int(loop_times)):
@@ -249,24 +250,40 @@ class MatchingThread(QtCore.QThread):
             if match_status:
                 success_times = success_times + 1
                 print(f"<br>已成功匹配 [ {success_times} ] 次")
-                if other_setting[2] is True:
 
-                    # 老方法，匹配指定次数后，立即触发等待
-                    # if success_times % int(other_setting[3]) == 0:
-                    #     print(f"<br>已成功匹配{success_times}次，为防止异常检测，在此期间请等待或手动操作！")
+                # 以下是匹配成功后的随机等待算法
 
-                    # 新方法，先roll一个数字，根据配置文件中设置的概率来触发等待，随机性更强
+                # 如果上次警告提示到需要触发时不足90秒，不会触发等待
+                if other_setting[2] is True and match_end_time - warming_time > 90:
+
+                    # 根据配置文件中设置的概率来触发等待，随机性更强
                     roll_num = random.randint(0, 99)  # roll 0-99，触发几率在配置文件可设置
                     if roll_num < float(other_setting[3]) * 100:
                         print(f"<br>已成功匹配{success_times}次，为防止异常检测，在此期间请等待或手动操作！")
                         if other_setting[7]:
-                            HandleSet.play_sounds("warming")  # 播放提示音
+                            HandleSet.play_sounds("ding")  # 播放提示音
                         roll_wait_sec = random.randint(int(other_setting[4][0]), int(other_setting[4][1]))
                         for t in range(int(roll_wait_sec)):
                             print(f"<br>为防止异常，[ {int(roll_wait_sec) - t} ] 秒后继续……")
                             sleep(1)
 
-            # 当连续匹配同一个图片超过5次，则脚本终止（没体力时一直点击的情况）
+                        # 记录警告提示的时间戳，避免出现1分钟内出现2次以上的等待
+                        warming_time = time.time()  # 记录当前时间
+
+                    # 匹配指定次数（100次）后，立即触发等待（写死每100次必须等待）
+                    elif (success_times+1) % 100 == 0:
+                        print(f"<br>已成功匹配{success_times}次，为防止异常检测，在此期间请等待或手动操作！")
+                        if other_setting[7]:
+                            HandleSet.play_sounds("ding")  # 播放提示音
+                        roll_wait_sec = random.randint(int(other_setting[4][0]), int(other_setting[4][1]))
+                        for t in range(int(roll_wait_sec)):
+                            print(f"<br>为防止异常，[ {int(roll_wait_sec) - t} ] 秒后继续……")
+                            sleep(1)
+
+                        # 记录警告提示的时间戳，避免出现1分钟内出现2次以上的等待
+                        warming_time = time.time()  # 记录当前时间
+
+            # 当连续匹配同一个图片超过5次，脚本终止（没体力时一直点击的情况、游戏卡住的情况）
             if match_status:
                 success_target_list.insert(0, match_target_name)  # 插入最新的匹配成功的图片名称在数组头部
                 success_target_list.pop()  # 移除数组尾部最老的匹配成功的图片名称
@@ -311,7 +328,7 @@ class MatchingThread(QtCore.QThread):
             else:
                 # 倒推剩余时间（时分秒格式）
                 # 设置随机延时，防检测
-                ts = uniform(-0.5, 0.5)
+                ts = uniform(-0.6, 0.6)
                 # 根据时间来计算剩余时间
                 remaining_time = time_transform(end_time - now_time)
                 # 执行一次匹配所需的时间

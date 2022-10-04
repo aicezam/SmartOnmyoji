@@ -46,7 +46,7 @@ class DoClick:
             # sleep(0.05)
             # SendMessage(handle_num, WM_LBUTTONUP, MK_LBUTTON, long_position)  # 模拟鼠标弹起
             SendMessage(handle_num, WM_LBUTTONDOWN, 0, long_position)  # 模拟鼠标按下
-            sleep(0.05)
+            sleep((random.randint(8, 35)) / 100)  # 点击弹起改为随机
             SendMessage(handle_num, WM_LBUTTONUP, 0, long_position)  # 模拟鼠标弹起
             print(f"<br>点击坐标: [ {cx} , {cy} ] <br>窗口名称: [ {HandleSet.get_handle_title(handle_num)} ]")
 
@@ -56,19 +56,19 @@ class DoClick:
             if self.ex_click_probability > 0:  # 如果配置文件设置了额外随机点击
                 roll_num = random.randint(0, 99)  # roll 0-99，触发几率在配置文件可设置
                 if roll_num > (1 - self.ex_click_probability/2) * 100:  # 匹配坐标附近的，不偏移太远(一半的概率分给附近)
-                    sleep((random.randint(5, 15)) / 100)  # 随机延迟0.05-0.15秒
-                    mx = random.randint(-50, 300) + cx
-                    my = random.randint(-50, 300) + cy
+                    sleep((random.randint(10, 35)) / 100)  # 随机延迟0.1-0.35秒
+                    mx = random.randint(-100, 100) + cx
+                    my = random.randint(-100, 100) + cy
                     SendMessage(handle_num, WM_LBUTTONDOWN, 0, MAKELONG(mx, my))  # 模拟鼠标按下
-                    sleep(0.05)
+                    sleep((random.randint(4, 35)) / 100)  # 点击弹起随机延迟
                     SendMessage(handle_num, WM_LBUTTONUP, 0, MAKELONG(mx, my))  # 模拟鼠标弹起
                     print(f"<br>点击偏移坐标: [ {mx}, {my} ]")
                 elif roll_num < self.ex_click_probability * 50:  # 随机点击其他地方(另一半的概率分给其他地方)
-                    sleep((random.randint(5, 15)) / 100)
-                    mx = random.randint(200, 1000)
-                    my = random.randint(200, 1000)
+                    sleep((random.randint(10, 35)) / 100)  # 随机延迟0.1-0.35秒
+                    mx = random.randint(50, 1050)
+                    my = random.randint(50, 1050)
                     SendMessage(handle_num, WM_LBUTTONDOWN, 0, MAKELONG(mx, my))  # 模拟鼠标按下
-                    sleep(0.05)
+                    sleep((random.randint(4, 35)) / 100)  # 点击弹起随机延迟
                     SendMessage(handle_num, WM_LBUTTONUP, 0, MAKELONG(mx, my))  # 模拟鼠标弹起
                     print(f"<br>点击偏移坐标: [ {mx}, {my} ]")
 
@@ -83,6 +83,7 @@ class DoClick:
             py = random.randint(-click_deviation - 5, click_deviation + 5)
             cx = int(px + pos[0])
             cy = int(py + pos[1])
+
             # 使用modules下的adb工具执行adb命令
             command = abspath(dirname(__file__)) + rf'\adb.exe -s {device_id} shell input tap {cx} {cy}'
             HandleSet.deal_cmd(command)
@@ -93,16 +94,16 @@ class DoClick:
             if self.ex_click_probability > 0:  # 如果配置文件设置了额外随机点击
                 roll_num = random.randint(0, 99)  # roll 0-99，触发几率在配置文件可设置
                 if roll_num > (1 - self.ex_click_probability / 2) * 100:  # 匹配坐标附近的，不偏移太远(一半的概率分给附近)
-                    mx = random.randint(-50, 300) + cx
-                    my = random.randint(-50, 300) + cy
-                    sleep((random.randint(5, 15)) / 100)
+                    sleep((random.randint(10, 35)) / 100)  # 随机延迟0.1-0.35秒
+                    mx = random.randint(-100, 100) + cx
+                    my = random.randint(-100, 100) + cy
                     command = abspath(dirname(__file__)) + rf'\adb.exe -s {device_id} shell input tap {mx} {my}'
                     HandleSet.deal_cmd(command)
                     print(f"<br>点击设备 [ {device_id} ] 额外偏移坐标: [ {mx} , {my} ]")
                 elif roll_num < self.ex_click_probability * 50:  # 随机点击其他地方(另一半的概率分给其他地方)
-                    mx = random.randint(200, 1000)
-                    my = random.randint(200, 1000)
-                    sleep((random.randint(5, 15)) / 100)
+                    sleep((random.randint(10, 35)) / 100)  # 随机延迟0.1-0.35秒
+                    mx = random.randint(50, 1050)
+                    my = random.randint(50, 1050)
                     command = abspath(dirname(__file__)) + rf'\adb.exe -s {device_id} shell input tap {mx} {my}'
                     HandleSet.deal_cmd(command)
                     print(f"<br>点击设备 [ {device_id} ] 额外偏移坐标: [ {mx} , {my} ]")
@@ -143,15 +144,15 @@ class DoClick:
         if self.ex_click_probability > 0:  # 如果配置文件设置了额外随机点击
             roll_num = random.randint(0, 99)  # roll 0-99，触发几率在配置文件可设置
             if roll_num > (1 - self.ex_click_probability / 2) * 100:  # 匹配坐标附近的，不偏移太远(一半的概率分给附近)
-                sleep((random.randint(5, 15)) / 100)
-                mx = random.randint(-50, 300) + cx
-                my = random.randint(-50, 300) + cy
+                sleep((random.randint(10, 35)) / 100)  # 随机延迟0.1-0.35秒
+                mx = random.randint(-100, 100) + cx
+                my = random.randint(-100, 100) + cy
                 click(mx, my)
                 print(f"<br>点击偏移坐标: [ {mx}, {my} ]")
             elif roll_num < self.ex_click_probability * 50:  # 随机点击其他地方(另一半的概率分给其他地方)
-                sleep((random.randint(5, 15)) / 100)
-                mx = random.randint(200, 1000)
-                my = random.randint(200, 1000)
+                sleep((random.randint(10, 35)) / 100)  # 随机延迟0.1-0.35秒
+                mx = random.randint(50, 1050)
+                my = random.randint(50, 1050)
                 click(mx, my)
                 print(f"<br>点击偏移坐标: [ {mx}, {my} ]")
         moveTo(now_pos[0], now_pos[1])
