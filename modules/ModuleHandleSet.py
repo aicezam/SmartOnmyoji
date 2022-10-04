@@ -206,3 +206,6 @@ class HandleSet:
         elif flag == "end":
             sound = abspath(dirname(__file__)) + r'\sounds\\end.wav'
             winsound.PlaySound(sound, winsound.SND_ALIAS)
+        elif flag == "ding":
+            sound = abspath(dirname(__file__)) + r'\sounds\\ding.wav'
+            winsound.PlaySound(sound, winsound.SND_ALIAS)
