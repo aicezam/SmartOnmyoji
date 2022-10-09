@@ -62,7 +62,7 @@ class ReadConfigFile:
 
         target_file_name_list = [file_name_0.split(","), file_name_1.split(","), file_name_2.split(","),
                                  file_name_3.split(","), file_name_4.split(","), file_name_5.split(","),
-                                 file_name_6.split(",")
+                                 file_name_6.split(","),
                                  ]
 
         return target_file_name_list
@@ -91,11 +91,13 @@ class ReadConfigFile:
         screen_scale_rate = config_ini.get('other_setting', 'screen_scale_rate')
         if_match_then_stop = self.str_to_bool(config_ini.get('other_setting', 'if_match_then_stop'))
         stop_target_img_name = config_ini.get('other_setting', 'stop_target_img_name')
+        if_match_5times_stop = self.str_to_bool(config_ini.get('other_setting', 'if_match_5times_stop'))
 
         other_setting = [save_ui_info_in_config, playtime_warming_status, success_times_warming_status,
                          success_times_warming_times, success_times_warming_waiting_seconds.split(","),
                          debug_status_show_pics, set_priority_num, play_sound_status, adb_wifi_status, adb_wifi_ip,
-                         ex_click, screen_scale_rate, if_match_then_stop, stop_target_img_name.split(",")]
+                         ex_click, screen_scale_rate, if_match_then_stop, stop_target_img_name.split(","),
+                         if_match_5times_stop]
 
         return other_setting
 

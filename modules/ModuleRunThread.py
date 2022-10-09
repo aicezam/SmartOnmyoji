@@ -205,7 +205,7 @@ class MatchingThread(QtCore.QThread):
 
         success_times = 0
         success_target_list = [0, 1, 2, 3, 4, 5]  # 初始化匹配成功的图片数组，只记录5个
-        warming_time = 0  # 记录警告提示的时间戳
+        warming_time = time.time()  # 记录当前时间(等待警告时间初始化，避免最开始的90秒内触发等待)
 
         # 开始循环
         for i in range(int(loop_times)):
@@ -284,7 +284,7 @@ class MatchingThread(QtCore.QThread):
                         warming_time = time.time()  # 记录当前时间
 
             # 当连续匹配同一个图片超过5次，脚本终止（没体力时一直点击的情况、游戏卡住的情况）
-            if match_status:
+            if match_status and other_setting[14]:  # 如果匹配成功且开启5次匹配停止脚本的配置
                 success_target_list.insert(0, match_target_name)  # 插入最新的匹配成功的图片名称在数组头部
                 success_target_list.pop()  # 移除数组尾部最老的匹配成功的图片名称
                 if len(set(success_target_list)) == 1:  # 如果数组中所有元素都相同，则意味着连续5次匹配到了同一个目标，触发脚本终止

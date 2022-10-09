@@ -118,7 +118,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.process_num_more.setEnabled(False)
 
         # 设置界面上显示的匹配目标文件夹的选项名称
-        for i in range(7):
+        for i in range(len(target_file_name_list)):
             self.select_target_path_mode_combobox.setItemText(i, target_file_name_list[i][0])
 
         # 绑定信号
@@ -313,7 +313,7 @@ if __name__ == '__main__':
         target_file_name = config_ini.read_config_target_path_files_name()
         myWindow = MainWindow(default_info, target_file_name)
 
-        myWindow.setWindowTitle('痒痒鼠护肝小助手 - v0.28')  # 设置窗口标题
+        myWindow.setWindowTitle('痒痒鼠护肝小助手 - v0.29')  # 设置窗口标题
         myWindow.show()
         sys.exit(app.exec_())
     else:
