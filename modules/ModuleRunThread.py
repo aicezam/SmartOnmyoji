@@ -6,6 +6,7 @@ import random
 import sys
 import time
 from os import system
+from os.path import abspath, dirname
 from random import uniform
 from time import sleep
 
@@ -13,6 +14,7 @@ from PyQt5 import QtCore
 from win32con import WM_CLOSE
 from win32gui import PostMessage
 
+from modules.ModuleClickModSet import ClickModSet
 from modules.ModuleGetConfig import ReadConfigFile
 from modules.ModuleHandleSet import HandleSet
 from modules.ModuleStartMatching import StartMatch, time_transform
@@ -187,9 +189,10 @@ class MatchingThread(QtCore.QThread):
         loop_seconds = int(info[5] * 60)
         start_time = time.mktime(time.localtime())  # 开始时间的时间戳
         end_time = start_time + loop_seconds  # 结束时间的时间戳
-        str_start_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(start_time))  # 开始时间
-        str_end_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(end_time))  # 结束时间
-        print("<br>初始化中…")
+
+        # 生成随机点击模型，其中info[3]是随机偏移像素值，这里作为点击模型的坐标范围，
+        # 如：偏移50，则模型的坐标范围为[(-50,50),(-50,50)]的正态分布数组
+        click_mod = ClickModSet.create_click_mod(info[3])
 
         # 对UI参数初始化，计算匹配的次数、导入需要检测的目标图片
         init_value = start_match.set_init(set_priority_status)
@@ -206,6 +209,8 @@ class MatchingThread(QtCore.QThread):
         success_times = 0
         success_target_list = [0, 1, 2, 3, 4, 5]  # 初始化匹配成功的图片数组，只记录5个
         warming_time = time.time()  # 记录当前时间(等待警告时间初始化，避免最开始的90秒内触发等待)
+
+        print("<br>初始化中…")
 
         # 开始循环
         for i in range(int(loop_times)):
@@ -230,13 +235,18 @@ class MatchingThread(QtCore.QThread):
 
             # 开始匹配
             match_start_time = time.time()
-            run_status, match_status, stop_status, match_target_name = start_match.start_match_click(i, loop_times,
-                                                                                                     target_info,
-                                                                                                     debug_status,
-                                                                                                     start_time,
-                                                                                                     end_time, now_time,
-                                                                                                     loop_seconds)
+            results = start_match.start_match_click(i, loop_times, target_info, debug_status, start_time, end_time,
+                                                    now_time, loop_seconds, click_mod)
             match_end_time = time.time()
+            run_status, match_status, stop_status, match_target_name, click_pos = results
+
+            # 记录点击日志(如果匹配成功)
+            if click_pos:
+                today = time.strftime('%y%m%d', time.localtime(time.time()))
+                match_time = time.strftime('%y-%m-%d %H:%M:%S', time.localtime(match_end_time))
+                file_path = abspath(dirname(dirname(__file__))) + r'/modules/click_log/click_log_' + today + '.txt'
+                f = open(file_path, 'a+', encoding="utf-8")
+                f.writelines(match_time + ',' + match_target_name + ',' + str(click_pos[0]) + ',' + str(click_pos[1]) + '\n')
 
             # 当匹配到需要终止脚本运行的图片时
             if stop_status:
@@ -271,7 +281,7 @@ class MatchingThread(QtCore.QThread):
                         warming_time = time.time()  # 记录当前时间
 
                     # 匹配指定次数（100次）后，立即触发等待（写死每100次必须等待）
-                    elif (success_times+1) % 100 == 0:
+                    elif (success_times + 1) % 100 == 0:
                         print(f"<br>已成功匹配{success_times}次，为防止异常检测，在此期间请等待或手动操作！")
                         if other_setting[7]:
                             HandleSet.play_sounds("ding")  # 播放提示音
@@ -344,7 +354,7 @@ class MatchingThread(QtCore.QThread):
                 sleep(sleep_time)
 
                 # 通过线程信号清除日志，避免日志过多导致运行缓慢(10次匹配清除1次)
-                if i % 10 == 0:
+                if (i + 1) % 10 == 0:
                     self.clean_run_log_signal.emit('')
 
             # 上面是Qthread中的循环匹配代码--------------

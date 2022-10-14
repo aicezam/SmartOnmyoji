@@ -11,14 +11,16 @@ from win32gui import SetForegroundWindow, GetWindowRect
 from win32api import MAKELONG, SendMessage
 from win32con import WM_LBUTTONUP, WM_LBUTTONDOWN, WM_ACTIVATE, WA_ACTIVE
 from pyautogui import position, click, moveTo
+
+from modules.ModuleClickModSet import ClickModSet
 from modules.ModuleHandleSet import HandleSet
 from modules.ModuleGetConfig import ReadConfigFile
 
 
 class DoClick:
-    def __init__(self, pos, click_deviation, handle_num=0):
+    def __init__(self, pos, click_mod, handle_num=0):
         super(DoClick, self).__init__()
-        self.click_deviation = click_deviation
+        self.click_mod = click_mod
         self.handle_num = handle_num
         self.pos = pos
         rc = ReadConfigFile()
@@ -32,19 +34,13 @@ class DoClick:
         if self.pos is not None:
             pos = self.pos
             handle_num = self.handle_num
-            click_deviation = int(self.click_deviation)
-            px = random.randint(-click_deviation - 5, click_deviation + 5)  # 设置随机偏移范围，避免封号
-            py = random.randint(-click_deviation - 5, click_deviation + 5)
+            px, py = ClickModSet.choice_mod_pos(self.click_mod)
             cx = int(px + pos[0])
-            cy = int(py + pos[1])
+            cy = int(py + pos[1]) - 40  # 减去40是因为window这个框占用40单位的高度
 
             # 模拟鼠标指针 点击指定位置
-            # 减去40是因为window这个框占用40单位的高度
-            long_position = MAKELONG(cx, cy - 40)
+            long_position = MAKELONG(cx, cy)
             SendMessage(handle_num, WM_ACTIVATE, WA_ACTIVE, 0)
-            # SendMessage(handle_num, WM_LBUTTONDOWN, MK_LBUTTON, long_position)  # 模拟鼠标按下
-            # sleep(0.05)
-            # SendMessage(handle_num, WM_LBUTTONUP, MK_LBUTTON, long_position)  # 模拟鼠标弹起
             SendMessage(handle_num, WM_LBUTTONDOWN, 0, long_position)  # 模拟鼠标按下
             sleep((random.randint(8, 35)) / 100)  # 点击弹起改为随机
             SendMessage(handle_num, WM_LBUTTONUP, 0, long_position)  # 模拟鼠标弹起
@@ -55,32 +51,31 @@ class DoClick:
             # 这里模拟正常点击偶尔会多点一次的情况，另外再增加混淆点击，使整体点击看起来不那么规律
             if self.ex_click_probability > 0:  # 如果配置文件设置了额外随机点击
                 roll_num = random.randint(0, 99)  # roll 0-99，触发几率在配置文件可设置
-                if roll_num > (1 - self.ex_click_probability/2) * 100:  # 匹配坐标附近的，不偏移太远(一半的概率分给附近)
+                if roll_num > (1 - self.ex_click_probability / 2) * 100:  # 匹配坐标附近的，不偏移太远(一半的概率分给附近)
                     sleep((random.randint(10, 35)) / 100)  # 随机延迟0.1-0.35秒
-                    mx = random.randint(-100, 100) + cx
-                    my = random.randint(-100, 100) + cy
-                    SendMessage(handle_num, WM_LBUTTONDOWN, 0, MAKELONG(mx, my))  # 模拟鼠标按下
+                    SendMessage(handle_num, WM_LBUTTONDOWN, 0, MAKELONG(cx, cy))  # 模拟鼠标按下
                     sleep((random.randint(4, 35)) / 100)  # 点击弹起随机延迟
-                    SendMessage(handle_num, WM_LBUTTONUP, 0, MAKELONG(mx, my))  # 模拟鼠标弹起
-                    print(f"<br>点击偏移坐标: [ {mx}, {my} ]")
+                    SendMessage(handle_num, WM_LBUTTONUP, 0, MAKELONG(cx, cy))  # 模拟鼠标弹起
+                    print(f"<br>点击偏移坐标: [ {cx}, {cy} ]")
                 elif roll_num < self.ex_click_probability * 50:  # 随机点击其他地方(另一半的概率分给其他地方)
                     sleep((random.randint(10, 35)) / 100)  # 随机延迟0.1-0.35秒
-                    mx = random.randint(50, 1050)
-                    my = random.randint(50, 1050)
+                    handle_set = HandleSet('', handle_num)
+
+                    # 点击屏幕中心，偏右下的位置
+                    mx = int((handle_set.get_handle_pos[2] - handle_set.get_handle_pos[0]) / 1.68 + px)
+                    my = int((handle_set.get_handle_pos[3] - handle_set.get_handle_pos[1]) / 1.68 + py)
                     SendMessage(handle_num, WM_LBUTTONDOWN, 0, MAKELONG(mx, my))  # 模拟鼠标按下
                     sleep((random.randint(4, 35)) / 100)  # 点击弹起随机延迟
                     SendMessage(handle_num, WM_LBUTTONUP, 0, MAKELONG(mx, my))  # 模拟鼠标弹起
                     print(f"<br>点击偏移坐标: [ {mx}, {my} ]")
 
-            return True
+            return True, [cx, cy]
 
     def adb_click(self, device_id):
         """数据线连手机点击"""
         if self.pos is not None:
             pos = self.pos
-            click_deviation = int(self.click_deviation)
-            px = random.randint(-click_deviation - 5, click_deviation + 5)  # 设置随机偏移范围，避免封号
-            py = random.randint(-click_deviation - 5, click_deviation + 5)
+            px, py = ClickModSet.choice_mod_pos(self.click_mod)
             cx = int(px + pos[0])
             cy = int(py + pos[1])
 
@@ -95,11 +90,9 @@ class DoClick:
                 roll_num = random.randint(0, 99)  # roll 0-99，触发几率在配置文件可设置
                 if roll_num > (1 - self.ex_click_probability / 2) * 100:  # 匹配坐标附近的，不偏移太远(一半的概率分给附近)
                     sleep((random.randint(10, 35)) / 100)  # 随机延迟0.1-0.35秒
-                    mx = random.randint(-100, 100) + cx
-                    my = random.randint(-100, 100) + cy
-                    command = abspath(dirname(__file__)) + rf'\adb.exe -s {device_id} shell input tap {mx} {my}'
+                    command = abspath(dirname(__file__)) + rf'\adb.exe -s {device_id} shell input tap {cx} {cy}'
                     HandleSet.deal_cmd(command)
-                    print(f"<br>点击设备 [ {device_id} ] 额外偏移坐标: [ {mx} , {my} ]")
+                    print(f"<br>点击设备 [ {device_id} ] 额外偏移坐标: [ {cx} , {cy} ]")
                 elif roll_num < self.ex_click_probability * 50:  # 随机点击其他地方(另一半的概率分给其他地方)
                     sleep((random.randint(10, 35)) / 100)  # 随机延迟0.1-0.35秒
                     mx = random.randint(50, 1050)
@@ -108,7 +101,7 @@ class DoClick:
                     HandleSet.deal_cmd(command)
                     print(f"<br>点击设备 [ {device_id} ] 额外偏移坐标: [ {mx} , {my} ]")
 
-            return True
+            return True, [cx, cy]
 
     def windows_click_bk(self):
         """
@@ -117,14 +110,12 @@ class DoClick:
         # 前台点击，窗口必须置顶，兼容所有窗口（模拟器、云游戏等）点击
         pos = self.pos
         handle_num = self.handle_num
-        click_deviation = int(self.click_deviation)
+        px, py = ClickModSet.choice_mod_pos(self.click_mod)
         x1, y1, x2, y2 = GetWindowRect(handle_num)
 
         # 设置随机偏移范围，避免封号
-        px = random.randint(-click_deviation - 5, click_deviation + 5)
-        py = random.randint(-click_deviation - 5, click_deviation + 5)
         cx = int(px + pos[0])
-        cy = int(py + pos[1])
+        cy = int(py + pos[1]) - 40  # 减去40是因为window这个框占用40单位的高度
 
         # 计算绝对坐标位置
         jx = cx + x1
@@ -145,16 +136,14 @@ class DoClick:
             roll_num = random.randint(0, 99)  # roll 0-99，触发几率在配置文件可设置
             if roll_num > (1 - self.ex_click_probability / 2) * 100:  # 匹配坐标附近的，不偏移太远(一半的概率分给附近)
                 sleep((random.randint(10, 35)) / 100)  # 随机延迟0.1-0.35秒
-                mx = random.randint(-100, 100) + cx
-                my = random.randint(-100, 100) + cy
-                click(mx, my)
-                print(f"<br>点击偏移坐标: [ {mx}, {my} ]")
+                click(jx, jy)
+                print(f"<br>点击偏移坐标: [ {jx}, {jy} ]")
             elif roll_num < self.ex_click_probability * 50:  # 随机点击其他地方(另一半的概率分给其他地方)
                 sleep((random.randint(10, 35)) / 100)  # 随机延迟0.1-0.35秒
-                mx = random.randint(50, 1050)
-                my = random.randint(50, 1050)
+                mx = int(x1 + (x2 - x1) / 1.68 + px)
+                my = int(x1 + (x2 - x1) / 1.68 + py)
                 click(mx, my)
                 print(f"<br>点击偏移坐标: [ {mx}, {my} ]")
         moveTo(now_pos[0], now_pos[1])
 
-        return True
+        return True, [cx, cy]
