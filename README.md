@@ -86,6 +86,8 @@
 - 使用正态分布模型模拟人的点击行为，简单的平均分布随机偏移容易被人工识别出来（平均分布的热力点击图呈现规律形状）
 
 ![image](https://user-images.githubusercontent.com/39365915/195895894-1fdebfc2-8031-4c64-a07b-5f1051c32ebf.png)
+
+- 正态分布模型处理，形成长尾效应，更符合人类行为
 ![标准正态分布和处理后的对比](https://user-images.githubusercontent.com/39365915/195972775-a17bc083-ccdb-485b-b45e-b65b336ca9df.jpg)
 
 
