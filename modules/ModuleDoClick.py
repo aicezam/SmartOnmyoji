@@ -95,8 +95,8 @@ class DoClick:
                     print(f"<br>点击设备 [ {device_id} ] 额外偏移坐标: [ {cx} , {cy} ]")
                 elif roll_num < self.ex_click_probability * 50:  # 随机点击其他地方(另一半的概率分给其他地方)
                     sleep((random.randint(10, 35)) / 100)  # 随机延迟0.1-0.35秒
-                    mx = random.randint(50, 1050)
-                    my = random.randint(50, 1050)
+                    mx = random.randint(50, 1050) + px
+                    my = random.randint(50, 1050) + py
                     command = abspath(dirname(__file__)) + rf'\adb.exe -s {device_id} shell input tap {mx} {my}'
                     HandleSet.deal_cmd(command)
                     print(f"<br>点击设备 [ {device_id} ] 额外偏移坐标: [ {mx} , {my} ]")
