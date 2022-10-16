@@ -33,49 +33,48 @@ class DoClick:
         """
         if self.pos is not None:
             pos = self.pos
-            handle_num = self.handle_num
-            px, py = ClickModSet.choice_mod_pos(self.click_mod)
+            click_pos_list = []
+            x1, y1, x2, y2 = GetWindowRect(self.handle_num)
+            width = x2 - x1
+            height = y2 - y1
+
+            px, py = self.get_p_pos(self.click_mod, width, height, pos)
+
             cx = int(px + pos[0])
             cy = int(py + pos[1]) - 40  # 减去40是因为window这个框占用40单位的高度
 
             # 模拟鼠标指针 点击指定位置
             long_position = MAKELONG(cx, cy)
-            SendMessage(handle_num, WM_ACTIVATE, WA_ACTIVE, 0)
-            SendMessage(handle_num, WM_LBUTTONDOWN, 0, long_position)  # 模拟鼠标按下
+            SendMessage(self.handle_num, WM_ACTIVATE, WA_ACTIVE, 0)
+            SendMessage(self.handle_num, WM_LBUTTONDOWN, 0, long_position)  # 模拟鼠标按下
             sleep((random.randint(8, 35)) / 100)  # 点击弹起改为随机
-            SendMessage(handle_num, WM_LBUTTONUP, 0, long_position)  # 模拟鼠标弹起
-            print(f"<br>点击坐标: [ {cx} , {cy} ] <br>窗口名称: [ {HandleSet.get_handle_title(handle_num)} ]")
+            SendMessage(self.handle_num, WM_LBUTTONUP, 0, long_position)  # 模拟鼠标弹起
+            print(f"<br>点击坐标: [ {cx} , {cy} ] <br>窗口名称: [ {HandleSet.get_handle_title(self.handle_num)} ]")
 
-            # 以下代码模拟真实点击，怀疑痒痒鼠会记录点击坐标数据，然后AI判断是否规律（比如一段时间内，每次都总点某个按钮附近，不超过100像素，就有风险），
-            # 如果只是随机延迟+坐标偏移，可能骗不过后台
-            # 这里模拟正常点击偶尔会多点一次的情况，另外再增加混淆点击，使整体点击看起来不那么规律
+            click_pos_list.append([cx, cy])
+
+            # 模拟真实点击、混淆点击热区
             if self.ex_click_probability > 0:  # 如果配置文件设置了额外随机点击
-                roll_num = random.randint(0, 99)  # roll 0-99，触发几率在配置文件可设置
-                if roll_num > (1 - self.ex_click_probability / 2) * 100:  # 匹配坐标附近的，不偏移太远(一半的概率分给附近)
+                ex_pos = self.get_ex_click_pos(self.ex_click_probability, width, height, [cx, cy], px, py)
+                if ex_pos is not None:
                     sleep((random.randint(10, 35)) / 100)  # 随机延迟0.1-0.35秒
-                    SendMessage(handle_num, WM_LBUTTONDOWN, 0, MAKELONG(cx, cy))  # 模拟鼠标按下
+                    SendMessage(self.handle_num, WM_LBUTTONDOWN, 0, MAKELONG(ex_pos[0], ex_pos[1]))  # 模拟鼠标按下
                     sleep((random.randint(4, 35)) / 100)  # 点击弹起随机延迟
-                    SendMessage(handle_num, WM_LBUTTONUP, 0, MAKELONG(cx, cy))  # 模拟鼠标弹起
-                    print(f"<br>点击偏移坐标: [ {cx}, {cy} ]")
-                elif roll_num < self.ex_click_probability * 50:  # 随机点击其他地方(另一半的概率分给其他地方)
-                    sleep((random.randint(10, 35)) / 100)  # 随机延迟0.1-0.35秒
-                    handle_set = HandleSet('', handle_num)
+                    SendMessage(self.handle_num, WM_LBUTTONUP, 0, MAKELONG(ex_pos[0], ex_pos[1]))  # 模拟鼠标弹起
+                    print(f"<br>点击偏移坐标: [ {ex_pos[0]}, {ex_pos[1]} ]")
+                    click_pos_list.append([ex_pos[0], ex_pos[1]])
 
-                    # 点击屏幕中心，偏右下的位置
-                    mx = int((handle_set.get_handle_pos[2] - handle_set.get_handle_pos[0]) / 1.68 + px)
-                    my = int((handle_set.get_handle_pos[3] - handle_set.get_handle_pos[1]) / 1.68 + py)
-                    SendMessage(handle_num, WM_LBUTTONDOWN, 0, MAKELONG(mx, my))  # 模拟鼠标按下
-                    sleep((random.randint(4, 35)) / 100)  # 点击弹起随机延迟
-                    SendMessage(handle_num, WM_LBUTTONUP, 0, MAKELONG(mx, my))  # 模拟鼠标弹起
-                    print(f"<br>点击偏移坐标: [ {mx}, {my} ]")
-
-            return True, [cx, cy]
+            return True, click_pos_list
 
     def adb_click(self, device_id):
         """数据线连手机点击"""
         if self.pos is not None:
+            click_pos_list = []
             pos = self.pos
-            px, py = ClickModSet.choice_mod_pos(self.click_mod)
+            height, width = HandleSet.get_screen_size(device_id)
+
+            px, py = self.get_p_pos(self.click_mod, width, height, pos)
+
             cx = int(px + pos[0])
             cy = int(py + pos[1])
 
@@ -84,34 +83,34 @@ class DoClick:
             HandleSet.deal_cmd(command)
             # system(command)
             print(f"<br>点击设备 [ {device_id} ] 坐标: [ {cx} , {cy} ]")
+            click_pos_list.append([cx, cy])
 
             # 模拟真实点击、混淆点击热区
             if self.ex_click_probability > 0:  # 如果配置文件设置了额外随机点击
-                roll_num = random.randint(0, 99)  # roll 0-99，触发几率在配置文件可设置
-                if roll_num > (1 - self.ex_click_probability / 2) * 100:  # 匹配坐标附近的，不偏移太远(一半的概率分给附近)
+                ex_pos = self.get_ex_click_pos(self.ex_click_probability, width, height, [cx, cy], px, py)
+                if ex_pos is not None:
                     sleep((random.randint(10, 35)) / 100)  # 随机延迟0.1-0.35秒
-                    command = abspath(dirname(__file__)) + rf'\adb.exe -s {device_id} shell input tap {cx} {cy}'
+                    command = abspath(
+                        dirname(__file__)) + rf'\adb.exe -s {device_id} shell input tap {ex_pos[0]} {ex_pos[1]}'
                     HandleSet.deal_cmd(command)
-                    print(f"<br>点击设备 [ {device_id} ] 额外偏移坐标: [ {cx} , {cy} ]")
-                elif roll_num < self.ex_click_probability * 50:  # 随机点击其他地方(另一半的概率分给其他地方)
-                    sleep((random.randint(10, 35)) / 100)  # 随机延迟0.1-0.35秒
-                    mx = random.randint(50, 1050) + px
-                    my = random.randint(50, 1050) + py
-                    command = abspath(dirname(__file__)) + rf'\adb.exe -s {device_id} shell input tap {mx} {my}'
-                    HandleSet.deal_cmd(command)
-                    print(f"<br>点击设备 [ {device_id} ] 额外偏移坐标: [ {mx} , {my} ]")
+                    print(f"<br>点击设备 [ {device_id} ] 额外偏移坐标: [ {ex_pos[0]} {ex_pos[1]} ]")
+                    click_pos_list.append([ex_pos[0], ex_pos[1]])
 
-            return True, [cx, cy]
+            return True, click_pos_list
 
     def windows_click_bk(self):
         """
         点击目标位置,只能前台点击（兼容所有窗体程序）
         """
         # 前台点击，窗口必须置顶，兼容所有窗口（模拟器、云游戏等）点击
+        click_pos_list = []
         pos = self.pos
-        handle_num = self.handle_num
-        px, py = ClickModSet.choice_mod_pos(self.click_mod)
-        x1, y1, x2, y2 = GetWindowRect(handle_num)
+        x1, y1, x2, y2 = GetWindowRect(self.handle_num)
+
+        width = x2 - x1
+        height = y2 - y1
+
+        px, py = self.get_p_pos(self.click_mod, width, height, pos)
 
         # 设置随机偏移范围，避免封号
         cx = int(px + pos[0])
@@ -124,26 +123,62 @@ class DoClick:
         # 把窗口置顶，并进行点击
         shell = win32com.client.Dispatch("WScript.Shell")
         shell.SendKeys('%')
-        SetForegroundWindow(handle_num)
+        SetForegroundWindow(self.handle_num)
         sleep(0.2)  # 置顶后等0.2秒再点击
         now_pos = position()
         moveTo(jx, jy)  # 鼠标移至目标
         click(jx, jy)
-        print(f"<br>点击坐标: [ {cx} , {cy} ] 窗口名称: [ {HandleSet.get_handle_title(handle_num)} ]")
+        print(f"<br>点击坐标: [ {cx} , {cy} ] 窗口名称: [ {HandleSet.get_handle_title(self.handle_num)} ]")
+        click_pos_list.append([cx, cy])
 
         # 模拟真实点击、混淆点击热区
         if self.ex_click_probability > 0:  # 如果配置文件设置了额外随机点击
-            roll_num = random.randint(0, 99)  # roll 0-99，触发几率在配置文件可设置
-            if roll_num > (1 - self.ex_click_probability / 2) * 100:  # 匹配坐标附近的，不偏移太远(一半的概率分给附近)
+            ex_pos = self.get_ex_click_pos(self.ex_click_probability, width, height, [jx, jy], px, py)
+            if ex_pos is not None:
                 sleep((random.randint(10, 35)) / 100)  # 随机延迟0.1-0.35秒
-                click(jx, jy)
-                print(f"<br>点击偏移坐标: [ {jx}, {jy} ]")
-            elif roll_num < self.ex_click_probability * 50:  # 随机点击其他地方(另一半的概率分给其他地方)
-                sleep((random.randint(10, 35)) / 100)  # 随机延迟0.1-0.35秒
-                mx = int(x1 + (x2 - x1) / 1.68 + px)
-                my = int(x1 + (x2 - x1) / 1.68 + py)
-                click(mx, my)
-                print(f"<br>点击偏移坐标: [ {mx}, {my} ]")
+                click(ex_pos[0], ex_pos[1])
+                print(f"<br>点击偏移坐标: [ {ex_pos[0]}, {ex_pos[1]} ]")
+                click_pos_list.append([ex_pos[0], ex_pos[1]])
+
         moveTo(now_pos[0], now_pos[1])
 
-        return True, [cx, cy]
+        return True, click_pos_list
+
+    @staticmethod
+    def get_ex_click_pos(ex_click_probability, width, height, old_pos, px, py):
+        """获取额外点击的偏移坐标"""
+        roll_num = random.randint(0, 999)
+        if roll_num < ex_click_probability * 0.1 * 1000:
+            x = old_pos[0]
+            y = old_pos[1]
+            return x, y
+        elif ex_click_probability * 0.3 * 1000 < roll_num < ex_click_probability * 0.6 * 1000:
+            x = int(width * 0.618 + px)
+            y = int(height * 0.618 + py)
+            return x, y
+        elif ex_click_probability * 0.6 * 1000 < roll_num < ex_click_probability * 0.9 * 1000:
+            x = int(random.randint(100, width))
+            y = int(random.randint(100, height))
+            return x, y
+        else:
+            return None
+
+    @staticmethod
+    def get_p_pos(click_mod, width, height, pos):
+        """获取模型中的偏移坐标"""
+        # 从原始模型中抽取一个坐标，根据在窗口中的相对位置，进行旋转
+        p_pos = ClickModSet.choice_mod_pos(click_mod)
+        if pos[0] < width * 0.618 and pos[1] < height * 0.618:
+            # 如果需要点击的位置位于窗口左上，则坐标顺时针旋转180度
+            px, py = ClickModSet.pos_rotate(p_pos, 180)
+        elif pos[0] < width * 0.618 and pos[1] > height * 0.618:
+            # 如果需要点击的位置位于窗口左下，则坐标顺时针旋转90度
+            px, py = ClickModSet.pos_rotate(p_pos, 90)
+        elif pos[0] > width * 0.618 and pos[1] < height * 0.618:
+            # 如果需要点击的位置位于窗口右上，则坐标顺时针旋转270度
+            px, py = ClickModSet.pos_rotate(p_pos, 270)
+        else:
+            # 如果需要点击的位置位于窗口右上或其他情况，则坐标不变
+            px, py = p_pos
+
+        return px, py

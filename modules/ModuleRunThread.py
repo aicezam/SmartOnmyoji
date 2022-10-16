@@ -246,7 +246,8 @@ class MatchingThread(QtCore.QThread):
                 match_time = time.strftime('%y-%m-%d %H:%M:%S', time.localtime(match_end_time))
                 file_path = abspath(dirname(dirname(__file__))) + r'/modules/click_log/click_log_' + today + '.txt'
                 f = open(file_path, 'a+', encoding="utf-8")
-                f.writelines(match_time + ',' + match_target_name + ',' + str(click_pos[0]) + ',' + str(click_pos[1]) + '\n')
+                for aa in range(len(click_pos)):
+                    f.writelines(match_time + ',' + match_target_name + ',' + str(click_pos[aa][0]) + ',' + str(click_pos[aa][1]) + '\n')
 
             # 当匹配到需要终止脚本运行的图片时
             if stop_status:

@@ -2,7 +2,8 @@
 # @Link    : https://github.com/aicezam/SmartOnmyoji
 # @Version : Python3.7.6
 # @MIT License Copyright (c) 2022 ACE
-
+import os
+import re
 import winsound
 from os import system
 from re import search
@@ -141,6 +142,15 @@ class HandleSet:
         """执行cmd命令"""
         pi = Popen(cmd, shell=True, stdout=PIPE)
         return pi.stdout.read()
+
+    @staticmethod
+    def get_screen_size(device_id):
+        """获取手机屏幕大小"""
+        command = abspath(dirname(__file__)) + rf'\adb.exe -s {device_id} shell wm size'
+        result_str = os.popen(command).read()
+        size_str = re.findall(r'\d+x\d+', result_str)
+        size = size_str[0].split("x")
+        return size
 
     @staticmethod
     def adb_device_status():
