@@ -164,8 +164,8 @@ class DoClick:
             return None
 
     @staticmethod
-    def get_p_pos(click_mod, width, height, pos):
-        """获取模型中的偏移坐标"""
+    def get_p_pos_4grid(click_mod, width, height, pos):
+        """获取模型中的偏移坐标（4宫格）"""
         # 从原始模型中抽取一个坐标，根据在窗口中的相对位置，进行旋转
         p_pos = ClickModSet.choice_mod_pos(click_mod)
         if pos[0] < width * 0.618 and pos[1] < height * 0.618:
@@ -180,5 +180,53 @@ class DoClick:
         else:
             # 如果需要点击的位置位于窗口右上或其他情况，则坐标不变
             px, py = p_pos
+
+        return px, py
+    
+    @staticmethod
+    def get_p_pos(click_mod, width, height, pos):
+        """获取模型中的偏移坐标（九宫格）"""
+
+        # 以窗口中偏下（0.618）的位置为中心，旋转得到的坐标，抽取模型中的一个点并进行旋转
+        # 得到的结果会根据原始坐标在窗口中的相对位置，形成一个与点击模型点击分布类似，但缩放方向不同的集合
+        x1 = 0.382 * width
+        x2 = 0.618 * width
+        x3 = width
+        y1 = 0.382 * height
+        y2 = 0.618 * height
+        y3 = height
+        x = pos[0]
+        y = pos[1]
+
+        p_pos = ClickModSet.choice_mod_pos(click_mod)
+
+        if x <= x1 and y <= y1:
+            # 左上
+            px, py = ClickModSet.pos_rotate(p_pos, 180)
+        elif x <= x1 and y1 < y <= y2:
+            # 左中
+            px, py = ClickModSet.pos_rotate(p_pos, 135)
+        elif x <= x1 and y2 < y <= y3:
+            # 左下
+            px, py = ClickModSet.pos_rotate(p_pos, 90)
+        elif x1 < x <= x2 and y <= y1:
+            # 中上
+            px, py = ClickModSet.pos_rotate(p_pos, 225)
+        elif x1 < x <= x2 and y1 < y <= y2:
+            # 中中，这个位置与左上一样处理
+            px, py = ClickModSet.pos_rotate(p_pos, 180)
+        elif x1 < x <= x2 and y2 < y <= y3:
+            # 中下
+            px, py = ClickModSet.pos_rotate(p_pos, 45)
+        elif x2 < x <= x3 and y <= y1:
+            # 右上
+            px, py = ClickModSet.pos_rotate(p_pos, 270)
+        elif x2 < x <= x3 and y1 < y <= y2:
+            # 右中
+            px, py = ClickModSet.pos_rotate(p_pos, 315)
+        else:
+            # 右下或其他情况
+            px = x
+            py = y
 
         return px, py
