@@ -213,7 +213,7 @@ class MatchingThread(QtCore.QThread):
         print("<br>初始化中…")
 
         # 开始循环
-        for i in range(int(loop_times)):
+        for i in range(20000):  # 最多20000次
             # 线程锁on
             self.mutex.lock()
             if self.isPause:
