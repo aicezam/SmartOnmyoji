@@ -38,7 +38,7 @@ class DoClick:
             width = x2 - x1
             height = y2 - y1
 
-            px, py = self.get_p_pos_4grid(self.click_mod, width, height, pos)
+            px, py = self.get_p_pos(self.click_mod, width, height, pos)
 
             cx = int(px + pos[0])
             cy = int(py + pos[1]) - 40  # 减去40是因为window这个框占用40单位的高度
@@ -73,7 +73,7 @@ class DoClick:
             pos = self.pos
             height, width = HandleSet.get_screen_size(device_id)
 
-            px, py = self.get_p_pos_4grid(self.click_mod, width, height, pos)
+            px, py = self.get_p_pos(self.click_mod, width, height, pos)
 
             cx = int(px + pos[0])
             cy = int(py + pos[1])
@@ -110,7 +110,7 @@ class DoClick:
         width = x2 - x1
         height = y2 - y1
 
-        px, py = self.get_p_pos_4grid(self.click_mod, width, height, pos)
+        px, py = self.get_p_pos(self.click_mod, width, height, pos)
 
         # 设置随机偏移范围，避免封号
         cx = int(px + pos[0])
@@ -226,7 +226,7 @@ class DoClick:
             px, py = ClickModSet.pos_rotate(p_pos, 315)
         else:
             # 右下或其他情况
-            px = x
-            py = y
+            px = p_pos[0]
+            py = p_pos[1]
 
         return px, py
