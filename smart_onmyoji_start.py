@@ -74,9 +74,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                              "https://wwu.lanzouq.com/b03d5mdli</a></p>"
                              "<br>"
                              "<p>使用方法：<a href=" + manual_url.as_posix() + ">"
-                             r"->点击查看</a></p> "
+                             "->点击查看</a></p> "
                              "<br>"
-                             "<p>🌟🌟🌟感谢你的使用，支持请点star🌟🌟🌟</p>"
+                             "<p>🌟🌟🌟感谢你的使用，支持请 <a href='https://github.com/aicezam/SmartOnmyoji'>点star</a> 🌟🌟🌟</p>"
                              )
 
         # 加载config.ini文件中的默认参数
@@ -316,7 +316,7 @@ if __name__ == '__main__':
         target_file_name = config_ini.read_config_target_path_files_name()
         myWindow = MainWindow(default_info, target_file_name)
 
-        myWindow.setWindowTitle('痒痒鼠护肝小助手 - v0.33')  # 设置窗口标题
+        myWindow.setWindowTitle('痒痒鼠护肝小助手 - v0.34')  # 设置窗口标题
         myWindow.show()
         sys.exit(app.exec_())
     else:

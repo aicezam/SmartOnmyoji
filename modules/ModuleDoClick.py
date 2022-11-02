@@ -35,8 +35,8 @@ class DoClick:
             pos = self.pos
             click_pos_list = []
             x1, y1, x2, y2 = GetWindowRect(self.handle_num)
-            width = x2 - x1
-            height = y2 - y1
+            width = int(x2 - x1)
+            height = int(y2 - y1)
 
             px, py = self.get_p_pos(self.click_mod, width, height, pos)
 
@@ -71,7 +71,9 @@ class DoClick:
         if self.pos is not None:
             click_pos_list = []
             pos = self.pos
-            height, width = HandleSet.get_screen_size(device_id)
+            screen_size = HandleSet.get_screen_size(device_id)
+            height = int(screen_size[0])
+            width = int(screen_size[1])
 
             px, py = self.get_p_pos(self.click_mod, width, height, pos)
 
@@ -107,8 +109,8 @@ class DoClick:
         pos = self.pos
         x1, y1, x2, y2 = GetWindowRect(self.handle_num)
 
-        width = x2 - x1
-        height = y2 - y1
+        width = int(x2 - x1)
+        height = int(y2 - y1)
 
         px, py = self.get_p_pos(self.click_mod, width, height, pos)
 
