@@ -91,7 +91,8 @@
 ![标准正态分布和处理后的对比](https://user-images.githubusercontent.com/39365915/195972775-a17bc083-ccdb-485b-b45e-b65b336ca9df.jpg)
 
 - 不同位置，使用不同的角度偏转，避免每个目标图片的点击位置都一样
-![500次](https://user-images.githubusercontent.com/39365915/196026021-8474ced4-3929-4ec0-b393-3fed7eb8dfd0.jpg)
+![QQ截图20221113113042](https://user-images.githubusercontent.com/39365915/201504293-0d08f477-a8be-4cd1-a662-ef602c7ac092.jpg)
+
 
 
 
