@@ -327,15 +327,8 @@ class StartMatch:
         compress_val = float(self.compress_val)
         handle_num_list = str(self.handle_num).split(",")
 
-        # 计算进度(根据次数)
-        # now_time = strftime("%Y-%m-%d %H:%M:%S", localtime())
-        # progress = format((i + 1) / loop_times, '.2%')
-        # print(f"<br>第 [ {i + 1} ] 次匹配, 还剩 [ {loop_times - i - 1} ] 次 当前进度 [ {progress} ] "
-        #       f"<br>当前时间 [ {now_time} ]")
-
         progress = format((now_time - start_time) / loop_seconds, '.2%')
         print(f"<br>第 [ {i + 1} ] 次匹配, 当前进度 [ {progress} ] "
-              # f"<br>当前时间 [ {strftime('%Y-%m-%d %H:%M:%S', localtime(now_time))} ]"
               f"<br>开始-结束时间 [ {strftime('%m-%d %H:%M', localtime(start_time))} --- {strftime('%m-%d %H:%M', localtime(end_time))} ]")
 
         # 多开场景下，针对每个窗口遍历：截图、匹配、点击

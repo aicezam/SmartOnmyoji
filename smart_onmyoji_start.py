@@ -6,12 +6,12 @@ import os
 import pathlib
 import subprocess
 import sys
-import urllib.parse
 from ctypes import windll
 from os.path import abspath, dirname
 from time import sleep
 
 import PyQt5.QtCore
+from PyQt5 import QtCore
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QMainWindow, QApplication, QFileDialog
 
@@ -74,9 +74,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                              "https://wwu.lanzouq.com/b03d5mdli</a></p>"
                              "<br>"
                              "<p>使用方法：<a href=" + manual_url.as_posix() + ">"
-                             "->点击查看</a></p> "
-                             "<br>"
-                             "<p>🌟🌟🌟感谢你的使用，支持请 <a href='https://github.com/aicezam/SmartOnmyoji'>点star</a> 🌟🌟🌟</p>"
+                                                                          "->点击查看</a></p> "
+                                                                          "<br>"
+                                                                          "<p>🌟🌟🌟感谢你的使用，支持请 <a href='https://github.com/aicezam/SmartOnmyoji'>点star</a> 🌟🌟🌟</p>"
                              )
 
         # 加载config.ini文件中的默认参数
@@ -306,8 +306,11 @@ def except_out_config(exc_type, value, tb):
 
 
 if __name__ == '__main__':
+
     if windll.shell32.IsUserAnAdmin():  # 是否以管理员身份运行
         sys.excepthook = except_out_config
+
+        QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)  # 高分屏适配，但是无效？
         app = QApplication(sys.argv)
 
         # 加载配置文件参数
@@ -316,7 +319,7 @@ if __name__ == '__main__':
         target_file_name = config_ini.read_config_target_path_files_name()
         myWindow = MainWindow(default_info, target_file_name)
 
-        myWindow.setWindowTitle('痒痒鼠护肝小助手 - v0.34')  # 设置窗口标题
+        myWindow.setWindowTitle('痒痒鼠护肝小助手 - v0.35')  # 设置窗口标题
         myWindow.show()
         sys.exit(app.exec_())
     else:

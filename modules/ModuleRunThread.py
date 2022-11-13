@@ -248,7 +248,8 @@ class MatchingThread(QtCore.QThread):
                     file_path = abspath(dirname(dirname(__file__))) + r'/modules/click_log/click_log_' + today + '.txt'
                     f = open(file_path, 'a+', encoding="utf-8")
                     for aa in range(len(click_pos)):
-                        f.writelines(match_time + ',' + match_target_name + ',' + str(click_pos[aa][0]) + ',' + str(click_pos[aa][1]) + '\n')
+                        f.writelines(match_time + ',' + match_target_name + ',' + str(click_pos[aa][0]) + ',' + str(
+                            click_pos[aa][1]) + '\n')
 
             # 当匹配到需要终止脚本运行的图片时
             if stop_status:
@@ -354,6 +355,7 @@ class MatchingThread(QtCore.QThread):
                 print("<br>-------------------------------------------")
                 # 匹配间隔 机器计算时间不计入
                 sleep(sleep_time)
+                sleep(random.uniform(0.05, 0.3))  # 再额外随机等待0.05-0.3秒
 
                 # 通过线程信号清除日志，避免日志过多导致运行缓慢(10次匹配清除1次)
                 if (i + 1) % 10 == 0:

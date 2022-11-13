@@ -47,8 +47,9 @@ class DoClick:
             long_position = MAKELONG(cx, cy)
             SendMessage(self.handle_num, WM_ACTIVATE, WA_ACTIVE, 0)
             SendMessage(self.handle_num, WM_LBUTTONDOWN, 0, long_position)  # 模拟鼠标按下
-            sleep((random.randint(5, 20)) / 100)  # 点击弹起改为随机
+            sleep((random.randint(10, 20)) / 100)  # 点击弹起改为随机
             SendMessage(self.handle_num, WM_LBUTTONUP, 0, long_position)  # 模拟鼠标弹起
+
             print(f"<br>点击坐标: [ {cx} , {cy} ] <br>窗口名称: [ {HandleSet.get_handle_title(self.handle_num)} ]")
 
             click_pos_list.append([cx, cy])
@@ -57,10 +58,11 @@ class DoClick:
             if self.ex_click_probability > 0:  # 如果配置文件设置了额外随机点击
                 ex_pos = self.get_ex_click_pos(self.ex_click_probability, width, height, [cx, cy], px, py)
                 if ex_pos is not None:
-                    sleep((random.randint(5, 20)) / 100)  # 点击弹起改为随机
-                    SendMessage(self.handle_num, WM_LBUTTONDOWN, 0, MAKELONG(ex_pos[0], ex_pos[1]))  # 模拟鼠标按下
-                    sleep((random.randint(5, 20)) / 100)  # 点击弹起改为随机
-                    SendMessage(self.handle_num, WM_LBUTTONUP, 0, MAKELONG(ex_pos[0], ex_pos[1]))  # 模拟鼠标弹起
+                    sleep((random.randint(15, 30)) / 100)  # 点击弹起改为随机
+                    long_position = MAKELONG(ex_pos[0], ex_pos[1])
+                    SendMessage(self.handle_num, WM_LBUTTONDOWN, 0, long_position)  # 模拟鼠标按下
+                    sleep((random.randint(10, 20)) / 100)  # 点击弹起改为随机
+                    SendMessage(self.handle_num, WM_LBUTTONUP, 0, long_position)  # 模拟鼠标弹起
                     print(f"<br>点击偏移坐标: [ {ex_pos[0]}, {ex_pos[1]} ]")
                     click_pos_list.append([ex_pos[0], ex_pos[1]])
 
@@ -91,7 +93,7 @@ class DoClick:
             if self.ex_click_probability > 0:  # 如果配置文件设置了额外随机点击
                 ex_pos = self.get_ex_click_pos(self.ex_click_probability, width, height, [cx, cy], px, py)
                 if ex_pos is not None:
-                    sleep((random.randint(5, 20)) / 100)  # 点击弹起改为随机
+                    sleep((random.randint(10, 20)) / 100)  # 点击弹起改为随机
                     command = abspath(
                         dirname(__file__)) + rf'\adb.exe -s {device_id} shell input tap {ex_pos[0]} {ex_pos[1]}'
                     HandleSet.deal_cmd(command)
@@ -137,7 +139,7 @@ class DoClick:
         if self.ex_click_probability > 0:  # 如果配置文件设置了额外随机点击
             ex_pos = self.get_ex_click_pos(self.ex_click_probability, width, height, [jx, jy], px, py)
             if ex_pos is not None:
-                sleep((random.randint(5, 20)) / 100)  # 点击弹起改为随机
+                sleep((random.randint(10, 20)) / 100)  # 点击弹起改为随机
                 click(ex_pos[0], ex_pos[1])
                 print(f"<br>点击偏移坐标: [ {ex_pos[0]}, {ex_pos[1]} ]")
                 click_pos_list.append([ex_pos[0], ex_pos[1]])

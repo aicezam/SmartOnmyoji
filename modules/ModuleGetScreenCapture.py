@@ -8,14 +8,13 @@ from os.path import abspath, dirname
 from subprocess import Popen, PIPE
 
 import win32com.client
-import win32print
 from numpy import frombuffer, uint8, array
-from win32con import SRCCOPY, DESKTOPHORZRES, SM_CYSCREEN
-from win32gui import DeleteObject, SetForegroundWindow, GetWindowRect, GetWindowDC, GetDC
+from win32con import SRCCOPY
+from win32gui import DeleteObject, SetForegroundWindow, GetWindowRect, GetWindowDC
 from win32ui import CreateDCFromHandle, CreateBitmap
-from win32api import GetSystemMetrics
 from cv2 import cv2
 from PIL import ImageGrab
+
 from modules.ModuleGetConfig import ReadConfigFile
 
 
@@ -25,15 +24,14 @@ class GetScreenCapture:
         self.hwd_num = handle_num
         self.screen_width = handle_width
         self.screen_height = handle_height
-        rc = ReadConfigFile()
-        self.other_setting = rc.read_config_other_setting()
-        self.screen_scale_rate = float(self.other_setting[11])  # 根据屏幕分辨率截图，可在配置文件中修改，默认1.25
+        self.screen_scale_rate = get_screen_scale_rate()  # 尝试获取屏幕分辨率缩放比例（暂未能找到自动获取的方法）
 
     def window_screen(self):
         """windows api 窗体截图方法，可后台截图，可被遮挡，不兼容部分窗口"""
         hwnd = self.hwd_num
         screen_width = self.screen_width
         screen_height = self.screen_height
+
         screen_width_source = int(screen_width / self.screen_scale_rate)
         screen_height_source = int(screen_height / self.screen_scale_rate)
 
@@ -89,7 +87,6 @@ class GetScreenCapture:
     @staticmethod
     def adb_screen(device_id):
         """安卓手机adb截图"""
-        # commend = Popen("adb shell screencap -p",stdin=PIPE,stdout=PIPE,shell=True)  # 截图
         commend = Popen(abspath(dirname(__file__)) + f'\\adb.exe -s {device_id} shell screencap -p', stdin=PIPE,
                         stdout=PIPE, shell=True)
         img_bytes = commend.stdout.read().replace(b'\r\n', b'\n')  # 传输
@@ -97,3 +94,11 @@ class GetScreenCapture:
         scr_img = cv2.cvtColor(scr_img, cv2.COLOR_BGRA2GRAY)
         print("<br>截图成功！")
         return scr_img
+
+
+def get_screen_scale_rate():
+    """获取缩放比例"""
+    set_config = ReadConfigFile()  # 读取配置文件
+    other_setting = set_config.read_config_other_setting()
+    screen_scale_rate = float(other_setting[11])
+    return screen_scale_rate

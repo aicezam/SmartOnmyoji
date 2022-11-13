@@ -2,6 +2,7 @@
 # @Link    : https://github.com/aicezam/SmartOnmyoji
 # @Version : Python3.7.6
 # @MIT License Copyright (c) 2022 ACE
+
 import os
 import re
 import winsound
