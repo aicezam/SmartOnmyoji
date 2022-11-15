@@ -2,13 +2,17 @@
 # @Link    : https://github.com/aicezam/SmartOnmyoji
 # @Version : Python3.7.6
 # @MIT License Copyright (c) 2022 ACE
+
+import json
 import os
 import pathlib
+import re
 import subprocess
 import sys
 from ctypes import windll
 from os.path import abspath, dirname
 from time import sleep
+import urllib.request
 
 import PyQt5.QtCore
 from PyQt5 import QtCore
@@ -18,6 +22,8 @@ from PyQt5.QtWidgets import QMainWindow, QApplication, QFileDialog
 from modules.ModuleGetConfig import ReadConfigFile
 from modules.ModuleRunThread import MatchingThread, GetActiveWindowThread
 from modules.ui import Ui_MainWindow
+
+now_tag = "v0.36"
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -60,11 +66,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.select_targetpic_path_btn.hide()
         self.setWindowIcon(QIcon('img/logo.ico'))
         manual_url = pathlib.PureWindowsPath(abspath(dirname(__file__)) + r'\modules\manual\index.html')
+        update_tips = ''
+        update_status = self.get_update_status(now_tag)
+        if update_status:
+            update_tips = update_status[1] + update_status[2]
         self.run_log.setText("<br>"
                              "<p>本软件完全开源免费，不盈利不接受捐赠，作者不对使用该软件产生的一切后果负责！</p>"
                              "<p>本软件仅作学习用途，请勿用于其他非法途径！</p>"
                              "<p>本软件未对任何游戏或程序进行任何程度的修改，仅做辅助手段，帮助处理大量重复且乏味的操作！</p>"
                              "<br>"
+                             "<p style='font-weight:bold;color:rgb(255, 136, 17);'>" + update_tips + "</p>"
                              "<p>你可以在以下地址下载：</p>"
                              "<p>脚本源码(git)："
                              "<a href='https://github.com/aicezam/SmartOnmyoji'>"
@@ -73,10 +84,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                              "<a href='https://isu.ink/yys'>"
                              "https://wwu.lanzouq.com/b03d5mdli</a></p>"
                              "<br>"
-                             "<p>使用方法：<a href=" + manual_url.as_posix() + ">"
-                                                                          "->点击查看</a></p> "
-                                                                          "<br>"
-                                                                          "<p>🌟🌟🌟感谢你的使用，支持请 <a href='https://github.com/aicezam/SmartOnmyoji'>点star</a> 🌟🌟🌟</p>"
+                             "<p>使用方法：<a href=" + manual_url.as_posix() + ">->点击查看</a></p> "
+                             "<br>"
+                             "<p>🌟🌟🌟感谢你的使用，支持请 <a href='https://github.com/aicezam/SmartOnmyoji'>点star</a> 🌟🌟🌟</p>"
                              )
 
         # 加载config.ini文件中的默认参数
@@ -253,6 +263,32 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         folder_path = abspath(dirname(__file__)) + r'\img'  # 当前路径
         os.startfile(folder_path)
 
+    @staticmethod
+    def get_update_status(now_tag1):
+        """从github获取更新状态"""
+        url = r"https://api.github.com/repos/aicezam/SmartOnmyoji/releases/latest"
+        url2 = r"https://isu.ink/stats"
+
+        try:
+            header = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 Edg/107.0.1418.42"}
+            try:
+                request2 = urllib.request.Request(url2, headers=header)
+                response2 = urllib.request.urlopen(request2, timeout=0.5)
+            finally:
+                request = urllib.request.Request(url, headers=header)
+                response = urllib.request.urlopen(request, timeout=1).read().decode('utf8')
+                tag_name = json.loads(response)["tag_name"]  # 将 JSON 对象转换为 Python 字典后，取tag_name字段值
+
+                latest_tag = re.findall(r"\d+\.?\d*", tag_name)
+                now_tag1 = re.findall(r"\d+\.?\d*", now_tag1)
+
+                if latest_tag[0] > now_tag1[0]:
+                    return True, "检测到更新，当前最新版：", tag_name
+                else:
+                    return False
+        except Exception as e:
+            return False
+
     # 退出程序的槽函数
     def __on_clicked_exit(self):
         if self.btn_start.isHidden():
@@ -319,7 +355,7 @@ if __name__ == '__main__':
         target_file_name = config_ini.read_config_target_path_files_name()
         myWindow = MainWindow(default_info, target_file_name)
 
-        myWindow.setWindowTitle('痒痒鼠护肝小助手 - v0.35')  # 设置窗口标题
+        myWindow.setWindowTitle('痒痒鼠护肝小助手 - ' + now_tag)  # 设置窗口标题
         myWindow.show()
         sys.exit(app.exec_())
     else:

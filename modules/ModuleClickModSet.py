@@ -34,11 +34,11 @@ class ClickModSet:
             elif mx[i] > 0 and my[i] < 0:
 
                 # 若第四象限全部缩小，会导致第四象限的密度偏大，所以把其中三分之一的坐标，转换为第二象限的坐标（第二象限放大后密度会变小）
-                roll = np.random.randint(0, 8)
-                if roll < 3:  # 转换其中三分之一的坐标
+                roll = np.random.randint(0, 9)
+                if roll < 5:  # 转换其中二分之一的坐标
                     x_int.append(int(mx[i] * zoom * -1.373))
                     y_int.append(int(my[i] * zoom * -1.373))
-                elif roll >= 7:  # 九分之二的坐标不处理
+                elif roll >= 8:  # 十分之二的坐标不处理
                     x_int.append(int(mx[i] * zoom))
                     y_int.append(int(my[i] * zoom))
                 else:  # 剩下的坐标正常缩小
@@ -101,19 +101,15 @@ class ClickModSet:
     @staticmethod
     def pos_rotate(pos, r=90):
         """
-        将一个坐标围绕原点（0，0）,进行顺时针旋转，默认90度，十分之一的概率不旋转
+        将一个坐标围绕原点（0，0）,进行顺时针旋转，默认90度
         """
-        roll = np.random.randint(0, 99)
-        if roll > 5:
-            rx = pos[0]
-            ry = pos[1]
-            # 对每个坐标进行变换，参照数学公式变换，有一点点误差，但不影响
-            ang = math.radians(r)  # 将角度转换成弧度
-            new_x = int(rx * math.cos(ang) + ry * math.sin(ang))
-            new_y = int(-rx * math.sin(ang) + ry * math.cos(ang))
-        else:
-            new_x = pos[0]
-            new_y = pos[1]
+        rx = pos[0]
+        ry = pos[1]
+        # 对每个坐标进行变换，参照数学公式变换，有一点点误差，但不影响
+        ang = math.radians(r)  # 将角度转换成弧度
+        new_x = int(rx * math.cos(ang) + ry * math.sin(ang))
+        new_y = int(-rx * math.sin(ang) + ry * math.cos(ang))
+
         return new_x, new_y
 
 
