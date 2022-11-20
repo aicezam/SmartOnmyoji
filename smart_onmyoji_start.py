@@ -23,7 +23,7 @@ from modules.ModuleGetConfig import ReadConfigFile
 from modules.ModuleRunThread import MatchingThread, GetActiveWindowThread
 from modules.ui import Ui_MainWindow
 
-now_tag = "v0.36"
+now_tag = "v0.37"
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -66,6 +66,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.select_targetpic_path_btn.hide()
         self.setWindowIcon(QIcon('img/logo.ico'))
         manual_url = pathlib.PureWindowsPath(abspath(dirname(__file__)) + r'\modules\manual\index.html')
+        show_log_tool_url = pathlib.PureWindowsPath(abspath(dirname(__file__)) + r'\modules\manual\show_log_tool.html')
         update_tips = ''
         update_status = self.get_update_status(now_tag)
         if update_status:
@@ -83,8 +84,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                              "<p>蓝奏云(密码yys)："
                              "<a href='https://isu.ink/yys'>"
                              "https://wwu.lanzouq.com/b03d5mdli</a></p>"
-                             "<br>"
-                             "<p>使用方法：<a href=" + manual_url.as_posix() + ">->点击查看</a></p> "
+                             "<p>使用方法说明：<a href=" + manual_url.as_posix() + ">->点击查看</a></p> "
+                             "<p>日志分析工具：<a href=" + show_log_tool_url.as_posix() + ">->点击使用</a></p> "
                              "<br>"
                              "<p>🌟🌟🌟感谢你的使用，支持请 <a href='https://github.com/aicezam/SmartOnmyoji'>点star</a> 🌟🌟🌟</p>"
                              )
