@@ -1,8 +1,8 @@
+
+![SmartOnmyoji](https://socialify.git.ci/aicezam/SmartOnmyoji/image?forks=1&issues=1&language=1&name=1&pattern=Signal&pulls=1&stargazers=1&theme=Light)
+
 # SmartOnmyoji
 > 虽然有很多大佬有写过类似的脚本，但其实这是个学习项目，通过这个项目基本花了一个月学会了python，这里注释虽然不完整，代码不够简洁，功能也不够丰富，但是用更加优雅的方法继续完善~
-
-## 始于痒痒鼠，不止于痒痒鼠
-> 支持所有需要自动点点点的软件 —— windows程序、安卓APP
 
 
 ### 安装方法
@@ -40,9 +40,6 @@
 13. 若你使用桌面版客户端，请勾选**桌面版防异常**，请打开配置文件**config.ini**修改window系统屏幕缩放率，即**[other_setting]** -> **srceen_scale_rate**
 14. 最后点击开始，即可运行并且输出运行日志
 
-- 推荐使用
-- 只要每天正常时间内，不刷满300次，理论上不会收到鬼使黑的信，**请按正常时间正常频率使用脚本，偶尔还是用一下樱饼，总使用脚本有被封号的风险**
-- 
 
 ### 注意事项
 
@@ -70,8 +67,6 @@
 
 
 
-
-
 - 模板匹配方法：不能随意调整窗体分辨率，模板图片与窗体中的部分必须一致
 
 ![image](https://user-images.githubusercontent.com/39365915/158008385-6d661a3f-51a7-44c0-9b8b-b872cfed60eb.png)
@@ -87,12 +82,13 @@
 
 ![image](https://user-images.githubusercontent.com/39365915/195895894-1fdebfc2-8031-4c64-a07b-5f1051c32ebf.png)
 
+
 - 正态分布模型处理，形成长尾效应，更符合人类行为
 ![标准正态分布和处理后的对比](https://user-images.githubusercontent.com/39365915/195972775-a17bc083-ccdb-485b-b45e-b65b336ca9df.jpg)
 
+
 - 不同位置，使用不同的角度偏转，避免每个目标图片的点击位置都一样
 ![QQ截图20221113113042](https://user-images.githubusercontent.com/39365915/201504293-0d08f477-a8be-4cd1-a662-ef602c7ac092.jpg)
-
 
 
 
