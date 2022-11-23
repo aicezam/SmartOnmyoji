@@ -5,23 +5,23 @@
         "click_pos":[[750,550],[800,500]]
     },
     {
-        "name":"win_jiangli",
-        "real_pos":[660,560],
+        "name":"10-win_end2",
+        "real_pos":[560,530],
         "click_pos":[[880,480],[800,614],[800,500],[970,450]]
     },
     {
-        "name":"win_jiangli2",
-        "real_pos":[570,530],
+        "name":"11-winhun",
+        "real_pos":[560,530],
         "click_pos":[[880,480],[800,614],[800,500],[970,450]]
     },
     {
-        "name":"win_shengli",
-        "real_pos":[530,200],
+        "name":"0-gu",
+        "real_pos":[430,200],
         "click_pos":[[820,480],[800,260]]
     },
     {
-        "name":"fail_shibai",
-        "real_pos":[508,216],
+        "name":"fail",
+        "real_pos":[430,200],
         "click_pos":[[1040,430],[720,300],[980,270]]
     }
 ]
