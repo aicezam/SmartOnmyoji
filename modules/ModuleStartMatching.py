@@ -2,7 +2,9 @@
 # @Link    : https://github.com/aicezam/SmartOnmyoji
 # @Version : Python3.7.6
 # @MIT License Copyright (c) 2022 ACE
-
+import json
+import os
+import random
 from gc import collect
 from time import sleep, localtime, strftime
 from os.path import abspath, dirname
@@ -241,6 +243,21 @@ class StartMatch:
             # 如果图片有压缩，需对坐标还原
             if compress_val != 1:
                 pos = [pos[0] / compress_val, pos[1] / compress_val]
+
+            # 获取json文件中，每个图片配置的坐标点
+            target_img_folder_path = os.path.dirname(target_img_file_path[target_num])  # 获取图片所在文件夹
+            img_json = json.load(open(target_img_folder_path + r'\img_pos.json', 'r', encoding='utf-8'))  # 读取json文件
+            for i in range(len(img_json)):  # 匹配并抽取当前目标json文件中设置的坐标点
+                if target_img_name[target_num] == img_json[i]["name"]:  # 判断当前匹配成功的图片是否设置json
+                    target_pos = random.choice(img_json[i]["click_pos"])  # 抽取一个点击坐标
+                    if abs(pos[0] - img_json[i]["real_pos"][0]) < 100:  # 判断界面是否经过较大缩放
+                        pos = target_pos  # 未缩放直接使用json中的值
+                    else:
+                        scal_rate = pos[0] / img_json[i]["real_pos"][0]  # 如果界面有缩放则计算缩放比例，重新计算缩放后的点击坐标
+                        pos = [0, 0]  # 重置坐标，通过缩放比例重新赋值新坐标
+                        pos[0] = int(target_pos[0] * scal_rate)
+                        pos[1] = int(target_pos[1] * scal_rate)
+                    break
 
             # 打印匹配到的实际坐标点和匹配到的图片信息
             print(f"<br>匹配成功! ")

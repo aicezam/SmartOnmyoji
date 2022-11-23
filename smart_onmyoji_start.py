@@ -23,7 +23,7 @@ from modules.ModuleGetConfig import ReadConfigFile
 from modules.ModuleRunThread import MatchingThread, GetActiveWindowThread
 from modules.ui import Ui_MainWindow
 
-now_tag = "v0.37"
+now_tag = "v0.38"
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -65,8 +65,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.loop_progress.setValue(0)
         self.select_targetpic_path_btn.hide()
         self.setWindowIcon(QIcon('img/logo.ico'))
-        manual_url = pathlib.PureWindowsPath(abspath(dirname(__file__)) + r'\modules\manual\index.html')
-        show_log_tool_url = pathlib.PureWindowsPath(abspath(dirname(__file__)) + r'\modules\manual\show_log_tool.html')
+        manual_url = pathlib.PureWindowsPath(abspath(dirname(__file__)) + r'\modules\tools\manual.html')
+        self.log_analysis_url = pathlib.PureWindowsPath(abspath(dirname(__file__)) + r'\modules\tools\log_analysis.html')
         update_tips = ''
         update_status = self.get_update_status(now_tag)
         if update_status:
@@ -85,7 +85,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                              "<a href='https://isu.ink/yys'>"
                              "https://wwu.lanzouq.com/b03d5mdli</a></p>"
                              "<p>使用方法说明：<a href=" + manual_url.as_posix() + ">->点击查看</a></p> "
-                             "<p>日志分析工具：<a href=" + show_log_tool_url.as_posix() + ">->点击使用</a></p> "
+                             "<p>日志分析工具：<a href=" + self.log_analysis_url.as_posix() + ">->点击使用</a></p> "
                              "<br>"
                              "<p>🌟🌟🌟感谢你的使用，支持请 <a href='https://github.com/aicezam/SmartOnmyoji'>点star</a> 🌟🌟🌟</p>"
                              )
@@ -188,6 +188,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     # 暂停按钮被点击的槽函数
     def __on_clicked_btn_pause(self):
+        print("<br>---已暂停!---")
+        print("<br>日志分析工具：<a href=" + self.log_analysis_url.as_posix() + ">->点击使用</a><br>")
         self.btn_start.setEnabled(False)
         self.btn_pause.setEnabled(False)
         self.btn_resume.setEnabled(True)
@@ -210,6 +212,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     # 停止按钮被点击的槽函数
     def __on_clicked_btn_cancel(self):
+        print("<br>---已终止!---")
+        print("<br>日志分析工具：<a href=" + self.log_analysis_url.as_posix() + ">->点击使用</a><br>")
         self.btn_start.setEnabled(True)
         self.btn_pause.setEnabled(False)
         self.btn_resume.setEnabled(False)

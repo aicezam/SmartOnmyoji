@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-CN" style="height: 100%">
+<head>
+	<meta charset="utf-8">
+    <link rel="icon" href="./logo.ico" />
+    <title>点击日志查看工具</title>
+	<style type="text/css">
+		.clip
+			{
+				position: absolute;
+				clip: rect(0, 0, 0, 0);
+			}
+		.button
+			{
+				display: inline-block;
+				width: 96px;
+				height: 32px;
+				padding: 8px 16px;
+				margin: 8px;
+				text-align: center;
+				line-height: 32px;
+				color: #ffffff;
+				background: #f44336;
+				border-radius: 5px;
+				cursor: pointer;
+				letter-spacing: 1px;
+				margin-top: 100px;
+				
+			}
+		.tips
+			{
+				color:#999999;
+			}
+		.stats_words
+			{
+				width: 80%;
+				margin:0% 10% 0% 10%;
+				text-align: left;
+			}
+		.stats_span
+			{
+				background-color: #f0f0f0;
+				padding: 10px;
+				color: #666666;
+			}
+	}
+	</style>
+
+</head>
+
+<body style="height: 100%;" align="center">
+
+    <input type="file" name="file" id="file" class="clip" accept="text/*">
+	<label for="file" class="button" align="center">选择文件</label>
+	<p align="center" class="tips">请选择日志文件，文件位于 "\modules\click_log\click_log_xxxx.txt"</p>
+	<p align="center" class="tips" id="file_name"></p>
+	<br><br>
+    <h2 id="show_click_pos_title" class="stats_words"></h2>
+	<p id="show_click_pos" class="stats_words"></p>
+  	<div id="container" style="height: 80%"></div>
+
+  	<br><br>
+    <h2 id="show_target_pic_title" class="stats_words"></h2>
+	<p id="show_target_pic" class="stats_words"></p>
+  	<div id="target_pic_stats" style="height: 80%"></div>
+
+  	<br><br>
+    <h2 id="show_click_time_title" class="stats_words"></h2>
+	<p id="show_click_time_stats" class="stats_words"></p>
+  	<div id="show_click_time" style="height: 80%"></div>
+  	
+	<script type="text/javascript">
+			//给页面一个加载等待动画，因为echarts加载需要一点时间
+		    //获取浏览器页面可见高度和宽度
+			var _PageHeight = document.documentElement.clientHeight,
+			    _PageWidth = document.documentElement.clientWidth;
+			//计算loading框距离顶部和左部的距离（loading框的宽度为215px，高度为61px）
+			var _LoadingTop = _PageHeight > 61 ? (_PageHeight - 61) / 2 : 0,
+			    _LoadingLeft = _PageWidth > 215 ? (_PageWidth - 215) / 2 : 0;
+			//在页面未加载完毕之前显示的loading Html自定义内容
+			var _LoadingHtml = '<div id="loadingDiv" style="position:absolute;left:0;width:100%;height:' + _PageHeight + 'px;top:0;background:#f3f8ff;opacity:1;filter:alpha(opacity=80);z-index:10000;"><div style="position: absolute; cursor1: wait; left: ' + _LoadingLeft + 'px; top:' + _LoadingTop + 'px; width: auto; height: 57px; line-height: 57px; padding-left: 50px; padding-right: 5px; color: #696969; ">加载中，请等待...</div></div>';
+			//呈现loading效果
+			document.write(_LoadingHtml);
+			//监听加载状态改变
+			document.onreadystatechange = completeLoading;
+
+			//加载状态为complete时移除loading效果
+			function completeLoading() {
+			    if (document.readyState == "complete") {
+			        var loadingMask = document.getElementById('loadingDiv');
+			        loadingMask.parentNode.removeChild(loadingMask);
+			    }
+			}
+	</script>
+
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+    <script type="text/javascript" src="https://fastly.jsdelivr.net/npm/echarts@5.4.0/dist/echarts.min.js"></script>
+	
+    <script type="text/javascript">
+      scrollTo(0,0);
+	  document.getElementById('file').onchange = function()
+		{
+			var file = this.files[0];
+			var reader = new FileReader();
+			var data_pos = []  // 坐标点
+			var data_target_pic = []  // 目标图片
+			var data_time = []  // 点击时间
+			var file_data = []
+			reader.onload = function(progressEvent)
+				{    
+		  			var fileContentArray = this.result.split(/\r\n|\n/);  //逐行读取txt文件，并存进fileContentArray数组
+		  			for(var line = 0; line < fileContentArray.length-1; line++) //将数组拆分转换为二维数组，并转换为int类型，存进data列表数组
+		  				{
+		  					data_pos[line] = []  //二维数组不能直接赋值，要先初始化一下
+		  					file_data[line] = fileContentArray[line].split(",");
+		  					data_time[line] = file_data[line][0];
+		  					data_target_pic[line] = file_data[line][1];
+		  					data_pos[line][0] = parseInt(file_data[line][2]);
+		  					data_pos[line][1] = parseInt(file_data[line][3]);
+		  				}
+
+		  			// console.log(data_pos)
+		  			// console.log(data_target_pic)
+		  			var fileName = $("#file").val();
+    				var strFileName = fileName.substring(fileName.lastIndexOf("\\")+1);
+
+		  			//以下是echarts坐标点散点图配置
+				  	var dom = document.getElementById('container');
+				    var myChart = echarts.init(dom, null, {renderer: 'canvas',useDirtyRect: false});
+				    var app = {};
+				    var option;
+				  		option = {
+				  			tooltip: {trigger: 'none', axisPointer: { type: 'cross' } },
+				  			xAxis: {position:"top"},  //x轴改到顶部
+				  			yAxis: {inverse: true}, //设置左上角为原点
+				  			series: [{symbolSize: 3, data: data_pos, type: 'scatter',}] //symbolSize是点的大小，data是坐标数据
+						};
+					window.addEventListener('resize', myChart.resize);
+				    if (option && typeof option === 'object') {
+				      myChart.setOption(option);
+				    }
+				    
+
+				    // 以下柱状图，统计每个目标点击多少次
+				    const target_pic_name = Array.from(new Set(data_target_pic))  // 获取有哪些目标图片被点击
+				    var target_pic_stats = getArrItemNum(data_target_pic)  // 统计每个图片点击次数
+				    var target_pic_click_num = []
+				    for(var i = 0; i < target_pic_name.length; i++)  // 拆分为2个一维数组
+					    {
+					    	target_pic_click_num[i] = parseInt(target_pic_stats[target_pic_name[i]])
+					    };
+					// console.log(target_pic_name)
+		  	        // console.log(target_pic_click_num)
+		  			var chartDom = document.getElementById('target_pic_stats');
+					var myChart = echarts.init(chartDom);
+					var option;
+
+					option = {
+						tooltip: {trigger: 'axis', axisPointer: { type: 'cross' } },
+					  	xAxis: {type: 'category', data: target_pic_name },
+					  	yAxis: {type: 'value' },
+					  	series: [ { data: target_pic_click_num, type: 'bar', name: '点击次数',} ]
+					};
+					option && myChart.setOption(option);
+					window.addEventListener('resize', myChart.resize);
+
+
+					// 以下是时间统计，每十分钟，点击多少次
+					var data_time_y_m_d = []
+					var data_time_h_m_s = []
+					for(var i = 0; i < data_time.length; i++)
+						{
+							data_time_y_m_d[i] = data_time[i].split(" ")[0];
+							data_time_h_m_s[i] = data_time[i].split(" ")[1];
+						}
+
+					var data_time_h = []
+					var data_time_min = []
+					for(var i = 0; i < data_time_h_m_s.length; i++)
+						{
+							data_time_h[i] = data_time_h_m_s[i].split(":")[0];
+							data_time_min[i] = data_time_h_m_s[i].split(":")[1];
+						}
+
+					var data_time_h_m = []
+					var data_time_min_int = 0
+					var data_time_y_m_d_h_m = []
+					for(var i = 0; i < data_time_h_m_s.length; i++)  // 转换为整点，每10分钟统计一次
+						{
+							data_time_min_int = parseInt(data_time_min[i])
+							if (data_time_min_int>=0 && data_time_min_int<10)
+								{data_time_min[i] = '00-'+data_time_h[i]+':09'}
+							else if (data_time_min_int>=10 && data_time_min_int<20)
+								{data_time_min[i] = '10-'+data_time_h[i]+':19'}
+							else if (data_time_min_int>=20 && data_time_min_int<30)
+								{data_time_min[i] = '20-'+data_time_h[i]+':29'}
+							else if (data_time_min_int>=30 && data_time_min_int<40)
+								{data_time_min[i] = '30-'+data_time_h[i]+':39'}
+							else if (data_time_min_int>=40 && data_time_min_int<50)
+								{data_time_min[i] = '40-'+data_time_h[i]+':49'}
+							else if (data_time_min_int>=50 && data_time_min_int<60)
+								{data_time_min[i] = '50-'+data_time_h[i]+':59';}
+							data_time_h_m[i] = data_time_h[i] + ":" + data_time_min[i];
+							// data_time_y_m_d_h_m[i] = data_time_y_m_d[i] + " " + data_time_h_m[i]
+							data_time_y_m_d_h_m[i] = data_time_h_m[i]
+						}
+
+					// console.log(data_time_y_m_d_h_m)
+
+					const data_time_name = Array.from(new Set(data_time_y_m_d_h_m))  // 获取有哪些时间有点击
+				    var data_time_name_num = getArrItemNum(data_time_y_m_d_h_m)  // 统计每个时间点击次数、
+				    var data_time_stats = []
+				    for(var i = 0; i < data_time_name.length; i++)  // 拆分为2个一维数组
+					    {
+					    	data_time_stats[i] = parseInt(data_time_name_num[data_time_name[i]])
+					    };
+					// console.log(data_time_name)
+					// console.log(data_time_stats)
+					// 图表绘制
+					var chartDom = document.getElementById('show_click_time');
+					var myChart = echarts.init(chartDom);
+					var option;
+
+					option = {
+						tooltip: {trigger: 'axis', axisPointer: { type: 'cross' } },
+					  	xAxis: {type: 'category', data: data_time_name },
+					  	yAxis: { type: 'value' },
+					  	series: [ { data: data_time_stats, type: 'bar' , name: '点击次数',} ]
+					};
+					option && myChart.setOption(option);
+					window.addEventListener('resize', myChart.resize);
+
+
+					//  显示结果统计
+					document.getElementById("file_name").innerHTML="<span>已选择文件："+strFileName+"</span>"
+
+					document.getElementById("show_click_pos_title").innerHTML="<span>点击散点图</span>"
+					document.getElementById("show_click_pos").innerHTML="<p class='stats_span'>共点击"+data_pos.length+"次</p>"
+
+					document.getElementById("show_target_pic_title").innerHTML="<span>目标点击次数统计</span>"
+					document.getElementById("show_target_pic").innerHTML="<p class='stats_span'>共点击了"+target_pic_name.length+"个目标图片</p>"
+
+					document.getElementById("show_click_time_title").innerHTML="<span>点击时间统计</span>"
+					document.getElementById("show_click_time_stats").innerHTML="<p class='stats_span'>脚本从 "+data_time[0]+" 执行至 "+data_time[data_pos.length-1]+"</p>"
+					
+
+				}
+			reader.readAsText(file);
+		};
+
+		// 获取数组中每个元素出现的次数
+		function getArrItemNum(arr) {
+		    let obj = {};
+		    arr.forEach(element => {
+		        if (obj[element]) {
+		            obj[element]++;
+		        } else {
+		            obj[element] = 1;
+		        }
+		    });
+		    return obj;
+		}
+    </script>
+</body>
+</html>

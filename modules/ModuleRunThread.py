@@ -333,9 +333,8 @@ class MatchingThread(QtCore.QThread):
             # if i == loop_times - 1:  # 根据执行次数判断结束时间
             if now_time >= end_time:  # 根据时间判断结束时间
                 print("<br>---已执行完成!---")
-                show_log_tool_url = pathlib.PureWindowsPath(
-                    abspath(dirname(__file__)) + r'\manual\show_log_tool.html')
-                print("<br>日志分析工具：<a href=" + show_log_tool_url.as_posix() + ">->点击使用</a>")
+                log_analysis_url = pathlib.PureWindowsPath(abspath(dirname(__file__)) + r'\tools\log_analysis.html')
+                print("<br>日志分析工具：<a href=" + log_analysis_url.as_posix() + ">->点击使用</a>")
                 if other_setting[7]:
                     HandleSet.play_sounds("end")  # 播放提示音
                 self.end_do(info)
