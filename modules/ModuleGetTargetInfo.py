@@ -5,6 +5,8 @@
 
 from os import path, walk
 from re import search, compile
+
+import numpy as np
 from numpy import uint8, fromfile
 from cv2 import cv2
 from modules.ModuleImgProcess import ImgProcess
@@ -70,7 +72,8 @@ class GetTargetPicInfo:
             # 通过图片地址获取每张图片的信息
             for i in range(len(img_file_path)):
                 # img = cv2.imread(img_file_path[i])  # 读取图片地址的图片到内存中
-                img = cv2.imdecode(fromfile(img_file_path[i], dtype=uint8), -1)  # 修复中文路径下opencv报错问题
+                # img = np.uint8(cv2.imdecode(fromfile(img_file_path[i], dtype=uint8), -1))  # 修复中文路径下opencv报错问题
+                img = cv2.imdecode(fromfile(img_file_path[i], dtype=uint8), -1)
                 img_process = ImgProcess()
                 img_hw[i] = img.shape[:2]  # 获取目标图片宽高
                 img_name.append(self.trans_path_to_name(img_file_path[i]))  # 获取目标图片名称

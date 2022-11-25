@@ -236,133 +236,144 @@ class MatchingThread(QtCore.QThread):
 
             # 开始匹配
             match_start_time = time.time()
-            results = start_match.start_match_click(i, loop_times, target_info, debug_status, start_time, end_time,
-                                                    now_time, loop_seconds, click_mod)
-            match_end_time = time.time()
-            run_status, match_status, stop_status, match_target_name, click_pos = results
+            try:
+                results = start_match.start_match_click(i, loop_times, target_info, debug_status, start_time, end_time,
+                                                        now_time, loop_seconds, click_mod)
 
-            # 记录点击日志(如果匹配成功)
-            if other_setting[15]:
-                if click_pos:
-                    today = time.strftime('%y%m%d', time.localtime(time.time()))
-                    match_time = time.strftime('%y-%m-%d %H:%M:%S', time.localtime(match_end_time))
-                    file_path = abspath(dirname(dirname(__file__))) + r'/modules/click_log/click_log_' + today + '.txt'
-                    f = open(file_path, 'a+', encoding="utf-8")
-                    for aa in range(len(click_pos)):
-                        f.writelines(match_time + ',' + match_target_name + ',' + str(click_pos[aa][0]) + ',' + str(
-                            click_pos[aa][1]) + '\n')
+                match_end_time = time.time()
+                run_status, match_status, stop_status, match_target_name, click_pos = results
 
-            # 当匹配到需要终止脚本运行的图片时
-            if stop_status:
-                if other_setting[7]:
-                    HandleSet.play_sounds("warming")  # 播放提示音
-                self.mutex.unlock()
-                self.finished_signal.emit(True)
-                break
-
-            # 计算匹配成功的次数,每成功匹配x次，休息x秒，避免异常
-            if match_status:
-                success_times = success_times + 1
-                print(f"<br>已成功匹配 [ {success_times} ] 次")
-
-                # 以下是匹配成功后的随机等待算法
-
-                # 如果上次警告提示到需要触发时不足90秒，不会触发等待
-                if other_setting[2] is True and match_end_time - warming_time > 90:
-
-                    # 根据配置文件中设置的概率来触发等待，随机性更强
-                    roll_num = random.randint(0, 99)  # roll 0-99，触发几率在配置文件可设置
-                    if roll_num < float(other_setting[3]) * 100:
-                        print(f"<br>已成功匹配{success_times}次，为防止异常检测，在此期间请等待或手动操作！")
-                        if other_setting[7]:
-                            HandleSet.play_sounds("ding")  # 播放提示音
-                        roll_wait_sec = random.randint(int(other_setting[4][0]), int(other_setting[4][1]))
-                        for t in range(int(roll_wait_sec)):
-                            print(f"<br>为防止异常，[ {int(roll_wait_sec) - t} ] 秒后继续……")
-                            sleep(1)
-
-                        # 记录警告提示的时间戳，避免出现1分钟内出现2次以上的等待
-                        warming_time = time.time()  # 记录当前时间
-
-                    # 匹配指定次数（100次）后，立即触发等待（写死每100次必须等待）
-                    elif (success_times + 1) % 100 == 0:
-                        print(f"<br>已成功匹配{success_times}次，为防止异常检测，在此期间请等待或手动操作！")
-                        if other_setting[7]:
-                            HandleSet.play_sounds("ding")  # 播放提示音
-                        roll_wait_sec = random.randint(int(other_setting[4][0]), int(other_setting[4][1]))
-                        for t in range(int(roll_wait_sec)):
-                            print(f"<br>为防止异常，[ {int(roll_wait_sec) - t} ] 秒后继续……")
-                            sleep(1)
-
-                        # 记录警告提示的时间戳，避免出现1分钟内出现2次以上的等待
-                        warming_time = time.time()  # 记录当前时间
-
-            # 当连续匹配同一个图片超过5次，脚本终止（没体力时一直点击的情况、游戏卡住的情况）
-            if match_status and other_setting[14]:  # 如果匹配成功且开启5次匹配停止脚本的配置
-                success_target_list.insert(0, match_target_name)  # 插入最新的匹配成功的图片名称在数组头部
-                success_target_list.pop()  # 移除数组尾部最老的匹配成功的图片名称
-                if len(set(success_target_list)) == 1:  # 如果数组中所有元素都相同，则意味着连续5次匹配到了同一个目标，触发脚本终止
-                    print(f"<br>--------------------------------------------"
-                          f"<br>已连续5次匹配同一目标图片 [ {success_target_list[0]} ] ，触发终止条件，脚本停止运行！！！"
-                          f"<br>--------------------------------------------"
-                          )
-
+                # 当匹配到需要终止脚本运行的图片时
+                if stop_status:
                     if other_setting[7]:
                         HandleSet.play_sounds("warming")  # 播放提示音
                     self.mutex.unlock()
                     self.finished_signal.emit(True)
                     break
 
-            # 检测是否正常运行，否则重试
-            if not run_status:
+                # 记录点击日志(如果匹配成功)
+                if other_setting[15]:
+                    if click_pos:
+                        today = time.strftime('%y%m%d', time.localtime(time.time()))
+                        match_time = time.strftime('%y-%m-%d %H:%M:%S', time.localtime(match_end_time))
+                        file_path = abspath(dirname(dirname(__file__))) + r'/modules/click_log/click_log_' + today + '.txt'
+                        f = open(file_path, 'a+', encoding="utf-8")
+                        for aa in range(len(click_pos)):
+                            f.writelines(match_time + ',' + match_target_name + ',' + str(click_pos[aa][0]) + ',' + str(
+                                click_pos[aa][1]) + '\n')
+
+                # 计算匹配成功的次数,每成功匹配x次，休息x秒，避免异常
+                if match_status:
+                    success_times = success_times + 1
+                    print(f"<br>已成功匹配 [ {success_times} ] 次")
+
+                    # 以下是匹配成功后的随机等待算法
+
+                    # 如果上次警告提示到需要触发时不足90秒，不会触发等待
+                    if other_setting[2] is True and match_end_time - warming_time > 90:
+
+                        # 根据配置文件中设置的概率来触发等待，随机性更强
+                        roll_num = random.randint(0, 99)  # roll 0-99，触发几率在配置文件可设置
+                        if roll_num < float(other_setting[3]) * 100:
+                            print(f"<br>已成功匹配{success_times}次，为防止异常检测，在此期间请等待或手动操作！")
+                            if other_setting[7]:
+                                HandleSet.play_sounds("ding")  # 播放提示音
+                            roll_wait_sec = random.randint(int(other_setting[4][0]), int(other_setting[4][1]))
+                            for t in range(int(roll_wait_sec)):
+                                print(f"<br>为防止异常，[ {int(roll_wait_sec) - t} ] 秒后继续……")
+                                sleep(1)
+
+                            # 记录警告提示的时间戳，避免出现1分钟内出现2次以上的等待
+                            warming_time = time.time()  # 记录当前时间
+
+                        # 匹配指定次数（100次）后，立即触发等待（写死每100次必须等待）
+                        elif (success_times + 1) % 100 == 0:
+                            print(f"<br>已成功匹配{success_times}次，为防止异常检测，在此期间请等待或手动操作！")
+                            if other_setting[7]:
+                                HandleSet.play_sounds("ding")  # 播放提示音
+                            roll_wait_sec = random.randint(int(other_setting[4][0]), int(other_setting[4][1]))
+                            for t in range(int(roll_wait_sec)):
+                                print(f"<br>为防止异常，[ {int(roll_wait_sec) - t} ] 秒后继续……")
+                                sleep(1)
+
+                            # 记录警告提示的时间戳，避免出现1分钟内出现2次以上的等待
+                            warming_time = time.time()  # 记录当前时间
+
+                # 当连续匹配同一个图片超过5次，脚本终止（没体力时一直点击的情况、游戏卡住的情况）
+                if match_status and other_setting[14]:  # 如果匹配成功且开启5次匹配停止脚本的配置
+                    success_target_list.insert(0, match_target_name)  # 插入最新的匹配成功的图片名称在数组头部
+                    success_target_list.pop()  # 移除数组尾部最老的匹配成功的图片名称
+                    if len(set(success_target_list)) == 1:  # 如果数组中所有元素都相同，则意味着连续5次匹配到了同一个目标，触发脚本终止
+                        print(f"<br>--------------------------------------------"
+                              f"<br>已连续5次匹配同一目标图片 [ {success_target_list[0]} ] ，触发终止条件，脚本停止运行！！！"
+                              f"<br>--------------------------------------------"
+                              )
+
+                        if other_setting[7]:
+                            HandleSet.play_sounds("warming")  # 播放提示音
+                        self.mutex.unlock()
+                        self.finished_signal.emit(True)
+                        break
+
+                # 检测是否正常运行，否则重试
+                if not run_status:
+                    if other_setting[7]:
+                        HandleSet.play_sounds("warming")  # 播放提示音
+                    # 如果运行异常重新尝试继续执行
+                    print(f"<br>运行异常，请检查待匹配目标程序是否启动！")
+                    for t in range(10):
+                        print(f"<br>{10 - t}秒后重试！")
+                        sleep(1)
+                    pass
+
+                    # 如果运行异常直接终止
+                    # self.mutex.unlock()
+                    # self.finished_signal.emit(True)
+                    # break
+
+                # 判断是否结束
+                # if i == loop_times - 1:  # 根据执行次数判断结束时间
+                if now_time >= end_time:  # 根据时间判断结束时间
+                    print("<br>---已执行完成!---")
+                    log_analysis_url = pathlib.PureWindowsPath(abspath(dirname(__file__)) + r'\tools\log_analysis.html')
+                    print("<br>日志分析工具：<a href=" + log_analysis_url.as_posix() + ">->点击使用</a>")
+                    if other_setting[7]:
+                        HandleSet.play_sounds("end")  # 播放提示音
+                    self.end_do(info)
+                    self.mutex.unlock()
+                    self.finished_signal.emit(True)
+                    break
+                else:
+                    # 倒推剩余时间（时分秒格式）
+                    # 设置随机延时，防检测
+                    ts = uniform(-0.6, 0.6)
+                    # 根据时间来计算剩余时间
+                    remaining_time = time_transform(end_time - now_time)
+                    # 执行一次匹配所需的时间
+                    match_once_time = match_end_time - match_start_time
+                    if match_once_time >= interval_seconds + ts:
+                        sleep_time = 0
+                    else:
+                        sleep_time = interval_seconds - match_once_time + ts
+                    print(
+                        f"<br>匹配一次需 [ {round(match_once_time, 2)} ] 秒, [ {round(sleep_time, 2)} ] 秒后继续，[ {remaining_time} ] 后结束")
+                    print("<br>-------------------------------------------")
+                    # 匹配间隔 机器计算时间不计入
+                    sleep(sleep_time)
+                    sleep(random.uniform(0.05, 0.3))  # 再额外随机等待0.05-0.3秒
+
+                    # 通过线程信号清除日志，避免日志过多导致运行缓慢(10次匹配清除1次)
+                    if (i + 1) % 10 == 0:
+                        self.clean_run_log_signal.emit('')
+
+            except Exception as e:  # 因未知原因导致的异常，要重新匹配
+                print("<br>未知原因导致异常中断，10秒后重试……")
                 if other_setting[7]:
                     HandleSet.play_sounds("warming")  # 播放提示音
-                # 如果运行异常重新尝试继续执行
-                print(f"<br>运行异常，请检查待匹配目标程序是否启动！")
                 for t in range(10):
                     print(f"<br>{10 - t}秒后重试！")
                     sleep(1)
-                pass
-
-                # 如果运行异常直接终止
-                # self.mutex.unlock()
-                # self.finished_signal.emit(True)
-                # break
-
-            # 判断是否结束
-            # if i == loop_times - 1:  # 根据执行次数判断结束时间
-            if now_time >= end_time:  # 根据时间判断结束时间
-                print("<br>---已执行完成!---")
-                log_analysis_url = pathlib.PureWindowsPath(abspath(dirname(__file__)) + r'\tools\log_analysis.html')
-                print("<br>日志分析工具：<a href=" + log_analysis_url.as_posix() + ">->点击使用</a>")
-                if other_setting[7]:
-                    HandleSet.play_sounds("end")  # 播放提示音
-                self.end_do(info)
-                self.mutex.unlock()
-                self.finished_signal.emit(True)
-                break
-            else:
-                # 倒推剩余时间（时分秒格式）
-                # 设置随机延时，防检测
-                ts = uniform(-0.6, 0.6)
-                # 根据时间来计算剩余时间
-                remaining_time = time_transform(end_time - now_time)
-                # 执行一次匹配所需的时间
-                match_once_time = match_end_time - match_start_time
-                if match_once_time >= interval_seconds + ts:
-                    sleep_time = 0
-                else:
-                    sleep_time = interval_seconds - match_once_time + ts
-                print(
-                    f"<br>匹配一次需 [ {round(match_once_time, 2)} ] 秒, [ {round(sleep_time, 2)} ] 秒后继续，[ {remaining_time} ] 后结束")
                 print("<br>-------------------------------------------")
-                # 匹配间隔 机器计算时间不计入
-                sleep(sleep_time)
-                sleep(random.uniform(0.05, 0.3))  # 再额外随机等待0.05-0.3秒
-
-                # 通过线程信号清除日志，避免日志过多导致运行缓慢(10次匹配清除1次)
-                if (i + 1) % 10 == 0:
-                    self.clean_run_log_signal.emit('')
 
             # 上面是Qthread中的循环匹配代码--------------
 

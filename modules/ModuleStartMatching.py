@@ -238,6 +238,7 @@ class StartMatch:
             del screen_sift  # 删除截图的特征点信息
 
         if pos and target_num is not None:
+            print(f"<br>匹配成功! ")
             match_status = True
 
             # 如果图片有压缩，需对坐标还原
@@ -260,7 +261,6 @@ class StartMatch:
                     break
 
             # 打印匹配到的实际坐标点和匹配到的图片信息
-            print(f"<br>匹配成功! ")
             # if debug_status:
             # if self.other_setting[5]:  # 显示匹配成功的图片
             print(f"<br><img height=\"30\" src='{target_img_file_path[target_num]}'>")
@@ -276,7 +276,8 @@ class StartMatch:
                               f"<br>--------------------------------------------"
                               )
                         stop_status = True
-                        return run_status, match_status, stop_status
+                        # return run_status, match_status, stop_status
+                        return run_status, match_status, stop_status, target_img_name[target_num], click_pos
 
             # 开始点击
             if connect_mod == 'Windows程序窗体':
@@ -328,6 +329,7 @@ class StartMatch:
         # 内存清理
         del screen_img, pos, target_info, target_img, target_img_sift, screen_method  # 删除变量
         collect()  # 清理内存
+
         return run_status, match_status, stop_status, target_img_name[target_num], click_pos
 
     def start_match_click(self, i, loop_times, target_info, debug_status, start_time, end_time, now_time, loop_seconds,

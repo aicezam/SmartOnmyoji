@@ -23,7 +23,7 @@ from modules.ModuleGetConfig import ReadConfigFile
 from modules.ModuleRunThread import MatchingThread, GetActiveWindowThread
 from modules.ui import Ui_MainWindow
 
-now_tag = "v0.38"
+now_tag = "v0.39"
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -360,7 +360,7 @@ if __name__ == '__main__':
         target_file_name = config_ini.read_config_target_path_files_name()
         myWindow = MainWindow(default_info, target_file_name)
 
-        myWindow.setWindowTitle('痒痒鼠护肝小助手 - ' + now_tag)  # 设置窗口标题
+        myWindow.setWindowTitle(now_tag)  # 设置窗口标题
         myWindow.show()
         sys.exit(app.exec_())
     else:

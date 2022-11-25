@@ -7,6 +7,7 @@ import time
 from os.path import abspath, dirname
 from subprocess import Popen, PIPE
 
+import numpy as np
 import win32com.client
 from numpy import frombuffer, uint8, array
 from win32con import SRCCOPY
@@ -56,6 +57,7 @@ class GetScreenCapture:
         im_opencv.shape = (screen_height_source, screen_width_source, 4)
         im_opencv = cv2.cvtColor(im_opencv, cv2.COLOR_BGRA2GRAY)
         # im_opencv = cv2.cvtColor(im_opencv, cv2.COLOR_BGRA2BGR)
+        # im_opencv = np.uint8(cv2.resize(im_opencv, (screen_width, screen_height)))
         im_opencv = cv2.resize(im_opencv, (screen_width, screen_height))
         print("<br>截图成功！")
 
