@@ -27,12 +27,15 @@ click_times = 500  # 每个点的点击次数
 time = "22-11-20 10:00:00"
 
 click_mod = ClickModSet.create_click_mod(50)
+click_mod2 = ClickModSet.create_click_mod(120)
 target_pos_list = []
 
 for i in range(click_times):
     p_pos = ClickModSet.choice_mod_pos(click_mod)
 
-    px, py = DoClick.get_p_pos(click_mod, screen_size[0], screen_size[1], target_pos1)
+    px, py = DoClick.get_p_pos(click_mod2, screen_size[0], screen_size[1], target_pos1)
+    # cx1 = int(px + target_pos1[0]) + random.randint(-100, 100)
+    # cy1 = int(py + target_pos1[1]) + random.randint(-100, 100)
     cx1 = int(px + target_pos1[0])
     cy1 = int(py + target_pos1[1])
     target_pos_list.append([time, pos1_name, cx1, cy1])

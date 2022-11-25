@@ -193,7 +193,8 @@ class MatchingThread(QtCore.QThread):
 
         # 生成随机点击模型，其中info[3]是随机偏移像素值，这里作为点击模型的坐标范围，
         # 如：偏移50，则模型的坐标范围为[(-50,50),(-50,50)]的正态分布数组
-        click_mod = ClickModSet.create_click_mod(info[3])
+        click_mod1 = ClickModSet.create_click_mod(info[3])  # 精确模型，用于关键图片偏移，偏移量可设置
+        click_mod2 = ClickModSet.create_click_mod(150)  # 大模型，用于空白位置偏移点击，默认150
 
         # 对UI参数初始化，计算匹配的次数、导入需要检测的目标图片
         init_value = start_match.set_init(set_priority_status)
@@ -237,8 +238,8 @@ class MatchingThread(QtCore.QThread):
             # 开始匹配
             match_start_time = time.time()
             try:
-                results = start_match.start_match_click(i, loop_times, target_info, debug_status, start_time, end_time,
-                                                        now_time, loop_seconds, click_mod)
+                results = start_match.start_match_click(i, target_info, debug_status, start_time, end_time,
+                                                        now_time, loop_seconds, click_mod1, click_mod2)
 
                 match_end_time = time.time()
                 run_status, match_status, stop_status, match_target_name, click_pos = results

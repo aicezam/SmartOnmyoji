@@ -154,7 +154,7 @@ class StartMatch:
         return loop_times, target_info, t1
 
     def matching(self, connect_mod, handle_num, scr_and_click_method, screen_method, debug_status, match_method,
-                 compress_val, target_info, click_mod, run_status, match_status, stop_status):
+                 compress_val, target_info, click_mod1, click_mod2, run_status, match_status, stop_status):
         """
         核心代码~
         :param connect_mod: 运行方式，windows或安卓
@@ -168,11 +168,13 @@ class StartMatch:
         :param run_status: 运行状态
         :param match_status: 匹配状态
         :param stop_status: 终止状态
-        :param click_mod: 随机点击模型
+        :param click_mod1: 随机点击模型（小偏移）
+        :param click_mod2: 随机点击模型（大偏移）
         :return: 运行状态、匹配状态
         """
 
         target_img_sift, target_img_hw, target_img_name, target_img_file_path, target_img = target_info
+        click_mod = click_mod1  # 默认使用精确点击模型
 
         # 获取截图
         print('<br>正在截图…')
@@ -250,6 +252,7 @@ class StartMatch:
             img_json = json.load(open(target_img_folder_path + r'\img_pos.json', 'r', encoding='utf-8'))  # 读取json文件
             for i in range(len(img_json)):  # 匹配并抽取当前目标json文件中设置的坐标点
                 if target_img_name[target_num] == img_json[i]["name"]:  # 判断当前匹配成功的图片是否设置json
+                    click_mod = click_mod2  # 如果匹配到需要偏移的位置，则使用偏移两较大的模型
                     target_pos = random.choice(img_json[i]["click_pos"])  # 抽取一个点击坐标
                     if abs(pos[0] - img_json[i]["real_pos"][0]) < 100:  # 判断界面是否经过较大缩放
                         pos = target_pos  # 未缩放直接使用json中的值
@@ -332,8 +335,7 @@ class StartMatch:
 
         return run_status, match_status, stop_status, target_img_name[target_num], click_pos
 
-    def start_match_click(self, i, loop_times, target_info, debug_status, start_time, end_time, now_time, loop_seconds,
-                          click_mod):
+    def start_match_click(self, i, target_info, debug_status, start_time, end_time, now_time, loop_seconds, click_mod1, click_mod2):
         """不同场景下的匹配方式"""
         match_status = False
         run_status = True
@@ -369,7 +371,7 @@ class StartMatch:
                 handle_height = handle_set.get_handle_pos[3] - handle_set.get_handle_pos[1]  # 下y - 上y 计算高度
                 screen_method = GetScreenCapture(handle_num, handle_width, handle_height)
                 results = self.matching(connect_mod, handle_num, scr_and_click_method, screen_method, debug_status,
-                                        match_method, compress_val, target_info, click_mod, run_status, match_status,
+                                        match_method, compress_val, target_info, click_mod1, click_mod2, run_status, match_status,
                                         stop_status)
                 run_status, match_status, stop_status, match_target_name, click_pos = results
 
@@ -389,7 +391,7 @@ class StartMatch:
             handle_num = handle_set.get_handle_num
             screen_method = GetScreenCapture(handle_num, handle_width, handle_height)
             results = self.matching(connect_mod, handle_num, scr_and_click_method, screen_method, debug_status,
-                                    match_method, compress_val, target_info, click_mod,
+                                    match_method, compress_val, target_info, click_mod1, click_mod2,
                                     run_status, match_status, stop_status)
             run_status, match_status, stop_status, match_target_name, click_pos = results
 
@@ -402,14 +404,14 @@ class StartMatch:
                 screen_method = GetScreenCapture()
                 results = self.matching(connect_mod, 0, scr_and_click_method, screen_method, debug_status, match_method,
                                         compress_val, target_info,
-                                        click_mod, run_status, match_status, stop_status)
+                                        click_mod1, click_mod2, run_status, match_status, stop_status)
                 run_status, match_status, stop_status, match_target_name, click_pos = results
             else:
                 print(device_id)
                 run_status = False
                 return run_status, match_status
 
-        del target_info, screen_method, connect_mod, scr_and_click_method, match_method, compress_val, click_mod, handle_num_list  # 删除变量
+        del target_info, screen_method, connect_mod, scr_and_click_method, match_method, compress_val, click_mod1, click_mod2, handle_num_list  # 删除变量
         collect()  # 清理内存
 
         return run_status, match_status, stop_status, match_target_name, click_pos
