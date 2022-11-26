@@ -23,44 +23,51 @@ class ClickModSet:
         # 对原始数据进行处理，点击模型除正态分布外，参照人类的眼动模型行为，点击规律还应呈现一定的长尾效应，所以对第二象限进行放大，对第四象限缩小
         x_int = []
         y_int = []
-        for i in range(len(mx)):
+        for t in range(len(mx)):
 
             # 对第二象限的坐标放大
-            if mx[i] < 0 and my[i] > 0:
-                x_int.append(int(mx[i] * zoom * 1.373))
-                y_int.append(int(my[i] * zoom * 1.373))
+            if mx[t] < 0 and my[t] > 0:
+                x_int.append(int(mx[t] * zoom * 1.373))
+                y_int.append(int(my[t] * zoom * 1.303))
 
             # 对第四象限的坐标缩小
-            elif mx[i] > 0 and my[i] < 0:
+            elif mx[t] > 0 and my[t] < 0:
 
                 # 若第四象限全部缩小，会导致第四象限的密度偏大，所以把其中三分之一的坐标，转换为第二象限的坐标（第二象限放大后密度会变小）
                 roll = np.random.randint(0, 9)
                 if roll < 5:  # 转换其中二分之一的坐标
-                    x_int.append(int(mx[i] * zoom * -1.373))
-                    y_int.append(int(my[i] * zoom * -1.373))
+                    # pos = ClickModSet.pos_rotate([int(mx[t]), int(my[t])], 180)
+                    # x_int.append(int(pos[0]))
+                    # y_int.append(int(pos[1]))
+
+                    x_int.append(int(mx[t] * zoom * -1.350))
+                    y_int.append(int(my[t] * zoom * -1.200))
+
+                    # x_int.append(int(mx[i] * zoom * -1))
+                    # y_int.append(int(my[i] * zoom * -1))
                 elif roll >= 8:  # 十分之二的坐标不处理
-                    x_int.append(int(mx[i] * zoom))
-                    y_int.append(int(my[i] * zoom))
+                    x_int.append(int(mx[t] * zoom))
+                    y_int.append(int(my[t] * zoom))
                 else:  # 剩下的坐标正常缩小
-                    x_int.append(int(mx[i] * zoom * 0.752))
-                    y_int.append(int(my[i] * zoom * 0.752))
+                    x_int.append(int(mx[t] * zoom * 0.618))
+                    y_int.append(int(my[t] * zoom * 0.618))
             else:
                 # 其他象限的坐标不变
-                x_int.append(int(mx[i] * zoom))
-                y_int.append(int(my[i] * zoom))
+                x_int.append(int(mx[t] * zoom))
+                y_int.append(int(my[t] * zoom))
 
         # 处理边界问题，如果坐标点超出偏移范围，则缩小
-        for i in range(len(x_int)):
+        for t in range(len(x_int)):
 
             # # 先缩小，原始数据稍微超出了zoom的范围
-            x_int[i] = int(x_int[i] * 0.618)
-            y_int[i] = int(y_int[i] * 0.618)
+            x_int[t] = int(x_int[t] * 0.816)
+            y_int[t] = int(y_int[t] * 0.712)
 
             # 再判断是否超出边界，超出则再缩小超出的部分
-            if abs(x_int[i]) > zoom:
-                x_int[i] = int(x_int[i] * 0.618)
-            if abs(y_int[i]) > zoom*1.15:
-                y_int[i] = int(y_int[i] * 0.618)
+            if abs(x_int[t]) > zoom:
+                x_int[t] = int(x_int[t] * 0.718)
+            if abs(y_int[t]) > zoom*1.15:
+                y_int[t] = int(y_int[t] * 0.618)
 
         # 合并数据
         mod_data = np.array(list(zip(x_int, y_int)))
@@ -124,7 +131,8 @@ if __name__ == '__main__':
     print(f"随机取值 ({x},{y})，并旋转90度 {ClickModSet.pos_rotate([x,y], 90)}")
 
     # 测试随机取值是否呈正态分布
-    for i in range(5000):
+    # os.remove(r"D:\click_mod\1.txt")
+    for i in range(500):
         # xy 写入txt
         xy = ClickModSet.choice_mod_pos(data)
         f = open(r"D:\click_mod\1.txt", "a")

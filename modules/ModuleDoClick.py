@@ -233,4 +233,6 @@ class DoClick:
             px = p_pos[0]
             py = p_pos[1]
 
+        py = int(py * 0.888)  # 让偏移结果再扁平一点
+
         return px, py

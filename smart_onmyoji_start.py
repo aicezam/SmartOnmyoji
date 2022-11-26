@@ -23,7 +23,7 @@ from modules.ModuleGetConfig import ReadConfigFile
 from modules.ModuleRunThread import MatchingThread, GetActiveWindowThread
 from modules.ui import Ui_MainWindow
 
-now_tag = "v0.39"
+now_tag = "v0.40"
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
