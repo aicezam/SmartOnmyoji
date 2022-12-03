@@ -15,6 +15,7 @@
 2. 克隆或下载本项目
 3. 运行power shell 或 cmd 进入主目录：cd .\SmartOnmyoji\ 安装依赖库：pip install -r requirements.txt
 4. 运行power shell 或 cmd ：python smart_onmyoji_start.py
+5. 手动编译可使用：pyinstaller --distpath Release/ -w -i logo.ico --clean .\smart_onmyoji_start.py
 ```
 
 
