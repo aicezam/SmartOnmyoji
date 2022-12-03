@@ -34,7 +34,7 @@ class GetActiveWindowThread(QtCore.QThread):
     def run(self):
         hand_title, hand_num = HandleSet.get_active_window()  # 鼠标点击获取句柄编号和标题
         if self.ui_info.process_num_one.isChecked():
-            self.active_window_signal.emit(hand_title)  # 单开获取标题
+            self.active_window_signal.emit(hand_title)  # 单开获取程序标题
         else:
             if self.ui_info.show_handle_num.text() == '0' or self.ui_info.show_handle_num.text() == '' or self.ui_info.show_handle_num.text() is None:
                 hand_num = str(hand_num)  # 获取的句柄编号拼接到UI中
@@ -118,7 +118,8 @@ class MatchingThread(QtCore.QThread):
         :return: GUI界面的参数
         """
         loop_min = float(self.ui_info.loop_min.value())  # 运行时长
-        interval_seconds = float(self.ui_info.interval_seconds.value())  # 间隔时间
+        interval_seconds = float(self.ui_info.interval_seconds.value())  # 间隔时间，下限
+        interval_seconds_max = float(self.ui_info.interval_seconds_max.value())  # 间隔时间，上限
         click_deviation = int(self.ui_info.click_deviation.value())  # 点击偏移范围
         connect_mod = None  # 连接方式，电脑还是安卓手机
         if self.ui_info.rd_btn_windows_mod.isChecked():
@@ -152,10 +153,11 @@ class MatchingThread(QtCore.QThread):
         if self.ui_info.select_target_path_mode_combobox.currentText() == '自定义':
             custom_target_path = self.ui_info.show_target_path.text()
         set_priority_status = self.ui_info.set_priority.isChecked()  # 是否启用调试
+        screen_scale_rate = float(self.ui_info.screen_rate.value())  # 屏幕压缩分辨率
 
         info = [connect_mod, target_path_mode, handle_title, click_deviation, interval_seconds, loop_min,
                 img_compress_val, match_method, run_mode, custom_target_path, process_num, handle_num, if_end,
-                debug_status, set_priority_status]
+                debug_status, set_priority_status, interval_seconds_max, screen_scale_rate]
 
         # 界面设置的参数写入配置文件
         set_config = ReadConfigFile()
@@ -163,7 +165,7 @@ class MatchingThread(QtCore.QThread):
         if other_setting[0] is True:
             set_config.writ_config_ui_info(info)
 
-        return connect_mod, target_path_mode, handle_title, click_deviation, interval_seconds, loop_min, img_compress_val, match_method, run_mode, custom_target_path, process_num, handle_num, if_end, debug_status, set_priority_status
+        return connect_mod, target_path_mode, handle_title, click_deviation, interval_seconds, loop_min, img_compress_val, match_method, run_mode, custom_target_path, process_num, handle_num, if_end, debug_status, set_priority_status, interval_seconds_max
 
     # 运行(入口)
     def run(self):
@@ -185,7 +187,7 @@ class MatchingThread(QtCore.QThread):
 
         debug_status = info[13]
         set_priority_status = info[14]
-        interval_seconds = info[4]
+        interval_seconds = [info[4], info[15]]
         start_match = StartMatch(info[:12])
         loop_seconds = int(info[5] * 60)
         start_time = time.mktime(time.localtime())  # 开始时间的时间戳
@@ -211,6 +213,7 @@ class MatchingThread(QtCore.QThread):
         success_times = 0
         success_target_list = [0, 1, 2, 3, 4, 5]  # 初始化匹配成功的图片数组，只记录5个
         warming_time = time.time()  # 记录当前时间(等待警告时间初始化，避免最开始的90秒内触发等待)
+        click_frequency = [warming_time, 0, 0]  # 计算点击频率，第一个值为开始时间，第二个值为当前时间，第三个值为点击次数，10分钟为一轮统计，点击超过N次则进行额外等待
 
         print("<br>初始化中…")
 
@@ -235,6 +238,14 @@ class MatchingThread(QtCore.QThread):
 
             # 下面是Qthread中的循环匹配代码--------------
 
+            # if info[15] - info[4] < 0:
+            #     print("<br>错误：每次匹配间隔时间上限不能小于下限！")
+            #     if other_setting[7]:
+            #         HandleSet.play_sounds("warming")  # 播放提示音
+            #     self.mutex.unlock()
+            #     self.finished_signal.emit(True)
+            #     break
+
             # 开始匹配
             match_start_time = time.time()
             try:
@@ -244,7 +255,7 @@ class MatchingThread(QtCore.QThread):
                 match_end_time = time.time()
                 run_status, match_status, stop_status, match_target_name, click_pos = results
 
-                # 当匹配到需要终止脚本运行的图片时
+                # 当匹配到需要终止脚本运行的图片，或其他需要终止运行的场景时
                 if stop_status:
                     if other_setting[7]:
                         HandleSet.play_sounds("warming")  # 播放提示音
@@ -257,7 +268,8 @@ class MatchingThread(QtCore.QThread):
                     if click_pos:
                         today = time.strftime('%y%m%d', time.localtime(time.time()))
                         match_time = time.strftime('%y-%m-%d %H:%M:%S', time.localtime(match_end_time))
-                        file_path = abspath(dirname(dirname(__file__))) + r'/modules/click_log/click_log_' + today + '.txt'
+                        file_path = abspath(
+                            dirname(dirname(__file__))) + r'/modules/click_log/click_log_' + today + '.txt'
                         f = open(file_path, 'a+', encoding="utf-8")
                         for aa in range(len(click_pos)):
                             f.writelines(match_time + ',' + match_target_name + ',' + str(click_pos[aa][0]) + ',' + str(
@@ -270,8 +282,8 @@ class MatchingThread(QtCore.QThread):
 
                     # 以下是匹配成功后的随机等待算法
 
-                    # 如果上次警告提示到需要触发时不足90秒，不会触发等待
-                    if other_setting[2] is True and match_end_time - warming_time > 90:
+                    # 如果上次警告提示到需要触发时不足150秒，不会触发等待
+                    if other_setting[2] is True and match_end_time - warming_time > 150:
 
                         # 根据配置文件中设置的概率来触发等待，随机性更强
                         roll_num = random.randint(0, 99)  # roll 0-99，触发几率在配置文件可设置
@@ -297,8 +309,21 @@ class MatchingThread(QtCore.QThread):
                                 print(f"<br>为防止异常，[ {int(roll_wait_sec) - t} ] 秒后继续……")
                                 sleep(1)
 
-                            # 记录警告提示的时间戳，避免出现1分钟内出现2次以上的等待
+                            # 记录警告提示的时间戳，避免出现2分钟内出现2次以上的等待
                             warming_time = time.time()  # 记录当前时间
+
+                    # 计算点击频率，超过一定频率容易被识别为异常，所以增加等待时间
+                    click_frequency[1] = match_end_time  # 记录当前时间戳
+                    if click_frequency[1] - click_frequency[0] < 600:  # 判断当前时间减去之前上一轮结束时间，是否在10分钟范围内
+                        click_frequency[2] = click_frequency[2] + 1  # 如果不超过10分钟，则匹配成功次数+1
+                    else:
+                        click_frequency = [match_end_time, 0, 0]  # 如果超过10分钟，则初始化时间以及频次
+
+                    if click_frequency[2] > int(other_setting[17][0]):  # 如果10分钟匹配频次超过N次，则等待
+                        print(f"<br>当前10分钟内匹配超过{other_setting[17][0]}次，接下来每次匹配成功后将强制额外等待{other_setting[17][1]}秒")
+                        for t in range(int(other_setting[17][1])):
+                            print(f"<br>为防止异常，[ {int(other_setting[17][1]) - t} ] 秒后继续……")
+                            sleep(1)
 
                 # 当连续匹配同一个图片超过5次，脚本终止（没体力时一直点击的情况、游戏卡住的情况）
                 if match_status and other_setting[14]:  # 如果匹配成功且开启5次匹配停止脚本的配置
@@ -321,7 +346,7 @@ class MatchingThread(QtCore.QThread):
                     if other_setting[7]:
                         HandleSet.play_sounds("warming")  # 播放提示音
                     # 如果运行异常重新尝试继续执行
-                    print(f"<br>运行异常，请检查待匹配目标程序是否启动！")
+                    print(f"<br>运行异常：请检查待匹配目标程序是否启动！")
                     for t in range(10):
                         print(f"<br>{10 - t}秒后重试！")
                         sleep(1)
@@ -352,10 +377,12 @@ class MatchingThread(QtCore.QThread):
                     remaining_time = time_transform(end_time - now_time)
                     # 执行一次匹配所需的时间
                     match_once_time = match_end_time - match_start_time
-                    if match_once_time >= interval_seconds + ts:
+                    interval_s = random.uniform(interval_seconds[0], interval_seconds[1])  # 匹配时间设定随机值
+                    # print("<br>", interval_s)
+                    if match_once_time >= interval_s + ts:
                         sleep_time = 0
                     else:
-                        sleep_time = interval_seconds - match_once_time + ts
+                        sleep_time = interval_s - match_once_time + ts
                     print(
                         f"<br>匹配一次需 [ {round(match_once_time, 2)} ] 秒, [ {round(sleep_time, 2)} ] 秒后继续，[ {remaining_time} ] 后结束")
                     print("<br>-------------------------------------------")
@@ -363,12 +390,15 @@ class MatchingThread(QtCore.QThread):
                     sleep(sleep_time)
                     sleep(random.uniform(0.05, 0.3))  # 再额外随机等待0.05-0.3秒
 
-                    # 通过线程信号清除日志，避免日志过多导致运行缓慢(10次匹配清除1次)
+                    # 通过线程信号清除UI界面的运行日志，避免日志过多导致运行缓慢(10次匹配清除1次)
                     if (i + 1) % 10 == 0:
                         self.clean_run_log_signal.emit('')
 
             except Exception as e:  # 因未知原因导致的异常，要重新匹配
-                print("<br>未知原因导致异常中断，10秒后重试……")
+                print("<br>未知原因导致异常中断，10秒后重试……"
+                      "<br>-------------------------------------------"
+                      f"<br>异常错误如下：<br>{e}"
+                      "<br>-------------------------------------------")
                 if other_setting[7]:
                     HandleSet.play_sounds("warming")  # 播放提示音
                 for t in range(10):

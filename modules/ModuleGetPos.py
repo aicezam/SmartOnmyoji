@@ -3,7 +3,8 @@
 # @Version : Python3.7.6
 # @MIT License Copyright (c) 2022 ACE
 
-from cv2 import cv2
+# from cv2 import cv2
+import cv2
 from numpy import int32, float32
 
 from modules.ModuleGetConfig import ReadConfigFile

@@ -13,7 +13,8 @@ from numpy import frombuffer, uint8, array
 from win32con import SRCCOPY
 from win32gui import DeleteObject, SetForegroundWindow, GetWindowRect, GetWindowDC
 from win32ui import CreateDCFromHandle, CreateBitmap
-from cv2 import cv2
+# from cv2 import cv2
+import cv2
 from PIL import ImageGrab
 
 from modules.ModuleGetConfig import ReadConfigFile

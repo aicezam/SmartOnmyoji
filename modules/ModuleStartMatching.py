@@ -6,19 +6,19 @@ import json
 import os
 import random
 from gc import collect
-from time import sleep, localtime, strftime
 from os.path import abspath, dirname
 from re import search
+from time import sleep, localtime, strftime
 
 from win32gui import GetWindowText
 
 from modules.ModuleDoClick import DoClick
+from modules.ModuleGetConfig import ReadConfigFile
 from modules.ModuleGetPos import GetPosByTemplateMatch, GetPosBySiftMatch
 from modules.ModuleGetScreenCapture import GetScreenCapture
 from modules.ModuleGetTargetInfo import GetTargetPicInfo
 from modules.ModuleHandleSet import HandleSet
 from modules.ModuleImgProcess import ImgProcess
-from modules.ModuleGetConfig import ReadConfigFile
 
 
 def time_transform(seconds):
@@ -248,24 +248,26 @@ class StartMatch:
                 pos = [pos[0] / compress_val, pos[1] / compress_val]
 
             # 获取json文件中，每个图片配置的坐标点
-            target_img_folder_path = os.path.dirname(target_img_file_path[target_num])  # 获取图片所在文件夹
-            img_json = json.load(open(target_img_folder_path + r'\img_pos.json', 'r', encoding='utf-8'))  # 读取json文件
-            for i in range(len(img_json)):  # 匹配并抽取当前目标json文件中设置的坐标点
-                if target_img_name[target_num] == img_json[i]["name"]:  # 判断当前匹配成功的图片是否设置json
-                    click_mod = click_mod2  # 如果匹配到需要偏移的位置，则使用偏移两较大的模型
-                    target_pos = random.choice(img_json[i]["click_pos"])  # 抽取一个点击坐标
-                    if abs(pos[0] - img_json[i]["real_pos"][0]) < 100:  # 判断界面是否经过较大缩放
-                        pos = target_pos  # 未缩放直接使用json中的值
-                    else:
-                        scal_rate = pos[0] / img_json[i]["real_pos"][0]  # 如果界面有缩放则计算缩放比例，重新计算缩放后的点击坐标
-                        pos = [0, 0]  # 重置坐标，通过缩放比例重新赋值新坐标
-                        pos[0] = int(target_pos[0] * scal_rate)
-                        pos[1] = int(target_pos[1] * scal_rate)
-                    break
+            try:
+                target_img_folder_path = os.path.dirname(target_img_file_path[target_num])  # 获取图片所在文件夹
+                img_json = json.load(open(target_img_folder_path + r'/img_pos.json', 'r', encoding='utf-8'))  # 读取json文件
+                # print(img_json)  # 测试json文件内容
+                for i in range(len(img_json)):  # 匹配并抽取当前目标json文件中设置的坐标点
+                    if target_img_name[target_num] == img_json[i]["name"]:  # 判断当前匹配成功的图片是否设置json
+                        click_mod = click_mod2  # 如果匹配到需要偏移的位置，则使用偏移两较大的模型
+                        target_pos = random.choice(img_json[i]["click_pos"])  # 抽取一个点击坐标
+                        if abs(pos[0] - img_json[i]["real_pos"][0]) < 100:  # 判断界面是否经过较大缩放
+                            pos = target_pos  # 未缩放直接使用json中的值
+                        else:
+                            scal_rate = pos[0] / img_json[i]["real_pos"][0]  # 如果界面有缩放则计算缩放比例，重新计算缩放后的点击坐标
+                            pos = [0, 0]  # 重置坐标，通过缩放比例重新赋值新坐标
+                            pos[0] = int(target_pos[0] * scal_rate)
+                            pos[1] = int(target_pos[1] * scal_rate)
+                        break
+            except Exception as e:
+                print("<br>", e)
 
             # 打印匹配到的实际坐标点和匹配到的图片信息
-            # if debug_status:
-            # if self.other_setting[5]:  # 显示匹配成功的图片
             print(f"<br><img height=\"30\" src='{target_img_file_path[target_num]}'>")
             print(f"<br>匹配到第 [ {target_num + 1} ] 张图片: [ {target_img_name[target_num]} ]"
                   f"<br>坐标位置: [ {int(pos[0])} , {int(pos[1])} ] ")
@@ -335,7 +337,8 @@ class StartMatch:
 
         return run_status, match_status, stop_status, target_img_name[target_num], click_pos
 
-    def start_match_click(self, i, target_info, debug_status, start_time, end_time, now_time, loop_seconds, click_mod1, click_mod2):
+    def start_match_click(self, i, target_info, debug_status, start_time, end_time, now_time, loop_seconds, click_mod1,
+                          click_mod2):
         """不同场景下的匹配方式"""
         match_status = False
         run_status = True
@@ -371,7 +374,8 @@ class StartMatch:
                 handle_height = handle_set.get_handle_pos[3] - handle_set.get_handle_pos[1]  # 下y - 上y 计算高度
                 screen_method = GetScreenCapture(handle_num, handle_width, handle_height)
                 results = self.matching(connect_mod, handle_num, scr_and_click_method, screen_method, debug_status,
-                                        match_method, compress_val, target_info, click_mod1, click_mod2, run_status, match_status,
+                                        match_method, compress_val, target_info, click_mod1, click_mod2, run_status,
+                                        match_status,
                                         stop_status)
                 run_status, match_status, stop_status, match_target_name, click_pos = results
 

@@ -4,7 +4,8 @@
 # @MIT License Copyright (c) 2022 ACE
 
 from os.path import abspath, dirname
-from cv2 import cv2
+# from cv2 import cv2
+import cv2
 
 
 class ImgProcess:
