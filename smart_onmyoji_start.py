@@ -15,7 +15,6 @@ from time import sleep
 import urllib.request
 
 import PyQt5.QtCore
-from PyQt5 import QtCore
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QMainWindow, QApplication, QFileDialog
 
@@ -23,7 +22,7 @@ from modules.ModuleGetConfig import ReadConfigFile
 from modules.ModuleRunThread import MatchingThread, GetActiveWindowThread
 from modules.ui import Ui_MainWindow
 
-now_tag = "v0.40"
+now_tag = "v0.41"
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -49,8 +48,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.if_end_value = ui_info[12]
         self.debug_status_value = ui_info[13]
         self.set_priority_status_value = ui_info[14]
+        self.interval_seconds_value_max = ui_info[15]
+        self.screen_scale_rate_value = ui_info[16]
 
-        # 控制台消息输出到窗口上
+        # 控制台消息捕获并输出到运行日志
         sys.stdout = EmitStr(text_writ=self.output_write)  # 输出结果重定向
         sys.stderr = EmitStr(text_writ=self.output_write)  # 错误输出重定向
 
@@ -103,8 +104,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         else:
             self.select_targetpic_path_btn.hide()
         self.interval_seconds.setValue(float(self.interval_seconds_value))
+        self.interval_seconds_max.setValue(float(self.interval_seconds_value_max))
         self.loop_min.setValue(float(self.loop_min_value))
         self.show_target_path.setText(self.custom_target_path_value)
+        self.screen_rate.setValue(float(self.screen_scale_rate_value))
         if self.run_mode_value == '正常-可后台':
             self.runmod_nomal.setChecked(True)
         else:
@@ -320,12 +323,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.show_target_path.setEnabled(bool_val)
         self.select_targetpic_path_btn.setEnabled(bool_val)
         self.interval_seconds.setEnabled(bool_val)
+        self.interval_seconds_max.setEnabled(bool_val)
         self.loop_min.setEnabled(bool_val)
         self.click_deviation.setEnabled(bool_val)
         self.image_compression.setEnabled(bool_val)
         self.set_priority.setEnabled(bool_val)
         self.config_set_btn.setEnabled(bool_val)
         self.targetpic_path_btn.setEnabled(bool_val)
+        self.screen_rate.setEnabled(bool_val)
 
 
 class EmitStr(PyQt5.QtCore.QObject):
@@ -349,9 +354,8 @@ def except_out_config(exc_type, value, tb):
 if __name__ == '__main__':
 
     if windll.shell32.IsUserAnAdmin():  # 是否以管理员身份运行
-        sys.excepthook = except_out_config
+        sys.excepthook = except_out_config  # 错误信息输出
 
-        QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)  # 高分屏适配，但是无效？
         app = QApplication(sys.argv)
 
         # 加载配置文件参数

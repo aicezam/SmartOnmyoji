@@ -8,7 +8,8 @@ from re import search, compile
 
 import numpy as np
 from numpy import uint8, fromfile
-from cv2 import cv2
+# from cv2 import cv2
+import cv2
 from modules.ModuleImgProcess import ImgProcess
 from modules.ModuleGetConfig import ReadConfigFile
 

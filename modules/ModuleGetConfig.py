@@ -37,10 +37,12 @@ class ReadConfigFile:
         if_end = config_ini.get('ui_info', 'if_end')
         debug_status = self.str_to_bool(config_ini.get('ui_info', 'debug_status'))
         set_priority_status = self.str_to_bool(config_ini.get('ui_info', 'set_priority_status'))
+        interval_seconds_max = float(config_ini.get('ui_info', 'interval_seconds_max'))
+        screen_scale_rate = config_ini.get('other_setting', 'screen_scale_rate')
 
         return [connect_mod, target_path_mode, handle_title, click_deviation, interval_seconds, loop_min,
                 img_compress_val, match_method, run_mode, custom_target_path, process_num, handle_num, if_end,
-                debug_status, set_priority_status]
+                debug_status, set_priority_status, interval_seconds_max, screen_scale_rate]
 
     def read_config_target_path_files_name(self):
         config_ini = ConfigParser()
@@ -94,12 +96,13 @@ class ReadConfigFile:
         if_match_5times_stop = self.str_to_bool(config_ini.get('other_setting', 'if_match_5times_stop'))
         save_click_log = self.str_to_bool(config_ini.get('other_setting', 'save_click_log'))
         target_deviation = int(config_ini.get('other_setting', 'target_deviation'))
+        success_match_then_wait = config_ini.get('other_setting', 'success_match_then_wait')
 
         other_setting = [save_ui_info_in_config, playtime_warming_status, success_times_warming_status,
                          success_times_warming_times, success_times_warming_waiting_seconds.split(","),
                          debug_status_show_pics, set_priority_num, play_sound_status, adb_wifi_status, adb_wifi_ip,
                          ex_click, screen_scale_rate, if_match_then_stop, stop_target_img_name.split(","),
-                         if_match_5times_stop, save_click_log, target_deviation]
+                         if_match_5times_stop, save_click_log, target_deviation, success_match_then_wait.split(",")]
 
         return other_setting
 
@@ -132,6 +135,8 @@ class ReadConfigFile:
         config_ini.set("ui_info", "if_end", info[12])
         config_ini.set("ui_info", "debug_status", info[13])
         config_ini.set("ui_info", "set_priority_status", info[14])
+        config_ini.set("ui_info", "interval_seconds_max", info[15])
+        config_ini.set("other_setting", "screen_scale_rate", info[16])
 
         # 写入文件
         config_ini.write(open(self.file_path, 'w', encoding="utf-8"))
