@@ -22,7 +22,7 @@ from modules.ModuleGetConfig import ReadConfigFile
 from modules.ModuleRunThread import MatchingThread, GetActiveWindowThread
 from modules.ui import Ui_MainWindow
 
-now_tag = "v0.41"
+now_tag = "v0.42"
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -50,6 +50,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.set_priority_status_value = ui_info[14]
         self.interval_seconds_value_max = ui_info[15]
         self.screen_scale_rate_value = ui_info[16]
+        self.times_mode = ui_info[17]
 
         # 控制台消息捕获并输出到运行日志
         sys.stdout = EmitStr(text_writ=self.output_write)  # 输出结果重定向
@@ -133,6 +134,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.show_handle_num.setEnabled(False)
             self.process_num_one.setEnabled(False)
             self.process_num_more.setEnabled(False)
+
+        if self.times_mode == "按分钟计算":
+            self.run_by_min.setChecked(True)
+        else:
+            self.run_by_rounds.setChecked(True)
 
         # 设置界面上显示的匹配目标文件夹的选项名称
         for i in range(len(target_file_name_list)):
@@ -281,7 +287,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             header = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 Edg/107.0.1418.42"}
             try:
                 request2 = urllib.request.Request(url2, headers=header)
-                response2 = urllib.request.urlopen(request2, timeout=0.5)
+                urllib.request.urlopen(request2, timeout=0.5)
             finally:
                 request = urllib.request.Request(url, headers=header)
                 response = urllib.request.urlopen(request, timeout=1).read().decode('utf8')
@@ -331,6 +337,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.config_set_btn.setEnabled(bool_val)
         self.targetpic_path_btn.setEnabled(bool_val)
         self.screen_rate.setEnabled(bool_val)
+        self.run_by_min.setEnabled(bool_val)
+        self.run_by_rounds.setEnabled(bool_val)
 
 
 class EmitStr(PyQt5.QtCore.QObject):

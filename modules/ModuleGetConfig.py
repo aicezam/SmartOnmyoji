@@ -39,10 +39,11 @@ class ReadConfigFile:
         set_priority_status = self.str_to_bool(config_ini.get('ui_info', 'set_priority_status'))
         interval_seconds_max = float(config_ini.get('ui_info', 'interval_seconds_max'))
         screen_scale_rate = config_ini.get('other_setting', 'screen_scale_rate')
+        times_mode = config_ini.get('ui_info', 'times_mode')
 
         return [connect_mod, target_path_mode, handle_title, click_deviation, interval_seconds, loop_min,
                 img_compress_val, match_method, run_mode, custom_target_path, process_num, handle_num, if_end,
-                debug_status, set_priority_status, interval_seconds_max, screen_scale_rate]
+                debug_status, set_priority_status, interval_seconds_max, screen_scale_rate, times_mode]
 
     def read_config_target_path_files_name(self):
         config_ini = ConfigParser()
@@ -137,6 +138,7 @@ class ReadConfigFile:
         config_ini.set("ui_info", "set_priority_status", info[14])
         config_ini.set("ui_info", "interval_seconds_max", info[15])
         config_ini.set("other_setting", "screen_scale_rate", info[16])
+        config_ini.set("ui_info", "times_mode", info[17])
 
         # 写入文件
         config_ini.write(open(self.file_path, 'w', encoding="utf-8"))

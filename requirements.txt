@@ -1,6 +1,9 @@
-# pip install -r requirements.txt
+# pip install -r requirements.txt -i https://pypi.douban.com/simple
+# opencv-python 大于4.6.0在pycharm会提示警告，但运行不会报错
+# python版本大于3.9时，pyinstaller打包的程序在win7上不兼容（win7不能装python3.9）
 
-pywin32>=302
-opencv-python>=4.5.4.60
-PyQt5>=5.15.4
-PyAutoGUI>=0.9.53
+pywin32==302
+opencv-python==4.5.4.60
+PyQt5==5.15.4
+PyAutoGUI==0.9.53
+pillow==9.3.0

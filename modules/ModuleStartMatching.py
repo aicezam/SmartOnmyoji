@@ -12,6 +12,7 @@ from time import sleep, localtime, strftime
 
 from win32gui import GetWindowText
 
+from modules.ModuleClickModSet import ClickModSet
 from modules.ModuleDoClick import DoClick
 from modules.ModuleGetConfig import ReadConfigFile
 from modules.ModuleGetPos import GetPosByTemplateMatch, GetPosBySiftMatch
@@ -49,8 +50,6 @@ class StartMatch:
         # 参数初始化
         target_modname = self.target_modname
         custom_target_path = self.custom_target_path
-        interval_seconds = self.interval_seconds
-        loop_min = self.loop_min
         # 获取待检测目标图片信息
         print('<br>目标图片读取中……')
         target_info = GetTargetPicInfo(target_modname, custom_target_path,
@@ -62,12 +61,6 @@ class StartMatch:
 
         print(f'<br>读取完成！共[ {len(target_img)} ]张图片\n{target_img_name}')
         print("<br>--------------------------------------------")
-
-        # 计算循环次数、时间
-        t1 = len(target_img) / 30  # 每次循环匹配找图需要消耗的时间, 脚本每次匹配一般平均需要2.5秒（30个匹配目标）
-        loop_min = int(loop_min)  # 初始化执行时间，因为不能使用字符串，所以要转一下
-        interval_seconds = int(interval_seconds)  # 初始化间隔秒数
-        loop_times = int(loop_min * (60 / (interval_seconds + t1)))  # 计算要一共要执行的次数
 
         # 程序初始化时，如果设置的wifi或远程连接，先使用adb connect 连接设备
         if self.connect_mod != 'Windows程序窗体':
@@ -102,8 +95,8 @@ class StartMatch:
                     print(f"<br>正在尝试连接 [ {self.other_setting[9]} ] ……")
                     command = abspath(dirname(__file__)) + rf'\adb.exe connect {self.other_setting[9]}'
                     HandleSet.deal_cmd(command)
-                except:
-                    print("<br>连接出现异常，或设备无响应！")
+                except Exception as e:
+                    print(f"<br>连接出现异常，或设备无响应！{e}")
                     return None
 
         elif self.connect_mod == 'Windows程序窗体':
@@ -151,10 +144,10 @@ class StartMatch:
                     return None
                 handle_set.set_priority(int(self.other_setting[6]))
 
-        return loop_times, target_info, t1
+        return target_info
 
     def matching(self, connect_mod, handle_num, scr_and_click_method, screen_method, debug_status, match_method,
-                 compress_val, target_info, click_mod1, click_mod2, run_status, match_status, stop_status):
+                 compress_val, target_info, click_mod1, click_mod2, run_status, match_status, stop_status, flag_mark):
         """
         核心代码~
         :param connect_mod: 运行方式，windows或安卓
@@ -170,6 +163,7 @@ class StartMatch:
         :param stop_status: 终止状态
         :param click_mod1: 随机点击模型（小偏移）
         :param click_mod2: 随机点击模型（大偏移）
+        :param flag_mark: 是否已点击mark标记图片，已点击的不再点击
         :return: 运行状态、匹配状态
         """
 
@@ -246,87 +240,115 @@ class StartMatch:
             # 如果图片有压缩，需对坐标还原
             if compress_val != 1:
                 pos = [pos[0] / compress_val, pos[1] / compress_val]
-
-            # 获取json文件中，每个图片配置的坐标点
-            try:
-                target_img_folder_path = os.path.dirname(target_img_file_path[target_num])  # 获取图片所在文件夹
-                img_json = json.load(open(target_img_folder_path + r'/img_pos.json', 'r', encoding='utf-8'))  # 读取json文件
-                # print(img_json)  # 测试json文件内容
-                for i in range(len(img_json)):  # 匹配并抽取当前目标json文件中设置的坐标点
-                    if target_img_name[target_num] == img_json[i]["name"]:  # 判断当前匹配成功的图片是否设置json
-                        click_mod = click_mod2  # 如果匹配到需要偏移的位置，则使用偏移两较大的模型
-                        target_pos = random.choice(img_json[i]["click_pos"])  # 抽取一个点击坐标
-                        if abs(pos[0] - img_json[i]["real_pos"][0]) < 100:  # 判断界面是否经过较大缩放
-                            pos = target_pos  # 未缩放直接使用json中的值
-                        else:
-                            scal_rate = pos[0] / img_json[i]["real_pos"][0]  # 如果界面有缩放则计算缩放比例，重新计算缩放后的点击坐标
-                            pos = [0, 0]  # 重置坐标，通过缩放比例重新赋值新坐标
-                            pos[0] = int(target_pos[0] * scal_rate)
-                            pos[1] = int(target_pos[1] * scal_rate)
-                        break
-            except Exception as e:
-                print("<br>", e)
+                if debug_status:
+                    print(f"<br>坐标压缩还原成功! ")
 
             # 打印匹配到的实际坐标点和匹配到的图片信息
             print(f"<br><img height=\"30\" src='{target_img_file_path[target_num]}'>")
             print(f"<br>匹配到第 [ {target_num + 1} ] 张图片: [ {target_img_name[target_num]} ]"
                   f"<br>坐标位置: [ {int(pos[0])} , {int(pos[1])} ] ")
 
-            # 检测是否匹配到终止脚本的模板图片
-            if self.other_setting[12]:
-                for i in range(len(self.other_setting[13])):
-                    if target_img_name[target_num] == self.other_setting[13][i]:
-                        print(f"<br>--------------------------------------------"
-                              f"<br>已匹配图片 [ {target_img_name[target_num]} ] ，触发终止条件，脚本停止运行！！！"
-                              f"<br>--------------------------------------------"
-                              )
-                        stop_status = True
-                        # return run_status, match_status, stop_status
-                        return run_status, match_status, stop_status, target_img_name[target_num], click_pos
+            # 获取json文件中，每个图片配置的坐标点
+            img_flag = ""
+            try:
+                target_img_folder_path = os.path.dirname(target_img_file_path[target_num])  # 获取图片所在文件夹
+                img_json = json.load(open(target_img_folder_path + r'/img_pos.json', 'r', encoding='utf-8'))  # 读取json文件
+                # print(img_json)  # 测试json文件内容
+                for i in range(len(img_json)):  # 匹配并抽取当前目标json文件中设置的坐标点
+                    if target_img_name[target_num] == img_json[i]["name"]:  # 判断当前匹配成功的图片是否设置json
+                        img_flag = img_json[i]["flag"]
+                        # print("<br> flag为：", flag)
+                        if img_json[i]["click_pos"] and img_json[i]["real_pos"]:  # 判断是否设置偏移坐标
+                            click_mod = click_mod2  # 如果匹配到需要偏移的位置，则使用偏移两较大的模型
+                            target_pos = random.choice(img_json[i]["click_pos"])  # 抽取一个点击坐标
+                            if abs(pos[0] - img_json[i]["real_pos"][0]) < 100:  # 判断界面是否经过较大缩放
+                                pos = target_pos  # 未缩放直接使用json中的值
+                            else:
+                                scal_rate = pos[0] / img_json[i]["real_pos"][0]  # 如果界面有缩放则计算缩放比例，重新计算缩放后的点击坐标
+                                pos = [0, 0]  # 重置坐标，通过缩放比例重新赋值新坐标
+                                pos[0] = int(target_pos[0] * scal_rate)
+                                pos[1] = int(target_pos[1] * scal_rate)
+                            if debug_status:
+                                print(f"<br>img_pos.json文件读取并设置偏移坐标成功! ")
+                                print(f"<br>偏移坐标: [{pos}] ")
+                            break
+            except Exception as e:
+                print("<br>", e)
 
             # 开始点击
-            if connect_mod == 'Windows程序窗体':
+            if flag_mark == 1 and img_flag == "mark":  # 标记为mark的图片已被点击，则不点击
+                print(f"<br>此回合已点击图片 {target_img_name[target_num]}, flag: {img_flag}，跳过点击!")
+                match_status = False
+            elif img_flag == "skip":
+                print(f"<br>检测到图片 {target_img_name[target_num]}, flag: {img_flag}，跳过点击!")
+                match_status = False
+            elif img_flag == "stop":
+                print(f"<br>已匹配图片 [ {target_img_name[target_num]} ] ，触发终止条件，脚本停止运行！！！")
+                stop_status = True
+            else:
+                if img_flag == "mark":
+                    click_mod = ClickModSet.create_click_mod(20, size=(200, 2))  # 构造正态分布模型，只针对标记场景，所以仅小范围偏移
 
-                if search("雷电模拟器", self.hwd_title):
-                    # 针对 雷电模拟器，特殊处理
-                    handle_set = HandleSet(self.hwd_title, handle_num)
-                    handle_num = handle_set.get_handle_num
-                    doclick = DoClick(pos, click_mod, handle_num)
+                if connect_mod == 'Windows程序窗体':
 
-                    # 如果部分窗口不能点击、截图出来是黑屏，可以使用兼容模式
-                    if scr_and_click_method == '正常-可后台':
-                        click_status, click_pos = doclick.windows_click()
-                    elif scr_and_click_method == '兼容-不可后台':
-                        click_status, click_pos = doclick.windows_click_bk()
+                    if search("雷电模拟器", self.hwd_title):
+                        # 针对 雷电模拟器，特殊处理
+                        handle_set = HandleSet(self.hwd_title, handle_num)
+                        handle_num = handle_set.get_handle_num
+                        doclick = DoClick(pos, click_mod, handle_num)
+                        if debug_status:
+                            print(f"<br>雷电模拟器点击成功! ")
 
-                elif search("模拟器", self.hwd_title) or search("手游助手", self.hwd_title):
-                    # 针对 安卓模拟器 的兼容（使用ADB连接）
+                        # 如果部分窗口不能点击、截图出来是黑屏，可以使用兼容模式
+                        if scr_and_click_method == '正常-可后台':
+                            click_status, click_pos = doclick.windows_click()
+                            if debug_status:
+                                print(f"<br>正常模式点击成功! ")
+                        elif scr_and_click_method == '兼容-不可后台':
+                            click_status, click_pos = doclick.windows_click_bk()
+                            if debug_status:
+                                print(f"<br>兼容模式点击成功! ")
+
+                    elif search("模拟器", self.hwd_title) or search("手游助手", self.hwd_title):
+                        # 针对 安卓模拟器 的兼容（使用ADB连接）
+                        adb_device_connect_status, device_id = HandleSet.adb_device_status()
+                        doclick = DoClick(pos, click_mod, handle_num)
+                        if debug_status:
+                            print(f"<br>模拟器点击成功! ")
+
+                        # 如果部分窗口不能点击、截图出来是黑屏，可以使用兼容模式
+                        if scr_and_click_method == '正常-可后台':
+                            click_status, click_pos = doclick.adb_click(device_id[0])
+                            if debug_status:
+                                print(f"<br>模拟器正常模式点击成功! ")
+                        elif scr_and_click_method == '兼容-不可后台':
+                            click_status, click_pos = doclick.windows_click_bk()
+                            if debug_status:
+                                print(f"<br>模拟器兼容模式点击成功! ")
+
+                    else:
+                        # 针对 windows 程序
+                        handle_set = HandleSet(self.hwd_title, handle_num)
+                        handle_num = handle_set.get_handle_num
+                        doclick = DoClick(pos, click_mod, handle_num)
+
+                        # 如果部分窗口不能点击、截图出来是黑屏，可以使用兼容模式
+                        if scr_and_click_method == '正常-可后台':
+                            click_status, click_pos = doclick.windows_click()
+                            if debug_status:
+                                print(f"<br>Windows程序正常后台点击成功! ")
+                        elif scr_and_click_method == '兼容-不可后台':
+                            click_status, click_pos = doclick.windows_click_bk()
+                            if debug_status:
+                                print(f"<br>Windows程序兼容模式点击成功! ")
+
+                # 支持安卓adb连接
+                elif connect_mod == 'Android-手机':
                     adb_device_connect_status, device_id = HandleSet.adb_device_status()
-                    doclick = DoClick(pos, click_mod, handle_num)
-
-                    # 如果部分窗口不能点击、截图出来是黑屏，可以使用兼容模式
-                    if scr_and_click_method == '正常-可后台':
-                        click_status, click_pos = doclick.adb_click(device_id[0])
-                    elif scr_and_click_method == '兼容-不可后台':
-                        click_status, click_pos = doclick.windows_click_bk()
-
-                else:
-                    # 针对 windows 程序
-                    handle_set = HandleSet(self.hwd_title, handle_num)
-                    handle_num = handle_set.get_handle_num
-                    doclick = DoClick(pos, click_mod, handle_num)
-
-                    # 如果部分窗口不能点击、截图出来是黑屏，可以使用兼容模式
-                    if scr_and_click_method == '正常-可后台':
-                        click_status, click_pos = doclick.windows_click()
-                    elif scr_and_click_method == '兼容-不可后台':
-                        click_status, click_pos = doclick.windows_click_bk()
-
-            # 支持安卓adb连接
-            elif connect_mod == 'Android-手机':
-                adb_device_connect_status, device_id = HandleSet.adb_device_status()
-                doclick = DoClick(pos, click_mod)
-                click_status, click_pos = doclick.adb_click(device_id[0])
+                    doclick = DoClick(pos, click_mod)
+                    click_status, click_pos = doclick.adb_click(device_id[0])
+                    if debug_status:
+                        print(f"<br>安卓ADB点击成功! ")
         else:
             print("<br>匹配失败！")
             match_status = False
@@ -334,11 +356,13 @@ class StartMatch:
         # 内存清理
         del screen_img, pos, target_info, target_img, target_img_sift, screen_method  # 删除变量
         collect()  # 清理内存
+        if debug_status:
+            print(f"<br>内存清理成功! ")
 
         return run_status, match_status, stop_status, target_img_name[target_num], click_pos
 
     def start_match_click(self, i, target_info, debug_status, start_time, end_time, now_time, loop_seconds, click_mod1,
-                          click_mod2):
+                          click_mod2, flag_mark):
         """不同场景下的匹配方式"""
         match_status = False
         run_status = True
@@ -375,8 +399,7 @@ class StartMatch:
                 screen_method = GetScreenCapture(handle_num, handle_width, handle_height)
                 results = self.matching(connect_mod, handle_num, scr_and_click_method, screen_method, debug_status,
                                         match_method, compress_val, target_info, click_mod1, click_mod2, run_status,
-                                        match_status,
-                                        stop_status)
+                                        match_status, stop_status, flag_mark)
                 run_status, match_status, stop_status, match_target_name, click_pos = results
 
         # 单开场景下，通过标题找到窗口句柄
@@ -396,7 +419,7 @@ class StartMatch:
             screen_method = GetScreenCapture(handle_num, handle_width, handle_height)
             results = self.matching(connect_mod, handle_num, scr_and_click_method, screen_method, debug_status,
                                     match_method, compress_val, target_info, click_mod1, click_mod2,
-                                    run_status, match_status, stop_status)
+                                    run_status, match_status, stop_status, flag_mark)
             run_status, match_status, stop_status, match_target_name, click_pos = results
 
         # adb模式下，暂仅支持单开
@@ -408,7 +431,7 @@ class StartMatch:
                 screen_method = GetScreenCapture()
                 results = self.matching(connect_mod, 0, scr_and_click_method, screen_method, debug_status, match_method,
                                         compress_val, target_info,
-                                        click_mod1, click_mod2, run_status, match_status, stop_status)
+                                        click_mod1, click_mod2, run_status, match_status, stop_status, flag_mark)
                 run_status, match_status, stop_status, match_target_name, click_pos = results
             else:
                 print(device_id)

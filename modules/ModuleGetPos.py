@@ -30,7 +30,7 @@ class GetPosByTemplateMatch:
 
         # 获取目标点位置
         pos = None
-        val = 0.90  # 设置相似度
+        val = 0.80  # 设置相似度
         i = 0
         # print("<br>正在匹配…")
         for i in range(len(target_pic)):
@@ -47,7 +47,7 @@ class GetPosByTemplateMatch:
                     if other_setting[5]:
                         draw_img = ImgProcess.draw_pos_in_img(screen_capture, pos, [screen_high / 10, screen_width / 10])
                         ImgProcess.show_img(draw_img)
-                break
+                return pos, i
         return pos, i
 
     @staticmethod
@@ -113,7 +113,7 @@ class GetPosBySiftMatch:
         des1 = target_sift[1]
         kp2 = screen_sift[0]
         des2 = screen_sift[1]
-        min_match_count = 10  # 匹配到的角点数量大于这个数值即匹配成功
+        min_match_count = 9  # 匹配到的角点数量大于这个数值即匹配成功
         flann_index_kdtree = 0  # 设置Flann参数，这里是为了下一步匹配做准备
         index_params = dict(algorithm=flann_index_kdtree, trees=4)  # 指定匹配的算法和kd树的层数
         search_params = dict(checks=50)  # 指定返回的个数

@@ -84,6 +84,7 @@ class GetScreenCapture:
         grab_image = ImageGrab.grab((x1, y1, x2, y2))  # 用PIL方法截图
         im_cv2 = array(grab_image)  # 转换为cv2的矩阵格式
         im_opencv = cv2.cvtColor(im_cv2, cv2.COLOR_BGRA2GRAY)
+        print("<br>截图成功！")
 
         return im_opencv
 

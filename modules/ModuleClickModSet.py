@@ -126,14 +126,14 @@ if __name__ == '__main__':
     x, y = ClickModSet.choice_mod_pos(data)
 
     # 模型测试
-    print("原始模型显示前5个坐标\n", data[:5])
+    print("原始模型显示前5个坐标\n", data[:20])
     print("测试坐标旋转，对第一个点旋转180度", ClickModSet.pos_rotate([data[0][0], data[0][1]], 180))
     print(f"随机取值 ({x},{y})，并旋转90度 {ClickModSet.pos_rotate([x,y], 90)}")
 
     # 测试随机取值是否呈正态分布
     # os.remove(r"D:\click_mod\1.txt")
-    for i in range(500):
-        # xy 写入txt
-        xy = ClickModSet.choice_mod_pos(data)
-        f = open(r"D:\click_mod\1.txt", "a")
-        f.writelines(str(xy[0]) + ',' + str(xy[1]) + '\n')
+    # for i in range(500):
+    #     # xy 写入txt
+    #     xy = ClickModSet.choice_mod_pos(data)
+    #     f = open(r"D:\click_mod\1.txt", "a")
+    #     f.writelines(str(xy[0]) + ',' + str(xy[1]) + '\n')
