@@ -17,6 +17,8 @@ class ClickModSet:
         生成正态分布的鼠标随机点击模型，zoom是缩放比例，约等于偏移像素点，size是模型大小即模型中的坐标总量
         """
 
+        zoom = int(zoom)
+
         # 随机生成呈正态分布的聚合坐标（坐标0,0 附近概率最高）
         mx, my = zip(*np.random.normal(loc=loc, scale=scale, size=size))
 

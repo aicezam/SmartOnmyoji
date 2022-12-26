@@ -208,7 +208,8 @@ class MatchingThread(QtCore.QThread):
         # 生成随机点击模型，其中info[3]是随机偏移像素值，这里作为点击模型的坐标范围，
         # 如：偏移50，则模型的坐标范围为[(-50,50),(-50,50)]的正态分布数组
         click_mod1 = ClickModSet.create_click_mod(info[3])  # 精确模型，用于关键图片偏移，偏移量可设置
-        click_mod2 = ClickModSet.create_click_mod(other_setting[16])  # 大模型，用于空白位置偏移点击
+        pic_json_zoom = random.randint(other_setting[16], other_setting[16] + 20)  # 为大模型设置随机偏移量，使每次运行的结果呈现一定波动
+        click_mod2 = ClickModSet.create_click_mod(pic_json_zoom)  # 大模型，用于空白位置偏移点击
         if debug_status:
             print(f"<br>偏移模型获取成功！")
 
