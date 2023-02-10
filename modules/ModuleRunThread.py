@@ -270,6 +270,27 @@ class MatchingThread(QtCore.QThread):
                 match_end_time = time.time()
                 run_status, match_status, stop_status, match_target_name, click_pos = results
 
+                # 当连续匹配同一个图片超过5次，脚本终止（没体力时一直点击的情况、游戏卡住的情况）
+                success_target_list.insert(0, match_target_name)  # 插入最新的匹配成功的图片名称在数组头部
+                success_target_list.pop()  # 移除数组尾部最老的匹配成功的图片名称
+                if match_status and other_setting[14]:  # 如果匹配成功且开启5次匹配停止脚本的配置
+
+                    if len(set(success_target_list)) == 1:  # 如果数组中所有元素都相同，则意味着连续5次匹配到了同一个目标，触发脚本终止
+                        print(f"<br>--------------------------------------------"
+                              f"<br>已连续5次匹配同一目标图片 [ {success_target_list[0]} ] ，触发终止条件，脚本停止运行！！！"
+                              f"<br>--------------------------------------------"
+                              )
+                        print(f"<br>共完成 [ {rounds} ] 轮, 运行时长：[ {time_transform(match_end_time - start_time)} ]")
+                        log_analysis_url = pathlib.PureWindowsPath(
+                            abspath(dirname(__file__)) + r'\tools\log_analysis.html')
+                        print("<br>日志分析工具：<a href=" + log_analysis_url.as_posix() + ">->点击使用</a>")
+
+                        if other_setting[7]:
+                            HandleSet.play_sounds("warming")  # 播放提示音
+                        self.mutex.unlock()
+                        self.finished_signal.emit(True)
+                        break
+
                 # 当匹配到需要终止脚本运行的图片，或其他需要终止运行的场景时
                 if stop_status:
                     print(f"<br>共完成 [ {rounds} ] 轮, 运行时长：[ {time_transform(match_end_time - start_time)} ]")
@@ -281,30 +302,39 @@ class MatchingThread(QtCore.QThread):
                     self.finished_signal.emit(True)
                     break
 
-                # 当需要点击的图片已被点击时，判断是否点击,用于绿标式神（当前效果不稳定，原因在于截取的关键图片不好匹配）
-                try:
-                    target_img_folder_path = os.path.dirname(target_info[3][0])  # 获取图片所在文件夹
-                    img_json = json.load(
-                        open(target_img_folder_path + r'/img_pos.json', 'r', encoding='utf-8'))  # 读取json文件
-                    # print(img_json)  # 测试json文件内容
-                    for img_num in range(len(img_json)):  # 匹配并抽取当前目标json文件中设置的坐标点
-                        if match_target_name == img_json[img_num]["name"]:  # 判断当前匹配成功的图片是否设置json
-                            img_flag = img_json[img_num]["flag"]
-                            if img_flag == "start":
-                                rounds = rounds + 1  # 当前回合数（计算总回合数）
-                                flag_mark = 0
-                                print(f"<br>第 [ {rounds} ] 轮开始！")
-                            if match_status:  # 匹配成功时，检测是否是标记为skip或mark的图片，如果是，则下一个回合不点击mark
-                                if img_flag == "skip" or img_flag == "mark":
-                                    flag_mark = 1
-                                    if debug_status:
-                                        print(f"<br>检测到跳过或标记图片，下一轮将跳过点击！")
-                            break
-                except Exception as e:
-                    print("<br>", e)
+                # 当需要点击的图片已被点击时，判断是否点击,用于绿标式神（当前效果不稳定，原因在于截取的关键图片不好匹配）,以及判断回合数
+                if match_status:
+                    if debug_status:
+                        print(f"<br>本次匹配图片：{success_target_list[0]},<br>上次匹配图片：{success_target_list[1]}")
+
+                    try:
+                        target_img_folder_path = os.path.dirname(target_info[3][0])  # 获取图片所在文件夹
+                        img_json = json.load(
+                            open(target_img_folder_path + r'/img_pos.json', 'r', encoding='utf-8'))  # 读取json文件
+                        # print(img_json)  # 测试json文件内容
+                        # 匹配并抽取当前目标json文件中设置的坐标点
+                        for img_num in range(len(img_json)):
+                            if match_target_name == img_json[img_num]["name"]:  # 判断当前匹配成功的图片是否设置json
+                                img_flag = img_json[img_num]["flag"]
+
+                                # 如果标签是“start” 以及 上一次匹配与本次匹配的图片名称不是同一个时
+                                if img_flag == "start" and success_target_list[0] != success_target_list[1]:
+                                    rounds = rounds + 1  # 当前回合数（计算总回合数）
+                                    flag_mark = 0
+                                    print(f"<br>第 [ {rounds} ] 轮开始！")
+
+                                # 匹配成功时，检测是否是标记为skip或mark的图片，如果是，则下一个回合不点击mark
+                                if match_status:
+                                    if img_flag == "skip" or img_flag == "mark":
+                                        flag_mark = 1
+                                        if debug_status:
+                                            print(f"<br>检测到跳过或标记图片，下一轮将跳过点击！")
+                                break
+                    except Exception as e:
+                        print("<br>", e)
 
                 # 记录点击日志(如果匹配成功)
-                if other_setting[15]:
+                if other_setting[15] and match_status:
                     if click_pos:
                         today = time.strftime('%y%m%d', time.localtime(time.time()))
                         match_time = time.strftime('%y-%m-%d %H:%M:%S', time.localtime(match_end_time))
@@ -368,26 +398,6 @@ class MatchingThread(QtCore.QThread):
                             sleep(1)
                     if debug_status:
                         print(f"<br>随机等待算法运行成功！")
-
-                # 当连续匹配同一个图片超过5次，脚本终止（没体力时一直点击的情况、游戏卡住的情况）
-                if match_status and other_setting[14]:  # 如果匹配成功且开启5次匹配停止脚本的配置
-                    success_target_list.insert(0, match_target_name)  # 插入最新的匹配成功的图片名称在数组头部
-                    success_target_list.pop()  # 移除数组尾部最老的匹配成功的图片名称
-                    if len(set(success_target_list)) == 1:  # 如果数组中所有元素都相同，则意味着连续5次匹配到了同一个目标，触发脚本终止
-                        print(f"<br>--------------------------------------------"
-                              f"<br>已连续5次匹配同一目标图片 [ {success_target_list[0]} ] ，触发终止条件，脚本停止运行！！！"
-                              f"<br>--------------------------------------------"
-                              )
-                        print(f"<br>共完成 [ {rounds} ] 轮, 运行时长：[ {time_transform(match_end_time - start_time)} ]")
-                        log_analysis_url = pathlib.PureWindowsPath(
-                            abspath(dirname(__file__)) + r'\tools\log_analysis.html')
-                        print("<br>日志分析工具：<a href=" + log_analysis_url.as_posix() + ">->点击使用</a>")
-
-                        if other_setting[7]:
-                            HandleSet.play_sounds("warming")  # 播放提示音
-                        self.mutex.unlock()
-                        self.finished_signal.emit(True)
-                        break
 
                 # 检测是否正常运行，否则重试
                 if not run_status:
