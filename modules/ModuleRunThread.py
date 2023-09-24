@@ -230,6 +230,7 @@ class MatchingThread(QtCore.QThread):
 
         success_times = 0  # 匹配成功次数（仅点击次数，不是回合数）
         success_target_list = [0, 1, 2, 3, 4, 5]  # 初始化匹配成功的图片数组，只记录5个
+        repeat_tolerance = 6 # 6-1=5
         warming_time = time.time()  # 记录当前时间(等待警告时间初始化，避免最开始的90秒内触发等待)
         click_frequency = [warming_time, 0, 0]  # 计算点击频率，第一个值为开始时间，第二个值为当前时间，第三个值为点击次数，10分钟为一轮统计，点击超过N次则进行额外等待
         rounds = 0  # 当前回合数（通过图片的flag标记中的“start”标记，计算总回合数）
@@ -273,13 +274,15 @@ class MatchingThread(QtCore.QThread):
                 # 当连续匹配同一个图片超过5次，脚本终止（没体力时一直点击的情况、游戏卡住的情况）
                 success_target_list.insert(0, match_target_name)  # 插入最新的匹配成功的图片名称在数组头部
                 success_target_list.pop()  # 移除数组尾部最老的匹配成功的图片名称
-                if match_status and other_setting[14]:  # 如果匹配成功且开启5次匹配停止脚本的配置
 
-                    if len(set(success_target_list)) == 1:  # 如果数组中所有元素都相同，则意味着连续5次匹配到了同一个目标，触发脚本终止
+                if match_status and other_setting[14]:  # 如果匹配成功且开启5次匹配停止脚本的配置
+                    repeat = repeat_tolerance-len(set(success_target_list))
+                    print("<br> 匹配重复次数",repeat) # 如果数组中所有元素都相同，则意味着连续5次匹配到了同一个目标，触发脚本终止
+                    if repeat == 5:  
                         print(f"<br>--------------------------------------------"
-                              f"<br>已连续5次匹配同一目标图片 [ {success_target_list[0]} ] ，触发终止条件，脚本停止运行！！！"
-                              f"<br>--------------------------------------------"
-                              )
+                            f"<br>已连续5次匹配同一目标图片 [ {success_target_list[0]} ] ，触发终止条件，脚本停止运行！！！"
+                            f"<br>--------------------------------------------"
+                            )
                         print(f"<br>共完成 [ {rounds} ] 轮, 运行时长：[ {time_transform(match_end_time - start_time)} ]")
                         log_analysis_url = pathlib.PureWindowsPath(
                             abspath(dirname(__file__)) + r'\tools\log_analysis.html')
@@ -290,6 +293,10 @@ class MatchingThread(QtCore.QThread):
                         self.mutex.unlock()
                         self.finished_signal.emit(True)
                         break
+                else:
+                    success_target_list = [0, 1, 2, 3, 4, 5] #匹配失败 重置数组
+
+
 
                 # 当匹配到需要终止脚本运行的图片，或其他需要终止运行的场景时
                 if stop_status:
