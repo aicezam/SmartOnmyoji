@@ -1,9 +1,8 @@
 
 ![SmartOnmyoji](https://socialify.git.ci/aicezam/SmartOnmyoji/image?forks=1&issues=1&language=1&name=1&pattern=Signal&pulls=1&stargazers=1&theme=Light)
 
-# <br/>SmartOnmyoji</br>
+# <br/>SmartOnmyoji - 作者已弃坑，也不再维护此项目了…</br>
 > 虽然有很多大佬有写过类似的脚本，但其实这是个学习项目，通过这个项目基本花了一个月学会了python，这里注释虽然不完整，代码不够简洁，功能也不够丰富，但是用更加优雅的方法继续完善~
-> 作者已弃坑，也不再维护此项目了…
 
 # <br/>高强度使用，被检测的风险较大！</br>
 > 可以尝试修改json中偏移的范围数值，不要使用默认值，等待时间触发概率也可以改大一点
